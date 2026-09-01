@@ -1,0 +1,334 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Nuevo Plato
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/dishes.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+                    <h1>Nuevo Plato</h1>
+                    <p>
+                        Crea un plato y asígnalo a una categoría y estación de cocina.
+                    </p>
+                </div>
+
+                <a href="/admin/dishes" class="btn-secondary">
+                    ← Regresar
+                </a>
+
+            </section>
+
+
+            <form id="dishForm" class="dish-form">
+
+                <!-- ==========================================
+                     IMAGEN
+                =========================================== -->
+
+                <div class="dish-left">
+
+                    <div class="preview">
+
+                        <img
+                            id="previewImage"
+                            src="/static/img/no-image.png"
+                            alt="Vista previa del plato"
+                        >
+
+                    </div>
+
+                    <input
+                        type="file"
+                        id="image"
+                        name="image"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                    >
+
+                    <small class="field-help">
+                        JPG, PNG, WEBP o AVIF.
+                    </small>
+
+                </div>
+
+
+                <!-- ==========================================
+                     INFORMACIÓN DEL PLATO
+                =========================================== -->
+
+                <div class="dish-right">
+
+                    <div class="grid">
+
+
+                        <!-- NOMBRE -->
+
+                        <div class="campo">
+
+                            <label for="name">
+                                Nombre del plato
+                            </label>
+
+                            <input
+                                id="name"
+                                type="text"
+                                maxlength="150"
+                                placeholder="Ej. Picada Familiar"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- CATEGORÍA -->
+
+                        <div class="campo">
+
+                            <label for="category">
+                                Categoría
+                            </label>
+
+                            <select
+                                id="category"
+                                required
+                            >
+
+                                <option value="">
+                                    Seleccione una categoría
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- PRECIO -->
+
+                        <div class="campo">
+
+                            <label for="price">
+                                Precio
+                            </label>
+
+                            <input
+                                id="price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- ESTACIÓN -->
+
+                        <div class="campo">
+
+                            <label for="station">
+                                Estación de cocina
+                            </label>
+
+                            <select
+                                id="station"
+                                required
+                            >
+
+                                <option value="">
+                                    Cargando estaciones...
+                                </option>
+
+                            </select>
+
+                            <small class="field-help">
+                                Esta estación recibirá automáticamente
+                                los productos de este plato cuando el
+                                mesero envíe la comanda.
+                            </small>
+
+                        </div>
+
+
+                        <!-- PORCIÓN -->
+
+                        <div class="campo">
+
+                            <label for="portion">
+                                Porción / cantidad
+                            </label>
+
+                            <input
+                                id="portion"
+                                type="text"
+                                maxlength="100"
+                                placeholder="Ej. 1 persona, 500 g, 2 unidades"
+                            >
+
+                        </div>
+
+
+                        <!-- TIEMPO -->
+
+                        <div class="campo">
+
+                            <label for="preparation_time">
+                                Tiempo de preparación
+                            </label>
+
+                            <div style="display:flex; gap:8px; align-items:center;">
+
+                                <input
+                                    id="preparation_time"
+                                    type="number"
+                                    min="1"
+                                    max="999"
+                                    value="10"
+                                    required
+                                >
+
+                                <span>min</span>
+
+                            </div>
+
+                        </div>
+
+                     
+
+
+                  
+
+
+                    <!-- ==========================================
+                         MODELO 3D
+                    =========================================== -->
+
+                    <div class="campo">
+
+                        <label>
+                            Modelo 3D
+                        </label>
+
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            disabled
+                        >
+                            🧊 Modelo 3D próximamente
+                        </button>
+
+                        <small class="field-help">
+                            Esta función estará disponible cuando integremos
+                            la generación del modelo 3D con IA.
+                        </small>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         OPCIONES
+                    =========================================== -->
+
+                    <div
+                        class="campo"
+                        style="display:flex; gap:20px; flex-wrap:wrap;"
+                    >
+
+                        <label style="display:flex; gap:8px; align-items:center;">
+
+                            <input
+                                type="checkbox"
+                                id="available"
+                                checked
+                            >
+
+                            Disponible
+
+                        </label>
+
+
+                        <label style="display:flex; gap:8px; align-items:center;">
+
+                            <input
+                                type="checkbox"
+                                id="featured"
+                            >
+
+                            Plato destacado
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         BOTONES
+                    =========================================== -->
+
+                    <div
+                        class="form-actions"
+                        style="
+                            margin-top:20px;
+                            display:flex;
+                            gap:10px;
+                        "
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                            id="btnGuardar"
+                        >
+                            Guardar Plato
+                        </button>
+
+                        <a
+                            href="/admin/dishes"
+                            class="btn-secondary"
+                        >
+                            Cancelar
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+<script src="/static/js/admin/dishes/stations.js"></script>
+
+<script src="/static/js/admin/dishes/categories.js"></script>
+
+<script src="/static/js/admin/dishes/image.js"></script>
+
+<script src="/static/js/admin/dishes/create.js"></script>
+
+{% endblock %}

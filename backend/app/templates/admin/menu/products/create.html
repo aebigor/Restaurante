@@ -1,0 +1,335 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Nuevo Producto
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/products.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+
+                    <h1>
+
+                        Nuevo Producto
+
+                    </h1>
+
+                    <p>
+
+                        Registre un nuevo producto para el restaurante.
+
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/menu/products"
+                    class="btn-secondary"
+                >
+
+                    ← Regresar
+
+                </a>
+
+            </section>
+
+            <form
+                id="productForm"
+                class="product-form"
+            >
+
+                <!-- ========================= -->
+                <!-- IMAGEN -->
+                <!-- ========================= -->
+
+                <div class="product-left">
+
+                    <div class="image-preview">
+
+                        <img
+                            id="previewImage"
+                            src="/static/img/no-image.png"
+                            alt="Vista previa"
+                        >
+
+                    </div>
+
+                    <input
+                        type="file"
+                        id="image"
+                        accept="image/*"
+                    >
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- FORMULARIO -->
+                <!-- ========================= -->
+
+                <div class="product-right">
+
+                    <div class="form-grid">
+
+                        <div class="campo">
+
+                            <label>
+
+                                Nombre
+
+                            </label>
+
+                            <input
+                                id="name"
+                                type="text"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Código
+
+                            </label>
+
+                            <input
+                                id="code"
+                                type="text"
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Categoría
+
+                            </label>
+
+                            <select
+                                id="category"
+                                required
+                            >
+
+                            </select>
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Precio
+
+                            </label>
+
+                            <input
+                                id="price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Tiempo Preparación (Min.)
+
+                            </label>
+
+                            <input
+                                id="preparation_time"
+                                type="number"
+                                value="10"
+                                min="0"
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Estación
+
+                            </label>
+
+                            <select id="station">
+
+                            
+
+                            </select>
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Inventario Inicial
+
+                            </label>
+
+                            <input
+                                id="stock"
+                                type="number"
+                                value="0"
+                                min="0"
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Estado
+
+                            </label>
+
+                            <select id="status">
+
+                                <option value="ACTIVE">
+
+                                    Disponible
+
+                                </option>
+
+                                <option value="OUT">
+
+                                    Agotado
+
+                                </option>
+
+                                <option value="HIDDEN">
+
+                                    Oculto
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- DESCRIPCIÓN -->
+                    <!-- ========================= -->
+
+                    <div class="campo">
+
+                        <label>
+
+                            Descripción
+
+                        </label>
+
+                        <textarea
+                            id="description"
+                            rows="5"
+                        ></textarea>
+
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- OPCIONES -->
+                    <!-- ========================= -->
+
+                    <div class="checks">
+
+                        <label>
+
+                            <input
+                                id="featured"
+                                type="checkbox"
+                            >
+
+                            Producto Destacado
+
+                        </label>
+
+                        <label>
+
+                            <input
+                                id="print_kitchen"
+                                type="checkbox"
+                                checked
+                            >
+
+                            Imprimir en Cocina
+
+                        </label>
+
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- BOTONES -->
+                    <!-- ========================= -->
+
+                    <div class="buttons">
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                        >
+
+                            Guardar Producto
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+<script src="/static/js/admin/products/categories.js"></script>
+
+<script src="/static/js/admin/products/image.js"></script>
+
+<script src="/static/js/admin/products/stations.js"></script>
+
+<script src="/static/js/admin/products/create.js"></script>
+
+{% endblock %}

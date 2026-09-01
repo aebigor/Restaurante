@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Administración de Mesas
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/tables.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+
+                    <h1>Administración de Mesas</h1>
+
+                    <p>
+
+                        Gestione todas las mesas del restaurante.
+
+                    </p>
+
+                </div>
+
+                <button
+                    onclick="location.href='/admin/tables/create'"
+                    class="btn-primary"
+                >
+                    + Nueva Mesa
+                </button>
+
+            </section>
+
+
+
+            <section class="resume-cards">
+
+                <div class="resume-card">
+
+                    <h3>Total</h3>
+
+                    <span id="totalTables">0</span>
+
+                </div>
+
+                <div class="resume-card disponible">
+
+                    <h3>Disponibles</h3>
+
+                    <span id="freeTables">0</span>
+
+                </div>
+
+                <div class="resume-card ocupada">
+
+                    <h3>Ocupadas</h3>
+
+                    <span id="busyTables">0</span>
+
+                </div>
+
+                <div class="resume-card reservada">
+
+                    <h3>Reservadas</h3>
+
+                    <span id="reservedTables">0</span>
+
+                </div>
+
+            </section>
+
+
+
+            <section class="toolbar">
+
+                <input
+                    type="text"
+                    id="searchTable"
+                    placeholder="Buscar mesa..."
+                >
+
+                <select id="filterStatus">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="AVAILABLE">
+                        Disponibles
+                    </option>
+
+                    <option value="OCCUPIED">
+                        Ocupadas
+                    </option>
+
+                    <option value="RESERVED">
+                        Reservadas
+                    </option>
+
+                    <option value="MAINTENANCE">
+                        Mantenimiento
+                    </option>
+
+                </select>
+
+            </section>
+
+
+
+            <section
+                id="tables-container"
+                class="tables-grid"
+            >
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+{% include "admin/components/modal_table.html" %}
+
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+<script src="/static/js/admin/tables.js"></script>
+
+{% endblock %}

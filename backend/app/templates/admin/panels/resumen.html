@@ -1,0 +1,76 @@
+<div class="panel">
+
+    <div class="cards">
+
+        {% with
+        icono="🍽",
+        titulo="Mesas Ocupadas",
+        valor="0 / 20",
+        descripcion="Mesas utilizadas"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="🛒",
+        titulo="Pedidos",
+        valor="0",
+        descripcion="Pedidos activos"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="👨‍🍳",
+        titulo="Cocina",
+        valor="0",
+        descripcion="Pendientes"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="💰",
+        titulo="Caja",
+        valor="Abierta",
+        descripcion="Estado"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="🌐",
+        titulo="Internet",
+        valor="Online",
+        descripcion="Conectividad"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="🖥",
+        titulo="Servidor",
+        valor="Activo",
+        descripcion="Servidor local"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+
+        {% with
+        icono="👥",
+        titulo="Usuarios",
+        valor="1",
+        descripcion="Conectados"
+        %}
+            {% include "admin/components/card.html" %}
+        {% endwith %}
+
+    </div>
+
+</div>

@@ -1,0 +1,74 @@
+.page{
+
+    padding:40px;
+
+}
+
+.page h1{
+
+    margin-bottom:10px;
+
+}
+
+form{
+
+    width:500px;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:10px;
+
+    box-shadow:0 10px 20px rgba(0,0,0,.1);
+
+}
+
+.campo{
+
+    margin-bottom:20px;
+
+}
+
+label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:bold;
+
+}
+
+input,
+select{
+
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #ccc;
+
+    border-radius:8px;
+
+}
+
+button{
+
+    background:#e63946;
+
+    color:white;
+
+    border:none;
+
+    padding:15px;
+
+    width:100%;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+}

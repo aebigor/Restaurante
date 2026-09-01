@@ -1,0 +1,560 @@
+/* ==========================================================
+   MÓDULO MESAS
+========================================================== */
+
+/* HEADER */
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+.page-header h1{
+
+    margin:0;
+
+    font-size:30px;
+
+    color:#1d1d1d;
+
+}
+
+.page-header p{
+
+    margin-top:8px;
+
+    color:#7a7a7a;
+
+}
+
+
+/* BOTÓN */
+
+.btn-primary{
+
+    background:#b40000;
+
+    color:#fff;
+
+    border:none;
+
+    padding:12px 24px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.btn-primary:hover{
+
+    background:#8f0000;
+
+}
+
+
+/* ==========================================================
+   RESUMEN
+========================================================== */
+
+.resume-cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.resume-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+}
+
+.resume-card h3{
+
+    margin:0;
+
+    color:#666;
+
+    font-size:15px;
+
+}
+
+.resume-card span{
+
+    display:block;
+
+    margin-top:15px;
+
+    font-size:34px;
+
+    font-weight:bold;
+
+}
+
+.resume-card.disponible{
+
+    border-left:5px solid #22c55e;
+
+}
+
+.resume-card.ocupada{
+
+    border-left:5px solid #ef4444;
+
+}
+
+.resume-card.reservada{
+
+    border-left:5px solid #f59e0b;
+
+}
+
+
+/* ==========================================================
+   FILTROS
+========================================================== */
+
+.toolbar{
+
+    display:flex;
+
+    gap:20px;
+
+    margin-bottom:35px;
+
+}
+
+.toolbar input{
+
+    flex:1;
+
+    border:none;
+
+    outline:none;
+
+    padding:13px 18px;
+
+    border-radius:12px;
+
+    background:#fff;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+}
+
+.toolbar select{
+
+    width:220px;
+
+    border:none;
+
+    outline:none;
+
+    padding:13px;
+
+    border-radius:12px;
+
+    background:#fff;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+}
+
+
+/* ==========================================================
+   GRID
+========================================================== */
+
+.tables-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+
+    gap:25px;
+
+}
+
+
+/*==================================================
+CARDS MESAS
+==================================================*/
+
+.tables-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+
+    gap:25px;
+
+}
+
+.table-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    transition:.25s;
+
+    border:1px solid #ececec;
+
+}
+
+.table-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+}
+
+.table-header{
+
+    padding:18px 22px;
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+.table-header h2{
+
+    margin:0;
+
+    font-size:28px;
+
+}
+
+.table-status{
+
+    padding:6px 14px;
+
+    border-radius:50px;
+
+    background:rgba(255,255,255,.20);
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+.estado-AVAILABLE .table-header{
+
+    background:#18a558;
+
+}
+
+.estado-OCCUPIED .table-header{
+
+    background:#d62828;
+
+}
+
+.estado-RESERVED .table-header{
+
+    background:#ffb703;
+
+}
+
+.estado-MAINTENANCE .table-header{
+
+    background:#6c757d;
+
+}
+
+.table-body{
+
+    padding:22px;
+
+}
+
+.table-info{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:14px;
+
+    color:#444;
+
+}
+
+.table-info span{
+
+    color:#777;
+
+    font-size:14px;
+
+}
+
+.table-footer{
+
+    display:flex;
+
+    gap:12px;
+
+    padding:18px 22px;
+
+    border-top:1px solid #eee;
+
+}
+
+.table-footer button{
+
+    flex:1;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:12px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.20s;
+
+}
+
+.btn-edit{
+
+    background:#1976d2;
+
+    color:#fff;
+
+}
+
+.btn-edit:hover{
+
+    background:#1259a8;
+
+}
+
+.btn-delete{
+
+    background:#e53935;
+
+    color:#fff;
+
+}
+
+.btn-delete:hover{
+
+    background:#bf2c2c;
+
+}
+
+
+
+
+/* HEADER */
+
+.table-header{
+
+    padding:20px;
+
+    color:#fff;
+
+}
+
+.table-header h2{
+
+    margin:0;
+
+    font-size:22px;
+
+}
+
+.table-header span{
+
+    display:inline-block;
+
+    margin-top:10px;
+
+    padding:6px 14px;
+
+    border-radius:20px;
+
+    background:rgba(255,255,255,.2);
+
+    font-size:13px;
+
+}
+
+
+/* ESTADOS */
+
+.estado-AVAILABLE .table-header{
+
+    background:#22c55e;
+
+}
+
+.estado-OCCUPIED .table-header{
+
+    background:#ef4444;
+
+}
+
+.estado-RESERVED .table-header{
+
+    background:#f59e0b;
+
+}
+
+.estado-MAINTENANCE .table-header{
+
+    background:#6b7280;
+
+}
+
+
+/* BODY */
+
+.table-body{
+
+    padding:20px;
+
+}
+
+.table-body p{
+
+    margin:12px 0;
+
+    color:#555;
+
+}
+
+
+/* FOOTER */
+
+.table-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px 20px;
+
+    border-top:1px solid #ececec;
+
+}
+
+
+/* BOTONES */
+
+.btn{
+
+    border:none;
+
+    cursor:pointer;
+
+    border-radius:10px;
+
+    padding:9px 15px;
+
+    font-weight:600;
+
+    transition:.20s;
+
+}
+
+.btn-edit{
+
+    background:#2563eb;
+
+    color:#fff;
+
+}
+
+.btn-edit:hover{
+
+    background:#1d4ed8;
+
+}
+
+.btn-delete{
+
+    background:#dc2626;
+
+    color:#fff;
+
+}
+
+.btn-delete:hover{
+
+    background:#b91c1c;
+
+}
+
+
+/* ==========================================================
+   SIN DATOS
+========================================================== */
+
+.empty{
+
+    grid-column:1/-1;
+
+    background:#fff;
+
+    border-radius:20px;
+
+    padding:80px;
+
+    text-align:center;
+
+    box-shadow:0 10px 20px rgba(0,0,0,.05);
+
+}
+
+.empty h2{
+
+    margin-bottom:10px;
+
+}
+
+.empty p{
+
+    color:#777;
+
+}

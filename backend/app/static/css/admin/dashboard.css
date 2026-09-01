@@ -1,0 +1,171 @@
+/* ==========================================
+   VARIABLES
+========================================== */
+
+:root{
+
+    --sidebar-width:270px;
+    --topbar-height:80px;
+
+    --background:#f4f6fb;
+
+    --primary:#b80000;
+
+    --card:#ffffff;
+
+}
+
+
+/* ==========================================
+   RESET
+========================================== */
+
+*{
+
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+
+}
+
+body{
+
+    background:var(--background);
+    font-family:Segoe UI,Arial,sans-serif;
+    overflow-x:hidden;
+
+}
+
+
+/* ==========================================
+   LAYOUT GENERAL
+========================================== */
+
+.layout{
+
+    display:flex;
+    min-height:100vh;
+
+}
+
+
+/* ==========================================
+   CONTENIDO
+========================================== */
+
+.contenido{
+
+    margin-left:var(--sidebar-width);
+
+    width:calc(100% - var(--sidebar-width));
+
+    min-height:100vh;
+
+    display:flex;
+
+    flex:1;
+
+
+    flex-direction:column;
+
+    transition:.35s;
+
+    overflow:auto;
+
+}
+
+
+/* ==========================================
+   PANEL PRINCIPAL
+========================================== */
+
+.panel{
+
+    flex:1;
+
+    padding:20px;
+
+    margin-top:20px;
+
+    width:100%;
+
+    box-sizing:border-box;
+
+}
+
+
+/* ==========================================
+   GRID
+========================================== */
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:
+
+    repeat(auto-fit,minmax(280px,1fr));
+
+    gap:25px;
+
+}
+
+
+/* ==========================================
+   SIDEBAR CERRADO
+========================================== */
+
+.sidebar.closed{
+
+    width:80px;
+
+}
+
+.sidebar.closed + .contenido{
+
+    margin-left:80px;
+
+    width:calc(100% - 80px);
+
+}
+
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:1200px){
+
+    .cards{
+
+        grid-template-columns:
+
+        repeat(2,1fr);
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .contenido{
+
+        margin-left:0;
+
+        width:100%;
+
+    }
+
+    .panel{
+
+        padding:20px;
+
+    }
+
+    .cards{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

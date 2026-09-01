@@ -1,0 +1,243 @@
+<div class="sidebar" id="sidebar">
+
+    <div>
+
+        <div class="logo" id="toggleSidebar">
+
+            <img
+                src="/static/img/logo.png"
+                class="logo-img"
+                alt="Logo"
+            >
+
+            <div class="logo-text">
+
+                <h2>CRIPTONIX</h2>
+
+                <small>Restaurant ERP</small>
+
+            </div>
+
+        </div>
+
+        <ul class="menu">
+
+            <li>
+
+                <a href="/admin">
+
+                    <span class="icon">🏠</span>
+
+                    <span class="text">Dashboard</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/tables">
+
+                    <span class="icon">🍽</span>
+
+                    <span class="text">Mesas</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/orders">
+
+                    <span class="icon">🛒</span>
+
+                    <span class="text">Pedidos</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/kitchen">
+
+                    <span class="icon">👨‍🍳</span>
+
+                    <span class="text">Cocina</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/cashier">
+
+                    <span class="icon">💳</span>
+
+                    <span class="text">Caja</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/inventory">
+
+                    <span class="icon">📦</span>
+
+                    <span class="text">Inventario</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="/admin/users">
+
+                    <span class="icon">👥</span>
+
+                    <span class="text">Usuarios</span>
+
+                </a>
+
+            </li>
+
+            <!-- CONFIGURACIÓN -->
+
+            <li class="submenu-item">
+
+                <a href="#" id="configMenu">
+
+                    <span class="icon">⚙️</span>
+
+                    <span class="text">
+
+                        Configuración
+
+                    </span>
+
+                    <span class="arrow">
+
+                        ▼
+
+                    </span>
+
+                </a>
+
+                <ul
+                    class="submenu"
+                    id="configSubmenu"
+                >
+
+                    <li>
+
+                        <a href="/admin/menu/categories">
+
+                            📂 Categorías
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/admin/menu/products">
+
+                            🍔 Productos
+
+                        </a>
+
+                    </li>
+                    <li>
+
+                        <a href="/admin/menu">
+
+                            🍽️ Menús
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/admin/dishes">
+
+                            🍽 Platos
+
+                        </a>
+
+                    </li>
+                    
+
+                    <li>
+
+                        <a href="/admin/menu/combos">
+
+                            🍟 Combos
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/admin/settings/tables">
+
+                            🍽 Configuración Mesas
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/admin/settings/printers">
+
+                            🖨 Impresoras
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </li>
+
+        </ul>
+
+    </div>
+
+    <div class="sidebar-footer">
+
+        ERP v1.0
+
+    </div>
+
+</div>
+<script>
+
+const configMenu=document.getElementById("configMenu");
+
+const configSubmenu=document.getElementById("configSubmenu");
+
+if(configMenu){
+
+    configMenu.addEventListener("click",()=>{
+
+        configSubmenu.classList.toggle("open");
+
+        if(configSubmenu.classList.contains("open")){
+            requestAnimationFrame(()=>{
+                configSubmenu.scrollIntoView({behavior:"smooth", block:"nearest"});
+            });
+        }
+
+    });
+
+}
+
+</script>

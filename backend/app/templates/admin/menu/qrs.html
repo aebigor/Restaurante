@@ -1,0 +1,215 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+QR del menú
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/menu.css">
+<link rel="stylesheet" href="/static/css/admin/menu-qrs.css">
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+
+        <div class="panel menu-page">
+
+
+            <section class="page-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        CARTA DIGITAL
+                    </span>
+
+                    <h1>
+                        QR del menú
+                    </h1>
+
+                    <p id="qrDescription">
+                        Cargando información...
+                    </p>
+
+                </div>
+
+
+                <div class="qr-header-actions">
+
+                    <button
+                        type="button"
+                        class="btn-secondary"
+                        onclick="window.print()"
+                    >
+                        🖨 Imprimir todos
+                    </button>
+
+
+                    <a
+                        href="/admin/menu"
+                        class="btn-secondary"
+                    >
+                        ← Regresar
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 INFORMACIÓN
+            ================================================== -->
+
+            <section class="qr-info">
+
+                <div>
+
+                    <span>
+                        MENÚ ACTIVO
+                    </span>
+
+                    <strong id="qrMenuTitle">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        MESAS
+                    </span>
+
+                    <strong id="qrTotalTables">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        FUNCIONAMIENTO
+                    </span>
+
+                    <strong>
+                        Automático
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 CARGANDO
+            ================================================== -->
+
+            <div
+                id="qrLoading"
+                class="qr-loading"
+            >
+
+                <div>
+                    ⏳
+                </div>
+
+                <p>
+                    Generando QRs de las mesas...
+                </p>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ERROR
+            ================================================== -->
+
+            <div
+                id="qrError"
+                class="qr-error"
+                style="display:none;"
+            >
+            </div>
+
+
+            <!-- ==================================================
+                 GRID
+            ================================================== -->
+
+            <section
+                id="qrGrid"
+                class="qr-grid"
+            >
+            </section>
+
+
+            <!-- ==================================================
+                 VACÍO
+            ================================================== -->
+
+            <div
+                id="qrEmpty"
+                class="qr-empty"
+                style="display:none;"
+            >
+
+                <div>
+                    🪑
+                </div>
+
+                <h3>
+                    No hay mesas activas
+                </h3>
+
+                <p>
+                    Crea o activa una mesa para generar su QR.
+                </p>
+
+                <a
+                    href="/admin/tables"
+                    class="btn-primary"
+                >
+                    Administrar mesas
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    window.QR_MENU_ID =
+        "{{ menu_id }}";
+
+</script>
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+<script src="/static/js/admin/menu/qrs.js"></script>
+
+{% endblock %}

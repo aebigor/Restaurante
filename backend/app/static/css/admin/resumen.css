@@ -1,0 +1,101 @@
+.panel{
+
+    width:100%;
+
+}
+
+/* GRID RESPONSIVE */
+
+.dashboard-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+
+    gap:25px;
+
+}
+
+/* TARJETA */
+
+.card{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    border-top:5px solid #b00000;
+
+    padding:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:22px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+    transition:.25s;
+
+}
+
+.card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 18px 40px rgba(0,0,0,.15);
+
+}
+
+.card-icon{
+
+    width:75px;
+
+    height:75px;
+
+    border-radius:18px;
+
+    background:#f3f3f3;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:38px;
+
+}
+
+.card-info{
+
+    flex:1;
+
+}
+
+.card-title{
+
+    font-size:18px;
+
+    color:#777;
+
+}
+
+.card-value{
+
+    font-size:48px;
+
+    font-weight:bold;
+
+    color:#171717;
+
+    margin:8px 0;
+
+}
+
+.card-description{
+
+    color:#888;
+
+}

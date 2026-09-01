@@ -1,0 +1,212 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Nueva Mesa
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/create_table.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <div class="page-header">
+
+                <div>
+
+                    <h1>Nueva Mesa</h1>
+
+                    <p>
+
+                        Cree una nueva mesa para el restaurante.
+
+                    </p>
+
+                </div>
+
+               
+            </div>
+
+            <div class="card-form">
+
+                <form id="tableForm">
+
+                    <div class="grid">
+
+                        <div class="form-group">
+
+                            <label>
+
+                                Número de Mesa
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="number"
+                                min="1"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>
+
+                                Nombre
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                placeholder="Mesa Terraza 01"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>
+
+                                Capacidad
+
+                            </label>
+
+                            <select id="capacity">
+
+                                <option value="2">2 Personas</option>
+                                <option value="4" selected>4 Personas</option>
+                                <option value="6">6 Personas</option>
+                                <option value="8">8 Personas</option>
+                                <option value="10">10 Personas</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>
+
+                                Zona
+
+                            </label>
+
+                            <select id="zone">
+
+                                <option value="Salón">
+                                    Salón
+                                </option>
+
+                                <option value="Terraza">
+                                    Terraza
+                                </option>
+
+                                <option value="VIP">
+                                    VIP
+                                </option>
+
+                                <option value="Bar">
+                                    Bar
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Observaciones
+
+                        </label>
+
+                        <textarea
+                            id="description"
+                            rows="4"
+                            placeholder="Información adicional de la mesa..."
+                        ></textarea>
+
+                    </div>
+
+                    <div class="switch-container">
+
+                        <label class="switch">
+
+                            <input
+                                type="checkbox"
+                                id="active"
+                                checked
+                            >
+
+                            <span class="slider"></span>
+
+                        </label>
+
+                        <span>
+
+                            Mesa Activa
+
+                        </span>
+
+                    </div>
+
+                    <div class="actions">
+
+                        <button
+                            type="button"
+                            class="btn-cancel"
+                            onclick="window.location='/admin/tables'"
+                        >
+
+                            Cancelar
+
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn-save"
+                        >
+
+                            Guardar Mesa
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+<script src="/static/js/admin/create_table.js"></script>
+
+{% endblock %}

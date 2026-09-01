@@ -1,0 +1,148 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Platos
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/dishes.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+
+                    <h1>
+
+                        Gestión de Platos
+
+                    </h1>
+
+                    <p>
+
+                        Administre la carta digital del restaurante.
+
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/dishes/create"
+                    class="btn-primary"
+                >
+
+                    + Nuevo Plato
+
+                </a>
+
+            </section>
+
+
+            <section class="cards-resume">
+
+                <div class="resume-card">
+
+                    <h3 id="totalDishes">
+
+                        0
+
+                    </h3>
+
+                    <span>
+
+                        Platos
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card">
+
+                    <h3 id="featuredDishes">
+
+                        0
+
+                    </h3>
+
+                    <span>
+
+                        Destacados
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card">
+
+                    <h3 id="availableDishes">
+
+                        0
+
+                    </h3>
+
+                    <span>
+
+                        Disponibles
+
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <section class="toolbar">
+
+                <input
+                    type="text"
+                    id="search"
+                    placeholder="Buscar plato..."
+                >
+
+                <select id="categoryFilter">
+
+                    <option value="">
+
+                        Todas las categorías
+
+                    </option>
+
+                </select>
+
+            </section>
+
+
+            <section
+                class="dish-grid"
+                id="dishGrid"
+            >
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/dishes/index.js"></script>
+
+{% endblock %}

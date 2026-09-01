@@ -1,0 +1,214 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Nuevo Menú
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/menu.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel menu-page">
+
+            <section class="page-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        CARTA DIGITAL
+                    </span>
+
+                    <h1>
+                        Nuevo menú
+                    </h1>
+
+                    <p>
+                        Crea un menú y luego selecciona los platos que estarán disponibles.
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/menu"
+                    class="btn-secondary"
+                >
+                    ← Regresar
+                </a>
+
+            </section>
+
+
+            <section class="menu-create-card">
+
+                <div class="menu-card-header">
+
+                    <div class="menu-icon">
+                        🍽
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Información del menú
+                        </h2>
+
+                        <p>
+                            Define el nombre y estado del menú.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="menuForm"
+                    class="menu-form-simple"
+                >
+
+                    <div class="campo">
+
+                        <label for="title">
+                            Nombre del menú
+                        </label>
+
+                        <input
+                            id="title"
+                            type="text"
+                            placeholder="Ej. Menú del día - Lunes"
+                            required
+                        >
+
+                        <small>
+                            Puedes crear un menú para cada día, evento o jornada especial.
+                        </small>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="description">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="description"
+                            rows="4"
+                            placeholder="Ej. Platos disponibles durante el servicio del lunes."
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="menu-form-grid">
+
+                        <div class="campo">
+
+                            <label for="display_order">
+                                Orden
+                            </label>
+
+                            <input
+                                id="display_order"
+                                type="number"
+                                min="1"
+                                value="1"
+                            >
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="active">
+                                Estado
+                            </label>
+
+                            <select id="active">
+
+                                <option value="true">
+                                    Activo
+                                </option>
+
+                                <option value="false">
+                                    Inactivo
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="menu-info-box">
+
+                        <span class="menu-info-icon">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                ¿Qué sigue?
+                            </strong>
+
+                            <p>
+                                Después de crear el menú podrás seleccionar los platos
+                                que quieres mostrar en él.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="buttons">
+
+                        <a
+                            href="/admin/menu"
+                            class="btn-secondary"
+                        >
+                            Cancelar
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                            id="btnCreateMenu"
+                        >
+                            Crear menú
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/menu/create.js"></script>
+
+{% endblock %}

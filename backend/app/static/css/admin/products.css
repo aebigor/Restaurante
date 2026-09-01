@@ -1,0 +1,523 @@
+/* =====================================================
+   LAYOUT
+===================================================== */
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+.page-header h1{
+
+    font-size:30px;
+
+    margin:0;
+
+    color:#222;
+
+}
+
+.page-header p{
+
+    margin-top:8px;
+
+    color:#777;
+
+}
+
+.btn-primary{
+
+    background:#b40000;
+
+    color:#fff;
+
+    border:none;
+
+    padding:12px 24px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+    transition:.25s;
+
+}
+
+.btn-primary:hover{
+
+    background:#900000;
+
+}
+
+.btn-secondary{
+
+    background:#ececec;
+
+    color:#333;
+
+    padding:12px 22px;
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+}
+
+/* =====================================================
+   RESUMEN
+===================================================== */
+
+.resume-cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.resume-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.05);
+
+}
+
+.resume-card h3{
+
+    margin:0;
+
+    color:#666;
+
+}
+
+.resume-card span{
+
+    display:block;
+
+    margin-top:12px;
+
+    font-size:34px;
+
+    font-weight:bold;
+
+}
+
+.disponible{
+
+    border-left:5px solid #1db954;
+
+}
+
+.ocupada{
+
+    border-left:5px solid #ff5252;
+
+}
+
+.reservada{
+
+    border-left:5px solid #ffb300;
+
+}
+
+/* =====================================================
+   TOOLBAR
+===================================================== */
+
+.toolbar{
+
+    display:flex;
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.toolbar input,
+
+.toolbar select{
+
+    padding:12px 16px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#fff;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+}
+
+.toolbar input{
+
+    flex:1;
+
+}
+
+.toolbar select{
+
+    width:220px;
+
+}
+
+/* =====================================================
+   PRODUCTOS GRID
+===================================================== */
+
+.products-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+
+    gap:25px;
+
+}
+
+/* =====================================================
+   TARJETA
+===================================================== */
+
+.product-card{
+
+    background:#fff;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    transition:.30s;
+
+}
+
+.product-card:hover{
+
+    transform:translateY(-6px);
+
+}
+
+.product-image{
+
+    width:100%;
+
+    height:200px;
+
+    background:#efefef;
+
+}
+
+.product-image img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+.product-body{
+
+    padding:20px;
+
+}
+
+.product-name{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-bottom:8px;
+
+}
+
+.product-category{
+
+    color:#777;
+
+    margin-bottom:15px;
+
+}
+
+.product-price{
+
+    font-size:26px;
+
+    color:#b40000;
+
+    font-weight:bold;
+
+    margin-bottom:15px;
+
+}
+
+.product-info{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:20px;
+
+    color:#666;
+
+}
+
+.product-actions{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+.product-actions button{
+
+    flex:1;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    cursor:pointer;
+
+    color:#fff;
+
+    font-weight:bold;
+
+}
+
+.btn-edit{
+
+    background:#1976d2;
+
+}
+
+.btn-delete{
+
+    background:#d32f2f;
+
+}
+
+/* =====================================================
+   FORMULARIO
+===================================================== */
+
+.product-form{
+
+    display:grid;
+
+    grid-template-columns:320px 1fr;
+
+    gap:40px;
+
+}
+
+.product-left{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+    text-align:center;
+
+}
+
+.image-preview{
+
+    width:240px;
+
+    height:240px;
+
+    margin:auto;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    background:#efefef;
+
+    margin-bottom:20px;
+
+}
+
+.image-preview img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+.product-left input{
+
+    width:100%;
+
+}
+
+.product-right{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+}
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+    margin-bottom:20px;
+
+}
+
+.campo{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.campo label{
+
+    margin-bottom:8px;
+
+    font-weight:bold;
+
+    color:#444;
+
+}
+
+.campo input,
+
+.campo select,
+
+.campo textarea{
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    padding:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.25s;
+
+}
+
+.campo input:focus,
+
+.campo select:focus,
+
+.campo textarea:focus{
+
+    border-color:#b40000;
+
+}
+
+.campo textarea{
+
+    resize:none;
+
+}
+
+.buttons{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    margin-top:25px;
+
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:1100px){
+
+.product-form{
+
+    grid-template-columns:1fr;
+
+}
+
+}
+
+@media(max-width:700px){
+
+.toolbar{
+
+    flex-direction:column;
+
+}
+
+.toolbar select{
+
+    width:100%;
+
+}
+
+.form-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.page-header{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:20px;
+
+}
+
+}

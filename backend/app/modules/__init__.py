@@ -1,0 +1,1 @@
+from app.modules.tables.model import Table

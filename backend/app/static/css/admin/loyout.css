@@ -1,0 +1,81 @@
+/* ==============================
+   LAYOUT GENERAL
+============================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#f4f6fb;
+
+    overflow-x:hidden;
+
+    font-family:Inter,Arial,sans-serif;
+
+}
+
+.admin-layout{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+/* ==============================
+   CONTENIDO
+============================== */
+
+.admin-content{
+
+    flex:1;
+
+    margin-left:280px;
+
+    transition:.30s;
+
+    min-height:100vh;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+/* sidebar cerrado */
+
+.sidebar.closed + .admin-content{
+
+    margin-left:90px;
+
+}
+
+/* ==============================
+   PAGINA
+============================== */
+
+.page-content{
+
+    padding:30px;
+
+    flex:1;
+
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media(max-width:900px){
+
+    .admin-content{
+
+        margin-left:90px;
+
+    }
+
+}

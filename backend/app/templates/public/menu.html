@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+{% block title %}Menú · Mesa {{ table_number }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/public/menu.css">{% endblock %}
+{% block content %}
+<div class="customer-shell">
+  <header class="customer-header"><div><span class="eyebrow">MENÚ DIGITAL</span><h1>Bienvenido</h1><p>Mesa {{ table_number }} · Consulta nuestra carta y llama al mesero cuando necesites atención.</p></div><button id="callWaiter" class="call-btn">🔔 Llamar al mesero</button></header>
+  <div id="callMessage" class="call-message"></div>
+  {% for category in categories %}
+    {% set items = dishes | selectattr('category_id','equalto',category.id) | list %}
+    {% if items %}<section class="menu-section"><div class="section-title"><span>{{ category.icon }}</span><div><h2>{{ category.name }}</h2><p>{{ category.description or '' }}</p></div></div><div class="dish-grid">
+      {% for dish in items %}<article class="dish-card"><div class="dish-image">{% if dish.image %}<img src="{{ dish.image }}" alt="{{ dish.name }}">{% else %}<img src="/static/img/no-image.png" alt="Sin imagen">{% endif %}{% if dish.featured %}<span class="featured">Destacado</span>{% endif %}</div><div class="dish-body"><div class="dish-top"><h3>{{ dish.name }}</h3><strong>${{ '{:,.0f}'.format(dish.price|float) }}</strong></div><p>{{ dish.description or 'Una preparación hecha para disfrutar.' }}</p><div class="dish-meta"><span>⏱ {{ dish.preparation_time }} min</span><span>🍽 {{ dish.portion or '1 porción' }}</span></div>{% if dish.ingredients %}<details><summary>Ingredientes</summary><p>{{ dish.ingredients }}</p></details>{% endif %}</div></article>{% endfor %}
+    </div></section>{% endif %}
+  {% endfor %}
+</div>
+<script>window.TABLE_ID={{ table_id }};</script><script src="/static/js/public/menu.js"></script>
+{% endblock %}

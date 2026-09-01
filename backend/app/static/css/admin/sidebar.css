@@ -1,0 +1,252 @@
+.sidebar{
+
+    width:270px;
+    height:100vh;
+
+    position:fixed;
+
+    left:0;
+    top:0;
+
+    background:#161616;
+
+    transition:.35s;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    overflow-x:hidden;
+    overflow-y:auto;
+
+    box-shadow:5px 0 25px rgba(0,0,0,.2);
+
+}
+
+.logo{
+
+    height:80px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:20px;
+
+    cursor:pointer;
+
+    border-bottom:1px solid #242424;
+
+}
+
+.logo-img{
+
+    width:45px;
+    height:45px;
+    border-radius:10px;
+
+}
+
+.logo-text{
+
+    transition:.3s;
+
+}
+
+.logo-text h2{
+
+    color:white;
+    font-size:20px;
+
+}
+
+.logo-text small{
+
+    color:#999;
+
+}
+
+.menu{
+
+    list-style:none;
+
+    padding:20px 0;
+
+}
+
+.menu li{
+
+    margin-bottom:5px;
+
+}
+
+.menu a{
+
+    height:55px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:0 25px;
+
+    transition:.25s;
+
+}
+
+.menu a:hover{
+
+    background:#b80000;
+
+}
+
+.icon{
+
+    font-size:24px;
+
+    width:30px;
+
+    text-align:center;
+
+}
+
+.text{
+
+    transition:.3s;
+
+}
+
+.sidebar-footer{
+
+    color:#777;
+
+    text-align:center;
+
+    padding:20px;
+
+}
+
+/* ---------- COLAPSADO ---------- */
+
+.sidebar.closed{
+
+    width:85px;
+
+}
+
+.sidebar.closed .logo{
+
+    justify-content:center;
+
+}
+
+.sidebar.closed .logo-text{
+
+    display:none;
+
+}
+
+.sidebar.closed .text{
+
+    display:none;
+
+}
+
+.sidebar.closed .menu a{
+
+    justify-content:center;
+
+    padding:0;
+
+}
+/* ===========================
+   SUBMENÚ
+=========================== */
+
+.submenu{
+
+    display:none;
+
+    margin-top:8px;
+
+    padding-left:18px;
+
+}
+
+.submenu.open{
+
+    display:block;
+
+}
+
+.submenu li{
+
+    list-style:none;
+
+    margin:6px 0;
+
+}
+
+.submenu li a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:#d8d8d8;
+
+    text-decoration:none;
+
+    padding:10px 12px;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    transition:.25s;
+
+}
+
+.submenu li a:hover{
+
+    background:rgba(255,255,255,.08);
+
+}
+
+.arrow{
+
+    margin-left:auto;
+
+    font-size:12px;
+
+}
+
+.submenu-item>a{
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+/* Barra de desplazamiento del panel lateral */
+.sidebar::-webkit-scrollbar{ width:7px; }
+.sidebar::-webkit-scrollbar-track{ background:#101010; }
+.sidebar::-webkit-scrollbar-thumb{ background:#3b3b3b; border-radius:20px; }
+.sidebar::-webkit-scrollbar-thumb:hover{ background:#555; }
+.sidebar{ scrollbar-width:thin; scrollbar-color:#3b3b3b #101010; }
+
+.sidebar > div:first-child{ min-height:max-content; }
+.sidebar-footer{ flex-shrink:0; }

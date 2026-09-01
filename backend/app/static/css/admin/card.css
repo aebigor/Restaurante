@@ -1,0 +1,65 @@
+.card{
+
+    background:#1f1f1f;
+
+    color:white;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:25px;
+
+    border-top:5px solid #d60000;
+
+    box-shadow:0 15px 30px rgba(0,0,0,.12);
+
+}
+
+.card-icon{
+
+    width:75px;
+
+    height:75px;
+
+    border-radius:18px;
+
+    background:#f3f3f3;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:38px;
+
+}
+
+.card-info h3{
+
+    margin:0;
+
+    color:#bdbdbd;
+
+}
+
+.card-info h1{
+
+    margin:8px 0;
+
+    font-size:48px;
+
+}
+
+.card-info p{
+
+    margin:0;
+
+    color:#9c9c9c;
+
+}

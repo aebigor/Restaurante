@@ -1,0 +1,1118 @@
+/* ==========================================================
+   PLATOS - MANUAL GRÁFICO DEL CLIENTE
+   ==========================================================
+
+   ROJO PRINCIPAL       #E30613
+   ROJO OSCURO          #8A1002
+   CAFÉ                 #2A1C1B
+   CAFÉ SECUNDARIO      #412512
+   CREMA                #F4E6B8
+   DORADO               #CEA565
+   BLANCO               #FFFFFF
+
+========================================================== */
+
+:root {
+
+    --rojo: #E30613;
+    --rojo-oscuro: #8A1002;
+
+    --cafe: #2A1C1B;
+    --cafe-secundario: #412512;
+
+    --crema: #F4E6B8;
+    --dorado: #CEA565;
+
+    --blanco: #FFFFFF;
+
+    --texto-suave: rgba(244, 230, 184, 0.72);
+    --borde: rgba(206, 165, 101, 0.18);
+    --borde-fuerte: rgba(206, 165, 101, 0.35);
+
+}
+
+
+/* ==========================================================
+   PANEL
+========================================================== */
+
+.panel {
+
+    width: 100%;
+
+    color: var(--blanco);
+
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.page-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 25px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.page-header h1 {
+
+    margin: 0;
+
+    color: var(--crema);
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.4px;
+
+}
+
+
+.page-header p {
+
+    margin-top: 7px;
+
+    color: var(--texto-suave);
+
+    font-size: 14px;
+
+}
+
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+.btn-primary,
+.btn-secondary {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 11px 20px;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s ease;
+
+}
+
+
+/* BOTÓN PRINCIPAL */
+
+.btn-primary {
+
+    background: var(--rojo);
+
+    color: var(--blanco);
+
+    border: 1px solid var(--rojo);
+
+}
+
+
+.btn-primary:hover {
+
+    background: var(--rojo-oscuro);
+
+    border-color: var(--rojo-oscuro);
+
+    transform: translateY(-1px);
+
+}
+
+
+/* BOTÓN SECUNDARIO */
+
+.btn-secondary {
+
+    background: var(--cafe-secundario);
+
+    color: var(--crema);
+
+    border: 1px solid var(--borde);
+
+}
+
+
+.btn-secondary:hover {
+
+    background: var(--rojo-oscuro);
+
+    border-color: var(--rojo-oscuro);
+
+}
+
+
+/* ==========================================================
+   RESUMEN
+========================================================== */
+
+.cards-resume {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.resume-card {
+
+    position: relative;
+
+    padding: 23px;
+
+    background: var(--cafe-secundario);
+
+    border: 1px solid var(--borde);
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+}
+
+
+.resume-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    width: 4px;
+
+    height: 100%;
+
+    background: var(--rojo);
+
+}
+
+
+.resume-card h3 {
+
+    margin: 0 0 5px;
+
+    color: var(--dorado);
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+}
+
+
+.resume-card span {
+
+    color: var(--texto-suave);
+
+    font-size: 13px;
+
+}
+
+
+/* ==========================================================
+   TOOLBAR
+========================================================== */
+
+.toolbar {
+
+    display: flex;
+
+    gap: 14px;
+
+    margin-bottom: 25px;
+
+}
+
+
+.toolbar input,
+.toolbar select {
+
+    min-height: 46px;
+
+    padding: 12px 15px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--borde);
+
+    outline: none;
+
+    background: var(--cafe-secundario);
+
+    color: var(--blanco);
+
+    font-size: 14px;
+
+    transition: .25s ease;
+
+}
+
+
+.toolbar input {
+
+    flex: 2;
+
+}
+
+
+.toolbar select {
+
+    flex: 1;
+
+}
+
+
+.toolbar input::placeholder {
+
+    color: rgba(244, 230, 184, 0.45);
+
+}
+
+
+.toolbar input:focus,
+.toolbar select:focus {
+
+    border-color: var(--dorado);
+
+    box-shadow: 0 0 0 2px rgba(206, 165, 101, 0.10);
+
+}
+
+
+/* ==========================================================
+   GRID
+========================================================== */
+
+.dish-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(280px, 1fr));
+
+    gap: 22px;
+
+}
+
+
+/* ==========================================================
+   CARD DEL PLATO
+========================================================== */
+
+.dish-card {
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    background: var(--cafe-secundario);
+
+    border: 1px solid var(--borde);
+
+    border-radius: 17px;
+
+    overflow: hidden;
+
+    transition:
+
+        transform .25s ease,
+
+        border-color .25s ease,
+
+        box-shadow .25s ease;
+
+}
+
+
+.dish-card:hover {
+
+    transform: translateY(-4px);
+
+    border-color: var(--borde-fuerte);
+
+    box-shadow:
+
+        0 12px 30px rgba(0, 0, 0, .30);
+
+}
+
+
+/* ==========================================================
+   IMAGEN
+========================================================== */
+
+.dish-card img {
+
+    display: block;
+
+    width: 100%;
+
+    height: 210px;
+
+    object-fit: cover;
+
+    background: var(--cafe);
+
+}
+
+
+/* ==========================================================
+   INFORMACIÓN
+========================================================== */
+
+.dish-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 19px;
+
+}
+
+
+.dish-info h3 {
+
+    margin: 0;
+
+    color: var(--blanco);
+
+    font-size: 20px;
+
+    font-weight: 650;
+
+}
+
+
+.dish-info p {
+
+    margin: 8px 0 0;
+
+    color: var(--texto-suave);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+/* ==========================================================
+   PRECIO
+========================================================== */
+
+.price {
+
+    display: block;
+
+    margin-top: 13px;
+
+    color: var(--dorado);
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+}
+
+
+/* ==========================================================
+   META
+========================================================== */
+
+.dish-meta {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 12px;
+
+}
+
+
+.dish-meta span {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 5px 9px;
+
+    border-radius: 7px;
+
+    background: var(--cafe);
+
+    border: 1px solid var(--borde);
+
+    color: var(--crema);
+
+    font-size: 11px;
+
+}
+
+
+/* ==========================================================
+   ESTADO
+========================================================== */
+
+.dish-status {
+
+    position: absolute;
+
+    top: 12px;
+
+    right: 12px;
+
+    padding: 6px 10px;
+
+    border-radius: 7px;
+
+    background: rgba(42, 28, 27, .90);
+
+    border: 1px solid var(--borde-fuerte);
+
+    color: var(--crema);
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+}
+
+
+/* ==========================================================
+   DESTACADO
+========================================================== */
+
+.dish-featured {
+
+    border-color: rgba(206, 165, 101, .35);
+
+}
+
+
+.dish-featured .dish-status {
+
+    background: var(--dorado);
+
+    color: var(--cafe);
+
+    border-color: var(--dorado);
+
+}
+
+
+/* ==========================================================
+   ACCIONES
+========================================================== */
+
+.card-actions {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+
+    margin-top: 17px;
+
+}
+
+
+.card-actions button,
+.card-actions a {
+
+    min-height: 39px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 9px 12px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition: .2s ease;
+
+}
+
+
+/* EDITAR */
+
+.edit {
+
+    background: var(--rojo);
+
+    color: var(--blanco);
+
+    border: 1px solid var(--rojo);
+
+}
+
+
+.edit:hover {
+
+    background: var(--rojo-oscuro);
+
+    border-color: var(--rojo-oscuro);
+
+}
+
+
+/* ELIMINAR */
+
+.delete {
+
+    background: transparent;
+
+    color: #ff7777;
+
+    border: 1px solid rgba(214, 48, 49, .35);
+
+}
+
+
+.delete:hover {
+
+    background: var(--rojo-oscuro);
+
+    color: var(--blanco);
+
+}
+
+
+/* ==========================================================
+   VER 3D
+========================================================== */
+
+.btn-3d {
+
+    width: 100%;
+
+    margin-top: 9px;
+
+    padding: 10px 14px;
+
+    border-radius: 9px;
+
+    border: 1px solid var(--dorado);
+
+    background: transparent;
+
+    color: var(--dorado);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s ease;
+
+}
+
+
+.btn-3d:hover {
+
+    background: var(--dorado);
+
+    color: var(--cafe);
+
+}
+
+
+/* ==========================================================
+   3D FUTURO
+========================================================== */
+
+.btn-3d-disabled {
+
+    width: 100%;
+
+    margin-top: 9px;
+
+    padding: 10px 14px;
+
+    border-radius: 9px;
+
+    border: 1px solid rgba(244, 230, 184, .12);
+
+    background: var(--cafe);
+
+    color: rgba(244, 230, 184, .35);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: not-allowed;
+
+}
+
+
+/* ==========================================================
+   SIN RESULTADOS
+========================================================== */
+
+.empty-state {
+
+    grid-column: 1 / -1;
+
+    padding: 60px 25px;
+
+    text-align: center;
+
+    background: var(--cafe-secundario);
+
+    border: 1px dashed var(--borde-fuerte);
+
+    border-radius: 16px;
+
+}
+
+
+.empty-state h3 {
+
+    margin: 0;
+
+    color: var(--crema);
+
+    font-size: 19px;
+
+}
+
+
+.empty-state p {
+
+    margin-top: 8px;
+
+    color: var(--texto-suave);
+
+    font-size: 13px;
+
+}
+
+
+/* ==========================================================
+   FORMULARIO
+========================================================== */
+
+.dish-form {
+
+    display: grid;
+
+    grid-template-columns: 320px 1fr;
+
+    gap: 35px;
+
+}
+
+
+/* ==========================================================
+   PREVIEW
+========================================================== */
+
+.preview {
+
+    width: 100%;
+
+    height: 320px;
+
+    background: var(--cafe-secundario);
+
+    border: 1px solid var(--borde);
+
+    border-radius: 17px;
+
+    overflow: hidden;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+
+.preview img {
+
+    display: block;
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+}
+
+
+.dish-left input[type="file"] {
+
+    width: 100%;
+
+    margin-top: 15px;
+
+    color: var(--crema);
+
+    font-size: 12px;
+
+}
+
+
+/* ==========================================================
+   CAMPOS
+========================================================== */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 18px;
+
+}
+
+
+.campo {
+
+    display: flex;
+
+    flex-direction: column;
+
+    margin-bottom: 18px;
+
+}
+
+
+.campo label {
+
+    margin-bottom: 7px;
+
+    color: var(--crema);
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+}
+
+
+.campo input,
+.campo textarea,
+.campo select {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    background: var(--cafe-secundario);
+
+    color: var(--blanco);
+
+    border: 1px solid var(--borde);
+
+    outline: none;
+
+    padding: 12px 14px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+
+    transition: .25s ease;
+
+}
+
+
+.campo textarea {
+
+    resize: vertical;
+
+    min-height: 90px;
+
+}
+
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+
+    color: rgba(244, 230, 184, .40);
+
+}
+
+
+.campo input:focus,
+.campo textarea:focus,
+.campo select:focus {
+
+    border-color: var(--dorado);
+
+    box-shadow: 0 0 0 2px rgba(206, 165, 101, .10);
+
+}
+
+
+/* ==========================================================
+   AYUDA
+========================================================== */
+
+.field-help {
+
+    display: block;
+
+    margin-top: 5px;
+
+    color: rgba(244, 230, 184, .50);
+
+    font-size: 11px;
+
+    line-height: 1.4;
+
+}
+
+
+/* ==========================================================
+   ACCIONES FORMULARIO
+========================================================== */
+
+.form-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+}
+
+
+/* ==========================================================
+   TARJETA FUTURO 3D
+========================================================== */
+
+.dish-ai-card {
+
+    margin: 24px 0;
+
+    padding: 18px 20px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    background: var(--cafe-secundario);
+
+    border: 1px solid var(--borde-fuerte);
+
+    border-radius: 15px;
+
+}
+
+
+.dish-ai-card > div {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+}
+
+
+.ai-icon {
+
+    font-size: 27px;
+
+}
+
+
+.dish-ai-card strong {
+
+    display: block;
+
+    color: var(--crema);
+
+    font-size: 14px;
+
+}
+
+
+.dish-ai-card small {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--texto-suave);
+
+    font-size: 11px;
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 1100px) {
+
+    .dish-form {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .preview {
+
+        max-width: 420px;
+
+    }
+
+}
+
+
+@media (max-width: 850px) {
+
+    .cards-resume {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .dish-grid {
+
+        grid-template-columns:
+            repeat(auto-fill, minmax(240px, 1fr));
+
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .page-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+    .toolbar {
+
+        flex-direction: column;
+
+    }
+
+    .toolbar input,
+    .toolbar select {
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+    }
+
+    .grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .form-actions {
+
+        flex-direction: column;
+
+    }
+
+    .form-actions .btn-primary,
+    .form-actions .btn-secondary {
+
+        width: 100%;
+
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .dish-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .dish-card img {
+
+        height: 200px;
+
+    }
+
+    .page-header h1 {
+
+        font-size: 27px;
+
+    }
+
+}

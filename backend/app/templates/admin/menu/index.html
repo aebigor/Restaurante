@@ -1,0 +1,196 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Menús
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/menu.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel menu-page">
+
+            <!-- ==================================================
+                 ENCABEZADO
+            ================================================== -->
+
+            <section class="page-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        CARTA DIGITAL
+                    </span>
+
+                    <h1>
+                        Menús
+                    </h1>
+
+                    <p>
+                        Organiza los platos que estarán disponibles
+                        en la carta digital del restaurante.
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/menu/create"
+                    class="btn-primary"
+                >
+                    + Nuevo menú
+                </a>
+
+            </section>
+
+
+            <!-- ==================================================
+                 RESUMEN
+            ================================================== -->
+
+            <section class="menu-summary">
+
+                <div class="menu-summary-card">
+
+                    <span class="summary-label">
+                        MENÚS
+                    </span>
+
+                    <strong id="totalMenus">
+                        0
+                    </strong>
+
+                    <small>
+                        Registrados
+                    </small>
+
+                </div>
+
+
+                <div class="menu-summary-card">
+
+                    <span class="summary-label">
+                        ACTIVOS
+                    </span>
+
+                    <strong id="activeMenus">
+                        0
+                    </strong>
+
+                    <small>
+                        Disponibles
+                    </small>
+
+                </div>
+
+
+                <div class="menu-summary-card menu-summary-highlight">
+
+                    <span class="summary-label">
+                        MENÚ PUBLICADO
+                    </span>
+
+                    <strong id="publishedMenu">
+                        —
+                    </strong>
+
+                    <small>
+                        Menú activo
+                    </small>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 BUSCADOR
+            ================================================== -->
+
+            <section class="menu-toolbar">
+
+                <div class="menu-search">
+
+                    <span>
+                        ⌕
+                    </span>
+
+                    <input
+                        type="text"
+                        id="search"
+                        placeholder="Buscar menú..."
+                    >
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 LISTA DE MENÚS
+            ================================================== -->
+
+            <section
+                id="menuGrid"
+                class="menu-grid"
+            >
+            </section>
+
+
+            <!-- ==================================================
+                 ESTADO VACÍO
+            ================================================== -->
+
+            <div
+                id="emptyMenus"
+                class="menu-empty"
+                style="display:none;"
+            >
+
+                <div class="empty-icon">
+                    🍽
+                </div>
+
+                <h3>
+                    Todavía no tienes menús
+                </h3>
+
+                <p>
+                    Crea un menú para organizar los platos
+                    que estarán disponibles durante el servicio.
+                </p>
+
+                <a
+                    href="/admin/menu/create"
+                    class="btn-primary"
+                >
+                    Crear primer menú
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/menu/index.js"></script>
+
+{% endblock %}

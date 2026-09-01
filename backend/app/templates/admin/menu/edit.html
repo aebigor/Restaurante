@@ -1,0 +1,369 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Gestionar Menú
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/menu.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel menu-page">
+
+            <!-- ==================================================
+                 HEADER
+            ================================================== -->
+
+            <section class="page-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        CARTA DIGITAL
+                    </span>
+
+                    <h1 id="menuTitle">
+                        Gestionar menú
+                    </h1>
+
+                    <p id="menuDescription">
+                        Organiza los platos que estarán disponibles.
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/menu"
+                    class="btn-secondary"
+                >
+                    ← Menús
+                </a>
+
+            </section>
+
+
+            <input
+                type="hidden"
+                id="menu_id"
+            >
+
+
+            <!-- ==================================================
+                 INFORMACIÓN DEL MENÚ
+            ================================================== -->
+
+            <section class="menu-editor">
+
+                <div class="menu-editor-info">
+
+                    <div class="menu-editor-heading">
+
+                        <div class="menu-editor-icon">
+                            🍽
+                        </div>
+
+                        <div>
+
+                            <span class="section-kicker">
+                                CONFIGURACIÓN
+                            </span>
+
+                            <h2>
+                                Información del menú
+                            </h2>
+
+                            <p>
+                                Define cómo se identificará esta carta.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="title">
+                            Nombre del menú
+                        </label>
+
+                        <input
+                            id="title"
+                            type="text"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="description">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="description"
+                            rows="3"
+                            placeholder="Ej. Platos disponibles durante el servicio del lunes."
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="menu-editor-grid">
+
+                        <div class="campo">
+
+                            <label for="display_order">
+                                Orden
+                            </label>
+
+                            <input
+                                id="display_order"
+                                type="number"
+                                min="1"
+                            >
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="active">
+                                Estado
+                            </label>
+
+                            <select id="active">
+
+                                <option value="true">
+                                    Activo
+                                </option>
+
+                                <option value="false">
+                                    Inactivo
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="menu-info-box">
+
+                        <span class="menu-info-icon">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Menú sin portada
+                            </strong>
+
+                            <p>
+                                La imagen pertenece a cada plato.
+                                El menú se encarga únicamente de organizar
+                                los platos disponibles.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="menu-editor-actions">
+
+                        <button
+                            type="button"
+                            id="saveMenu"
+                            class="btn-primary"
+                        >
+                            Guardar cambios
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 PLATOS DEL MENÚ
+            ================================================== -->
+
+            <section class="menu-content-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            CONTENIDO
+                        </span>
+
+                        <h2>
+                            Platos del menú
+                        </h2>
+
+                        <p>
+                            Selecciona los platos que aparecerán
+                            en esta carta.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="openDishModal"
+                        class="btn-primary"
+                    >
+                        + Agregar plato
+                    </button>
+
+                </div>
+
+
+                <!-- LISTA -->
+
+                <div
+                    id="menuItems"
+                    class="menu-items"
+                >
+                </div>
+
+
+                <!-- VACÍO -->
+
+                <div
+                    id="emptyItems"
+                    class="menu-items-empty"
+                    style="display:none;"
+                >
+
+                    <div class="empty-icon">
+                        🍽
+                    </div>
+
+                    <h3>
+                        Este menú todavía está vacío
+                    </h3>
+
+                    <p>
+                        Agrega los platos que quieres
+                        mostrar durante este servicio.
+                    </p>
+
+                    <button
+                        type="button"
+                        id="openDishModalEmpty"
+                        class="btn-primary"
+                    >
+                        + Agregar primer plato
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================================
+     MODAL PARA AGREGAR PLATO
+========================================================== -->
+
+<div
+    id="dishModal"
+    class="menu-modal"
+    style="display:none;"
+>
+
+    <div class="menu-modal-overlay"></div>
+
+
+    <div class="menu-modal-content">
+
+        <div class="menu-modal-header">
+
+            <div>
+
+                <span class="section-kicker">
+                    CARTA
+                </span>
+
+                <h2>
+                    Agregar plato
+                </h2>
+
+                <p>
+                    Selecciona un plato disponible.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="closeDishModal"
+                class="modal-close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="menu-dish-search">
+
+            <span>
+                ⌕
+            </span>
+
+            <input
+                type="text"
+                id="dishSearch"
+                placeholder="Buscar plato..."
+            >
+
+        </div>
+
+
+        <div
+            id="availableDishes"
+            class="available-dishes"
+        >
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/menu/edit.js"></script>
+
+{% endblock %}

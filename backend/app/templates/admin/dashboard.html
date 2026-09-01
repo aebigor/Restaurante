@@ -1,0 +1,40 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/card.css">
+<link rel="stylesheet" href="/static/css/admin/resumen.css">
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            {% include "admin/panels/resumen.html" %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+
+{% endblock %}

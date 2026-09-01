@@ -1,0 +1,221 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %}Cocina{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/kitchen/index.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="kitchen-shell" id="kitchenApp">
+
+    <header class="kitchen-header">
+
+        <div>
+            <span class="eyebrow">
+                KITCHEN DISPLAY SYSTEM
+            </span>
+
+            <h1 id="screenTitle">
+                Seleccionar estación
+            </h1>
+
+            <p id="screenSubtitle">
+                Selecciona manualmente la estación que atenderá esta pantalla.
+            </p>
+        </div>
+
+        <div class="header-actions">
+
+            <div class="clock" id="clock">
+                00:00
+            </div>
+
+            <button
+                id="changeStationBtn"
+                class="secondary-btn hidden"
+                type="button"
+            >
+                Cambiar estación
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================================================== -->
+    <!-- SELECTOR -->
+    <!-- ================================================== -->
+
+    <section
+        id="stationSelector"
+        class="station-selector"
+    >
+
+        <div class="selector-head">
+
+            <div>
+
+                <span class="eyebrow">
+                    ESTACIONES DISPONIBLES
+                </span>
+
+                <h2>
+                    ¿Qué cocina mostrará esta pantalla?
+                </h2>
+
+                <p>
+                    Solo debes elegirla una vez.
+                    Esta pantalla recordará la estación seleccionada.
+                </p>
+
+            </div>
+
+            <span
+                id="selectedBadge"
+                class="device-badge hidden"
+            >
+                ESTACIÓN GUARDADA EN ESTE DISPOSITIVO
+            </span>
+
+        </div>
+
+        <div
+            id="stations"
+            class="stations-grid"
+        >
+
+            <div class="loading-card">
+                Cargando estaciones...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================== -->
+    <!-- COCINA -->
+    <!-- ================================================== -->
+
+    <section
+        id="kitchenBoard"
+        class="hidden"
+    >
+
+        <div class="station-bar">
+
+            <div>
+
+                <span class="eyebrow">
+                    ESTACIÓN ACTIVA
+                </span>
+
+                <h2 id="stationName">
+                    Cocina
+                </h2>
+
+                <p id="stationDescription">
+                    Cola automática · orden de llegada
+                </p>
+
+            </div>
+
+            <div class="station-status">
+
+                <span class="status-dot"></span>
+
+                <span>
+                    En línea
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================================== -->
+        <!-- COLA -->
+        <!-- ============================================== -->
+
+        <section>
+
+            <div class="section-title">
+
+                <div>
+                    <span class="eyebrow">
+                        PRODUCCIÓN
+                    </span>
+
+                    <h2>
+                        Comandas pendientes
+                    </h2>
+                </div>
+
+                <span
+                    id="queueCount"
+                    class="count-badge"
+                >
+                    0
+                </span>
+
+            </div>
+
+            <main
+                id="queue"
+                class="queue"
+            ></main>
+
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- HISTORIAL -->
+        <!-- ============================================== -->
+
+        <section
+            class="history-section"
+        >
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="eyebrow">
+                        HISTORIAL
+                    </span>
+
+                    <h2>
+                        Últimas comandas terminadas
+                    </h2>
+
+                </div>
+
+                <button
+                    id="toggleHistoryBtn"
+                    class="secondary-btn"
+                    type="button"
+                >
+                    Ver historial
+                </button>
+
+            </div>
+
+            <div
+                id="history"
+                class="history hidden"
+            ></div>
+
+        </section>
+
+    </section>
+
+</div>
+
+<script src="/static/js/kitchen/index.js"></script>
+
+{% endblock %}
+

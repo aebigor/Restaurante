@@ -1,0 +1,160 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Categorías
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/categories.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+
+                    <h1>
+
+                        Categorías
+
+                    </h1>
+
+                    <p>
+
+                        Administre todas las categorías del restaurante.
+
+                    </p>
+
+                </div>
+
+                <button
+                    id="btnNuevaCategoria"
+                    class="btn-primary"
+                >
+
+                    + Nueva Categoría
+
+                </button>
+
+            </section>
+
+
+            <section class="resume-cards">
+
+                <div class="resume-card">
+
+                    <h3>
+
+                        Total
+
+                    </h3>
+
+                    <span id="totalCategories">
+
+                        0
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card disponible">
+
+                    <h3>
+
+                        Activas
+
+                    </h3>
+
+                    <span id="activeCategories">
+
+                        0
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card ocupada">
+
+                    <h3>
+
+                        Inactivas
+
+                    </h3>
+
+                    <span id="inactiveCategories">
+
+                        0
+
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <section class="toolbar">
+
+                <input
+                    type="text"
+                    id="searchCategory"
+                    placeholder="Buscar categoría..."
+                >
+
+                <select id="filterStatus">
+
+                    <option value="">
+
+                        Todas
+
+                    </option>
+
+                    <option value="ACTIVE">
+
+                        Activas
+
+                    </option>
+
+                    <option value="INACTIVE">
+
+                        Inactivas
+
+                    </option>
+
+                </select>
+
+            </section>
+
+
+            <section
+                id="categoriesContainer"
+                class="categories-grid"
+            >
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/categories.js"></script>
+
+{% endblock %}

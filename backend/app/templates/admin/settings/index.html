@@ -1,0 +1,72 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Configuración
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/settings.css">
+
+{% endblock %}
+
+{% block content %}
+
+{% include "components/admin/sidebar.html" %}
+{% include "components/admin/topbar.html" %}
+
+<div class="content">
+
+    <h1>Configuración del Sistema</h1>
+
+    <div class="settings-grid">
+
+        <a href="/admin/settings/tables" class="card">
+
+            <h2>🪑 Mesas</h2>
+
+            <p>
+                Crear y administrar las mesas del restaurante.
+            </p>
+
+        </a>
+
+        <div class="card disabled">
+
+            <h2>👨‍🍳 Estaciones</h2>
+
+            <p>Próximamente</p>
+
+        </div>
+
+        <div class="card disabled">
+
+            <h2>👥 Usuarios</h2>
+
+            <p>Próximamente</p>
+
+        </div>
+
+        <div class="card disabled">
+
+            <h2>🍔 Productos</h2>
+
+            <p>Próximamente</p>
+
+        </div>
+
+        <div class="card disabled">
+
+            <h2>🖨 Impresoras</h2>
+
+            <p>Próximamente</p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

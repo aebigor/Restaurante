@@ -1,0 +1,172 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Productos
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/products.css">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="layout">
+
+    {% include "admin/components/sidebar.html" %}
+
+    <div class="contenido">
+
+        {% include "admin/components/topbar.html" %}
+
+        <div class="panel">
+
+            <section class="page-header">
+
+                <div>
+
+                    <h1>Productos</h1>
+
+                    <p>
+
+                        Administre todos los productos del restaurante.
+
+                    </p>
+
+                </div>
+
+                <button
+                    class="btn-primary"
+                    id="btnNuevoProducto"
+                >
+
+                    + Nuevo Producto
+
+                </button>
+
+            </section>
+
+
+            <section class="resume-cards">
+
+                <div class="resume-card">
+
+                    <h3>Total Productos</h3>
+
+                    <span id="totalProducts">
+
+                        0
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card disponible">
+
+                    <h3>Disponibles</h3>
+
+                    <span id="activeProducts">
+
+                        0
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card reservada">
+
+                    <h3>Agotados</h3>
+
+                    <span id="outProducts">
+
+                        0
+
+                    </span>
+
+                </div>
+
+                <div class="resume-card ocupada">
+
+                    <h3>Ocultos</h3>
+
+                    <span id="hiddenProducts">
+
+                        0
+
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <section class="toolbar">
+
+                <input
+                    type="text"
+                    id="searchProduct"
+                    placeholder="Buscar producto..."
+                >
+
+                <select id="filterCategory">
+
+                    <option value="">
+
+                        Todas las categorías
+
+                    </option>
+
+                </select>
+
+                <select id="filterStatus">
+
+                    <option value="">
+
+                        Todos
+
+                    </option>
+
+                    <option value="ACTIVE">
+
+                        Disponible
+
+                    </option>
+
+                    <option value="OUT">
+
+                        Agotado
+
+                    </option>
+
+                    <option value="HIDDEN">
+
+                        Oculto
+
+                    </option>
+
+                </select>
+
+            </section>
+
+
+            <section
+                class="products-grid"
+                id="productsContainer"
+            >
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/products.js"></script>
+
+{% endblock %}

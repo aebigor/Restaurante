@@ -1,0 +1,369 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Editar Categoría
+{% endblock %}
+
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/categories.css">
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<div class="layout">
+
+
+    {% include "admin/components/sidebar.html" %}
+
+
+    <div class="contenido">
+
+
+        {% include "admin/components/topbar.html" %}
+
+
+
+        <div class="panel">
+
+
+            <section class="page-header">
+
+
+                <div>
+
+
+                    <h1>
+
+                        Editar Categoría
+
+                    </h1>
+
+
+                    <p>
+
+                        Actualice la información de la categoría del menú.
+
+                    </p>
+
+
+                </div>
+
+
+            </section>
+
+
+
+
+            <form
+                id="categoryEditForm"
+                class="form-card"
+            >
+
+
+                <div class="form-grid">
+
+
+
+                    <div class="campo">
+
+
+                        <label>
+
+                            Nombre
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="name"
+                            required
+                            placeholder="Ej: Hamburguesas"
+                        >
+
+
+                    </div>
+
+
+
+
+
+                    <div class="campo">
+
+
+                        <label>
+
+                            Orden
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            id="display_order"
+                            value="1"
+                        >
+
+
+                    </div>
+
+
+
+
+
+                    <div class="campo">
+
+
+                        <label>
+
+                            Color
+
+                        </label>
+
+
+                        <input
+                            type="color"
+                            id="color"
+                            value="#b40000"
+                        >
+
+
+                    </div>
+
+
+
+
+
+                    <div class="campo">
+
+
+                        <label>
+
+                            Icono
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="icon"
+                            maxlength="5"
+                            value="🍔"
+                        >
+
+
+                    </div>
+
+
+
+
+
+                    <div class="campo full">
+
+
+                        <label>
+
+                            Descripción
+
+                        </label>
+
+
+                        <textarea
+                            id="description"
+                            rows="4"
+                            placeholder="Descripción de la categoría..."
+                        ></textarea>
+
+
+                    </div>
+
+
+
+
+
+                    <div class="campo full">
+
+
+                        <label>
+
+                            Estado
+
+                        </label>
+
+
+
+                        <select id="active">
+
+
+                            <option value="true">
+
+                                Activa
+
+                            </option>
+
+
+                            <option value="false">
+
+                                Inactiva
+
+                            </option>
+
+
+                        </select>
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+
+
+
+                <div class="preview-card">
+
+
+                    <h3>
+
+                        Vista previa
+
+                    </h3>
+
+
+
+                    <div
+                        id="previewCategory"
+                        class="category-preview"
+                    >
+
+
+
+                        <div
+                            class="preview-header"
+                            id="previewHeader"
+                            style="background:#b40000;"
+                        >
+
+
+
+                            <span
+                                id="previewIcon"
+                                class="preview-icon"
+                            >
+
+                                🍔
+
+                            </span>
+
+
+
+                            <h2 id="previewName">
+
+                                Categoría
+
+                            </h2>
+
+
+
+                        </div>
+
+
+
+
+
+                        <div class="preview-body">
+
+
+                            <p id="previewDescription">
+
+                                Descripción...
+
+                            </p>
+
+
+                        </div>
+
+
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+                <div class="form-buttons">
+
+
+
+                    <a
+                        href="/admin/menu/categories"
+                        class="btn-secondary"
+                    >
+
+                        Cancelar
+
+                    </a>
+
+
+
+
+
+                    <button
+                        type="submit"
+                        class="btn-primary"
+                    >
+
+                        Guardar Cambios
+
+                    </button>
+
+
+
+
+                </div>
+
+
+
+            </form>
+
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+<script src="/static/js/admin/sidebar.js"></script>
+<script>
+    const categoryId = "{{ category_id }}";
+</script>
+<script src="/static/js/admin/categories_edit.js"></script>
+
+
+
+{% endblock %}

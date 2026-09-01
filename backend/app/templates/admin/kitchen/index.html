@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Cocina{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/kitchen_dashboard.css">
+{% endblock %}
+
+{% block content %}
+<div class="layout">
+    {% include "admin/components/sidebar.html" %}
+    <div class="contenido">
+        {% include "admin/components/topbar.html" %}
+
+        <main class="panel kitchen-admin">
+            <section class="kitchen-head">
+                <div>
+                    <span class="eyebrow">OPERACIÓN</span>
+                    <h1>Centro de Cocina</h1>
+                    <p>Supervisa las estaciones, sus platos y la carga actual de cada cocina.</p>
+                </div>
+                <button class="btn-primary" id="openStationModal">＋ Nueva estación</button>
+            </section>
+
+            <section class="station-summary" id="stationSummary">
+                <div class="summary-card"><span>Estaciones</span><strong id="totalStations">0</strong></div>
+                <div class="summary-card"><span>Esperando</span><strong id="totalWaiting">0</strong></div>
+                <div class="summary-card"><span>Preparando</span><strong id="totalPreparing">0</strong></div>
+                <div class="summary-card"><span>Listos</span><strong id="totalReady">0</strong></div>
+            </section>
+
+            <section>
+                <div class="section-title"><h2>Estaciones activas</h2><span id="lastUpdate">Actualizando…</span></div>
+                <div class="station-grid" id="stationGrid"></div>
+                <div class="empty-stations" id="emptyStations" hidden>
+                    <div>👨‍🍳</div>
+                    <h3>Aún no hay estaciones</h3>
+                    <p>Crea Bar, Picadas, Cocina Principal o las estaciones que necesite tu restaurante.</p>
+                    <button class="btn-primary" id="emptyCreateStation">Crear primera estación</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="stationModal" hidden>
+    <div class="station-modal">
+        <button class="modal-close" id="closeStationModal">×</button>
+        <span class="eyebrow">NUEVA ESTACIÓN</span>
+        <h2>Crear estación de cocina</h2>
+        <p>La estación podrá recibir automáticamente los platos de las categorías que le asignes.</p>
+        <form id="stationForm">
+            <label>Nombre<input id="stationName" required maxlength="50" placeholder="Ej. Picadas"></label>
+            <label>Impresora <span>(opcional)</span><input id="stationPrinter" maxlength="100" placeholder="Ej. Cocina-Picadas"></label>
+            <label>Color<input id="stationColor" type="color" value="#3498db"></label>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="cancelStation">Cancelar</button>
+                <button type="submit" class="btn-primary">Crear estación</button>
+            </div>
+            <div class="form-error" id="stationError"></div>
+        </form>
+    </div>
+</div>
+<script src="/static/js/admin/kitchen_dashboard.js"></script>
+{% endblock %}

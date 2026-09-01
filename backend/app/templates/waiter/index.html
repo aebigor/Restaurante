@@ -1,0 +1,448 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Panel del Mesero
+{% endblock %}
+
+{% block css %}
+
+<link
+    rel="stylesheet"
+    href="/static/css/waiter/index.css"
+>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="waiter-shell">
+
+    <!-- ==================================================
+         HEADER
+    ================================================== -->
+
+    <header class="waiter-header">
+
+        <div>
+
+            <span class="eyebrow">
+                OPERACIÓN
+            </span>
+
+            <h1>
+                Panel del mesero
+            </h1>
+
+            <p>
+                Selecciona una mesa y registra el pedido.
+            </p>
+
+        </div>
+
+        <div class="live">
+
+            <span></span>
+
+            EN VIVO
+
+        </div>
+
+    </header>
+
+
+    <!-- ==================================================
+         RESUMEN
+    ================================================== -->
+
+    <section class="waiter-summary">
+
+        <div class="summary-card">
+
+            <span>
+                MESAS
+            </span>
+
+            <strong id="totalTables">
+                0
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                LIBRES
+            </span>
+
+            <strong
+                id="freeTables"
+                class="free-value"
+            >
+                0
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                OCUPADAS
+            </span>
+
+            <strong
+                id="occupiedTables"
+                class="occupied-value"
+            >
+                0
+            </strong>
+
+        </div>
+
+        <div class="summary-card menu-summary">
+
+            <span>
+                MENÚ DEL DÍA
+            </span>
+
+            <strong id="activeMenuName">
+                Cargando...
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         MESAS
+    ================================================== -->
+
+    <section class="waiter-panel tables-panel">
+
+        <div class="section-head">
+
+            <div>
+
+                <span class="section-label">
+                    ATENCIÓN
+                </span>
+
+                <h2>
+                    Selecciona una mesa
+                </h2>
+
+                <p>
+                    Elige una mesa para comenzar a registrar el pedido.
+                </p>
+
+            </div>
+
+            <button
+                id="refreshTables"
+                class="btn-refresh"
+                type="button"
+            >
+                ↻ Actualizar
+            </button>
+
+        </div>
+
+
+        <div
+            id="tables"
+            class="tables-grid"
+        >
+
+            <div class="loading-state">
+                Cargando mesas...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         SOLICITUDES
+    ================================================== -->
+
+    <section class="waiter-panel calls-panel">
+
+        <div class="section-head">
+
+            <div>
+
+                <span class="section-label">
+                    SERVICIO
+                </span>
+
+                <h2>
+                    Solicitudes
+                </h2>
+
+                <p>
+                    Clientes que han solicitado atención.
+                </p>
+
+            </div>
+
+            <button
+                id="refreshCalls"
+                class="btn-refresh"
+                type="button"
+            >
+                ↻ Actualizar
+            </button>
+
+        </div>
+
+
+        <div
+            id="calls"
+            class="calls"
+        >
+
+            <div class="empty-state">
+                No hay solicitudes pendientes.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         PEDIDOS ACTIVOS
+    ================================================== -->
+
+    <section class="waiter-panel active-orders-panel">
+
+        <div class="section-head">
+
+            <div>
+                <span class="section-label">COMANDAS</span>
+                <h2>Pedidos en curso</h2>
+                <p>Aquí ves qué está preparando cada cocina y qué ya está listo.</p>
+            </div>
+
+            <button id="refreshOrders" class="btn-refresh" type="button">
+                ↻ Actualizar
+            </button>
+
+        </div>
+
+        <div id="activeOrders" class="active-orders">
+            <div class="empty-state">No tienes pedidos activos.</div>
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ======================================================
+     MODAL DEL PEDIDO
+====================================================== -->
+
+<div
+    class="order-modal"
+    id="orderModal"
+    hidden
+>
+
+    <div class="order-dialog">
+
+
+        <!-- HEADER MODAL -->
+
+        <div class="order-dialog-header">
+
+            <div>
+
+                <span class="modal-label">
+                    NUEVO PEDIDO
+                </span>
+
+                <h2 id="orderTitle">
+                    Mesa
+                </h2>
+
+                <p id="orderMenuName">
+                    Cargando menú...
+                </p>
+
+            </div>
+
+
+            <button
+                class="modal-close"
+                id="closeOrder"
+                type="button"
+                aria-label="Cerrar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- CUERPO -->
+
+        <div class="order-dialog-body">
+
+
+            <!-- ==================================================
+                 MENÚ
+            ================================================== -->
+
+            <section class="order-menu-section">
+
+                <div class="order-section-title">
+
+                    <div>
+
+                        <span>
+                            MENÚ DEL DÍA
+                        </span>
+
+                        <h3>
+                            Agregar al pedido
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CATEGORÍAS -->
+
+                <div
+                    id="menuCategories"
+                    class="menu-categories"
+                >
+                </div>
+
+
+                <!-- PLATOS -->
+
+                <div
+                    id="dishList"
+                    class="dish-list"
+                >
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 CARRITO
+            ================================================== -->
+
+            <aside class="order-cart">
+
+                <div class="cart-header">
+
+                    <div>
+
+                        <span>
+                            PEDIDO ACTUAL
+                        </span>
+
+                        <h3>
+                            Comanda
+                        </h3>
+
+                    </div>
+
+                    <strong id="cartTotal">
+                        $0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    id="cart"
+                    class="cart-items"
+                >
+
+                    <div class="cart-empty">
+
+                        <span>
+                            🛒
+                        </span>
+
+                        <p>
+                            Aún no hay productos agregados.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cart-footer">
+
+                    <div class="cart-total-row">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <strong id="cartTotalBottom">
+                            $0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="order-actions">
+
+            <div
+                id="orderError"
+                class="form-error"
+            >
+            </div>
+
+
+            <div class="order-buttons">
+
+                <button
+                    class="secondary"
+                    id="cancelOrder"
+                    type="button"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    class="primary"
+                    id="sendOrder"
+                    type="button"
+                >
+                    Enviar pedido
+                </button>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script
+    src="/static/js/waiter/index.js"
+></script>
+
+{% endblock %}

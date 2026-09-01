@@ -1,0 +1,319 @@
+/* ==========================================================
+   CONTENEDOR
+========================================================== */
+
+.card-form{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    padding:35px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    margin-top:25px;
+
+}
+
+/* ==========================================================
+   GRID
+========================================================== */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:25px;
+
+}
+
+/* ==========================================================
+   CAMPOS
+========================================================== */
+
+.form-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.form-group label{
+
+    margin-bottom:10px;
+
+    font-weight:600;
+
+    color:#444;
+
+}
+
+.form-group input,
+
+.form-group select,
+
+.form-group textarea{
+
+    width:100%;
+
+    padding:14px 16px;
+
+    border:1px solid #dcdcdc;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.25s;
+
+    background:#fff;
+
+}
+
+.form-group textarea{
+
+    resize:vertical;
+
+    min-height:120px;
+
+}
+
+.form-group input:focus,
+
+.form-group select:focus,
+
+.form-group textarea:focus{
+
+    border-color:#b40000;
+
+    box-shadow:0 0 0 4px rgba(180,0,0,.12);
+
+}
+
+/* ==========================================================
+   TEXTAREA
+========================================================== */
+
+textarea{
+
+    margin-top:25px;
+
+}
+
+/* ==========================================================
+   SWITCH
+========================================================== */
+
+.switch-container{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-top:30px;
+
+    margin-bottom:35px;
+
+}
+
+.switch{
+
+    position:relative;
+
+    display:inline-block;
+
+    width:60px;
+
+    height:32px;
+
+}
+
+.switch input{
+
+    display:none;
+
+}
+
+.slider{
+
+    position:absolute;
+
+    inset:0;
+
+    cursor:pointer;
+
+    background:#cfcfcf;
+
+    border-radius:30px;
+
+    transition:.25s;
+
+}
+
+.slider:before{
+
+    content:"";
+
+    position:absolute;
+
+    width:24px;
+
+    height:24px;
+
+    left:4px;
+
+    top:4px;
+
+    background:#fff;
+
+    border-radius:50%;
+
+    transition:.25s;
+
+}
+
+.switch input:checked + .slider{
+
+    background:#b40000;
+
+}
+
+.switch input:checked + .slider:before{
+
+    transform:translateX(28px);
+
+}
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+.actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+}
+
+.btn-save{
+
+    background:#b40000;
+
+    color:#fff;
+
+    border:none;
+
+    padding:14px 28px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.btn-save:hover{
+
+    background:#930000;
+
+}
+
+.btn-cancel{
+
+    background:#ececec;
+
+    color:#333;
+
+    border:none;
+
+    padding:14px 28px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.btn-cancel:hover{
+
+    background:#d8d8d8;
+
+}
+
+.btn-secondary{
+
+    text-decoration:none;
+
+    background:#ececec;
+
+    color:#333;
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.btn-secondary:hover{
+
+    background:#dddddd;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media(max-width:900px){
+
+    .grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+@media(max-width:700px){
+
+    .actions{
+
+        flex-direction:column;
+
+    }
+
+    .btn-save,
+
+    .btn-cancel{
+
+        width:100%;
+
+    }
+
+}

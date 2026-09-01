@@ -1,0 +1,284 @@
+/* =====================================================
+   TOPBAR
+===================================================== */
+
+.topbar{
+
+    height:80px;
+
+    background:#ffffff;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 35px;
+
+    border-bottom:1px solid #ececec;
+
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+
+    position:sticky;
+
+    top:0;
+
+    z-index:999;
+
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.topbar-left{
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.topbar-logo{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    color:#c70000;
+
+    letter-spacing:2px;
+
+}
+
+.topbar-logo img{
+
+    height:50px;
+
+}
+
+
+/* =====================================================
+   LADO DERECHO
+===================================================== */
+
+.topbar-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+
+/* =====================================================
+   BUSCADOR
+===================================================== */
+
+.search-box{
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.search{
+
+    width:320px;
+
+    height:44px;
+
+    border:none;
+
+    outline:none;
+
+    background:#f5f5f5;
+
+    border-radius:30px;
+
+    padding:0 20px;
+
+    font-size:15px;
+
+    transition:.25s;
+
+}
+
+.search:focus{
+
+    background:white;
+
+    box-shadow:0 0 0 2px rgba(199,0,0,.15);
+
+}
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+.icon-btn{
+
+    width:45px;
+
+    height:45px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#f5f5f5;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    transition:.25s;
+
+}
+
+.icon-btn:hover{
+
+    background:#c70000;
+
+    color:white;
+
+}
+
+
+/* =====================================================
+   PERFIL
+===================================================== */
+
+.profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.avatar{
+
+    width:46px;
+
+    height:46px;
+
+    border-radius:50%;
+
+    background:#c70000;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:bold;
+
+    font-size:16px;
+
+}
+
+.profile-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.profile-info strong{
+
+    font-size:15px;
+
+    color:#222;
+
+}
+
+.profile-info small{
+
+    color:#888;
+
+    font-size:13px;
+
+}
+
+
+/* =====================================================
+   BOTÓN CERRAR SESIÓN
+===================================================== */
+
+.logout-btn{
+
+    text-decoration:none;
+
+    background:#c70000;
+
+    color:white;
+
+    padding:12px 20px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.logout-btn:hover{
+
+    background:#900000;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:1200px){
+
+    .search{
+
+        width:220px;
+
+    }
+
+}
+
+@media(max-width:900px){
+
+    .profile-info{
+
+        display:none;
+
+    }
+
+    .search{
+
+        width:160px;
+
+    }
+
+}
+
+@media(max-width:700px){
+
+    .search-box{
+
+        display:none;
+
+    }
+
+}
