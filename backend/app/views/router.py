@@ -319,3 +319,30 @@ async def kitchen_selector(request: Request):
 @router.get("/kitchen/{screen_code}")
 async def kitchen_view(request: Request, screen_code: str):
     return templates.TemplateResponse(request=request, name="kitchen/index.html", context={})
+
+# ======================================================
+# CAJA
+# ======================================================
+
+@router.get("/admin/cashier")
+async def cashier_page(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/cashier/index.html",
+        context={}
+    )
+
+
+# ======================================================
+# CAJA - ACCESO DIRECTO
+# ======================================================
+
+@router.get("/cashier")
+async def cashier_page_direct(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/cashier/index.html",
+        context={}
+    )

@@ -6,7 +6,8 @@ import qrcode
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException
+    HTTPException,
+    Request
 )
 
 from fastapi.responses import StreamingResponse
@@ -315,6 +316,7 @@ def get_menu_qrs(
 def generate_table_qr(
     menu_id: UUID,
     table_id: int,
+    request: Request,
     db: Session = Depends(get_db)
 ):
 
@@ -361,29 +363,20 @@ def generate_table_qr(
     # ======================================================
     # CREAR URL ABSOLUTA
     # ======================================================
-
-    # La URL base se envía desde el navegador mediante
-    # el endpoint de datos. Para el QR usamos una URL
-    # relativa que el navegador convertirá en absoluta
-    # en la página de impresión.
     #
-    # Sin embargo, para que el QR funcione desde otro
-    # dispositivo necesitamos la URL real del servidor.
+    # El QR debe contener una URL completa, no solamente /m/1.
+    # request.base_url toma automáticamente el dominio actual:
     #
-    # Se obtiene desde la petición.
+    # Local:      http://192.168.x.x:8000/m/1
+    # Producción: https://tu-restaurante.onrender.com/m/1
+    #
+    # De esta manera cada QR identifica la mesa correctamente
+    # cuando el cliente lo escanea desde su celular.
     # ======================================================
 
-    from fastapi import Request
+    base_url = str(request.base_url).rstrip('/')
 
-
-    # Esta función necesita Request.
-    # El endpoint se vuelve a manejar abajo.
-    #
-    # Este bloque no se utiliza directamente.
-    # ======================================================
-
-    url = f"/m/{table.number}"
-
+    url = f"{base_url}/m/{table.number}"
 
     # ======================================================
     # GENERAR QR

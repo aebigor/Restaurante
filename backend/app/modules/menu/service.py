@@ -24,7 +24,7 @@ class MenuService:
 
     def list(self, db: Session):
 
-        return self.repository.get_all()
+        return self.repository.get_all(db)
 
 
     # ==========================================================

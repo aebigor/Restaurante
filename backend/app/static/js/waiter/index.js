@@ -1448,39 +1448,66 @@ function renderCalls(calls) {
     }
 
     callsContainer.innerHTML =
-        calls.map(call => `
+        calls.map(call => {
 
-            <article class="call-card">
+            // Buscar la mesa en las mesas que ya cargó el panel
+            const table =
+                tablesData.find(
+                    t => String(t.id) === String(call.table_id)
+                );
 
-                <div>
+            const tableNumber =
+                table?.number ??
+                table?.table_number ??
+                call.table_number ??
+                call.table_id ??
+                "Sin información";
 
-                    <span>
-                        MESA
-                    </span>
+            return `
 
-                    <h3>
-                        ${escapeHtml(
-                            call.table_name ||
-                            call.table_number ||
-                            "Sin información"
-                        )}
-                    </h3>
+                <article class="call-card">
 
-                </div>
+                    <div class="call-info">
 
-                <div>
+                        <span>
+                            MESA
+                        </span>
 
-                    <span class="call-status">
-                        Solicita atención
-                    </span>
+                        <h3>
+                            ${escapeHtml(
+                                String(tableNumber)
+                            )}
+                        </h3>
 
-                </div>
+                    </div>
 
-            </article>
 
-        `).join("");
+                    <div class="call-actions">
+
+                        <span class="call-status">
+                            Solicita atención
+                        </span>
+
+                        <button
+                            type="button"
+                            class="call-attended-btn"
+                            data-call-id="${escapeHtml(
+                                String(call.id)
+                            )}"
+                            onclick="attendCall('${escapeHtml(
+                                String(call.id)
+                            )}', this)"
+                        >
+                            ✓ Atendido
+                        </button>
+
+                    </div>
+
+                </article>
+
+            `;
+        }).join("");
 }
-
 
 // ==========================================================
 // ESTADOS PEDIDO
@@ -1562,8 +1589,68 @@ async function loadActiveOrders() {
         `;
     }
 }
+// ==========================================================
+// MARCAR SOLICITUD COMO ATENDIDA
+// ==========================================================
+
+async function attendCall(callId, button) {
+
+    if (!callId) {
+        return;
+    }
 
 
+    const originalText =
+        button.textContent;
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "Procesando...";
+
+
+    try {
+
+        await api(
+            `${API_BASE}/waiter-calls/${encodeURIComponent(callId)}`,
+            {
+                method: "PATCH",
+
+                body: JSON.stringify({
+                    status: "ATTENDED"
+                })
+            }
+        );
+
+
+        // Recargar las solicitudes.
+        // La solicitud atendida ya no aparecerá porque
+        // /pending solamente devuelve REQUESTED y ACKNOWLEDGED.
+
+        await loadCalls();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error atendiendo solicitud:",
+            error
+        );
+
+
+        button.disabled = false;
+
+        button.textContent =
+            originalText;
+
+
+        alert(
+            error.message ||
+            "No fue posible marcar la solicitud como atendida."
+        );
+    }
+}
 // ==========================================================
 // RENDER PEDIDOS
 // ==========================================================
