@@ -1,0 +1,116 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Caja | CRIPTONIX{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/cashier/layout.css">
+<link rel="stylesheet" href="/static/css/admin/cashier.css">
+{% endblock %}
+
+{% block content %}
+<div class="cashier-layout">
+    {% include "cashier/sidebar.html" %}
+
+    <div class="cashier-content">
+        {% include "cashier/topbar.html" %}
+
+        <main class="cashier-page">
+            <section class="cashier-header">
+                <div>
+                    <span class="cashier-label">OPERACIÓN</span>
+                    <h1>Caja</h1>
+                    <p>Control de cuentas, cobros y cierre de caja.</p>
+                </div>
+                <div id="registerStatus" class="register-status">Verificando caja...</div>
+            </section>
+
+            <section id="openRegisterPanel" class="cashier-panel" hidden>
+                <div class="panel-title">
+                    <div>
+                        <span>INICIO DE TURNO</span>
+                        <h2>Abrir caja</h2>
+                        <p>Registra la base inicial antes de comenzar a cobrar.</p>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Base inicial
+                        <input id="openingAmount" type="number" min="0" step="100" value="0">
+                    </label>
+                    <button id="openRegisterButton" class="btn-primary" type="button">Abrir caja</button>
+                </div>
+            </section>
+
+            <section id="registerSummary" class="resume-cards" hidden>
+                <div class="resume-card"><span>BASE INICIAL</span><strong id="openingValue">$0</strong></div>
+                <div class="resume-card"><span>EFECTIVO</span><strong id="cashValue">$0</strong></div>
+                <div class="resume-card"><span>TARJETA</span><strong id="cardValue">$0</strong></div>
+                <div class="resume-card"><span>TRANSFERENCIAS</span><strong id="transferValue">$0</strong></div>
+                <div class="resume-card total-card"><span>VENTAS</span><strong id="salesValue">$0</strong></div>
+            </section>
+
+            <section id="accountsPanel" class="cashier-panel" hidden>
+                <div class="panel-title">
+                    <div>
+                        <span>CUENTAS</span>
+                        <h2>Mesas pendientes de pago</h2>
+                        <p>Selecciona una mesa para revisar y cobrar su cuenta.</p>
+                    </div>
+                    <button id="refreshCashier" class="btn-refresh" type="button">↻ Actualizar</button>
+                </div>
+                <div id="tablesContainer" class="cash-tables"></div>
+            </section>
+
+            <section id="accountPanel" class="cashier-panel" hidden>
+                <div class="panel-title">
+                    <div>
+                        <span>CUENTA</span>
+                        <h2 id="accountTitle">Selecciona una mesa</h2>
+                    </div>
+                </div>
+                <div id="accountContent" class="account-content"></div>
+
+                <div id="paymentBox" class="payment-box" hidden>
+                    <h3>Cobrar cuenta</h3>
+                    <div class="payment-total"><span>Total a pagar</span><strong id="paymentTotal">$0</strong></div>
+                    <div class="payment-form">
+                        <label>Método de pago
+                            <select id="paymentMethod">
+                                <option value="CASH">Efectivo</option>
+                                <option value="CARD">Tarjeta</option>
+                                <option value="TRANSFER">Transferencia</option>
+                            </select>
+                        </label>
+                        <label>Dinero recibido
+                            <input id="receivedAmount" type="number" min="0" step="100">
+                        </label>
+                        <label>Referencia
+                            <input id="paymentReference" type="text" placeholder="Opcional">
+                        </label>
+                        <div class="change-box"><span>Cambio</span><strong id="changeValue">$0</strong></div>
+                        <button id="payButton" class="btn-pay" type="button">💵 Cobrar cuenta</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="closeRegisterPanel" class="cashier-panel close-panel" hidden>
+                <div class="panel-title">
+                    <div>
+                        <span>FIN DE TURNO</span>
+                        <h2>Cerrar caja</h2>
+                    </div>
+                </div>
+                <div class="close-grid">
+                    <div><span>EFECTIVO ESPERADO</span><strong id="expectedCash">$0</strong></div>
+                    <label>Efectivo contado
+                        <input id="closingAmount" type="number" min="0" step="100">
+                    </label>
+                    <button id="closeRegisterButton" class="btn-close-register" type="button">🔒 Cerrar caja</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script src="/static/js/cashier/layout.js"></script>
+<script src="/static/js/admin/cashier.js?v=20260908"></script>
+{% endblock %}

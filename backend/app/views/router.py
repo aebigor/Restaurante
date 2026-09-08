@@ -292,6 +292,20 @@ async def dishes_view(
     )
 
 # ======================================================
+# CONTROL ADMINISTRATIVO DE CAJAS
+# ======================================================
+
+@router.get("/admin/cash-control")
+async def admin_cash_control(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/cash_control.html",
+        context={}
+    )
+
+
+# ======================================================
 # MENÚ PÚBLICO DEL CLIENTE
 # ======================================================
 @router.get("/m/{table_number}")
@@ -327,11 +341,9 @@ async def kitchen_view(request: Request, screen_code: str):
 @router.get("/admin/cashier")
 async def cashier_page(request: Request):
 
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/cashier/index.html",
-        context={}
-    )
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(url="/admin/cash-control", status_code=307)
 
 
 # ======================================================
@@ -343,6 +355,6 @@ async def cashier_page_direct(request: Request):
 
     return templates.TemplateResponse(
         request=request,
-        name="admin/cashier/index.html",
+        name="cashier/index.html",
         context={}
     )

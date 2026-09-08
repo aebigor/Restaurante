@@ -404,12 +404,18 @@ function renderTables(
 
                     <button
                         type="button"
-                        onclick="openAccount(
-                            '${table.session_id}'
-                        )"
+                        onclick="openAccount('${table.session_id}')"
                     >
                         Ver cuenta
                     </button>
+
+                    ${table.status === "CLEAN" ? `
+                        <button type="button" class="cash-release-button" onclick="event.stopPropagation(); releaseTable('${table.session_id}')">
+                            🔓 Liberar mesa
+                        </button>
+                    ` : table.status === "PAID" ? `
+                        <span class="cash-wait-clean">⏳ Esperando que el mesero marque limpia</span>
+                    ` : ""}
 
                 </article>
 
@@ -885,6 +891,28 @@ document
         "click",
         loadCashier
     );
+
+
+// ==========================================================
+// LIBERAR MESA - SOLO CAJA
+// ==========================================================
+
+async function releaseTable(sessionId) {
+    if (!sessionId) return;
+
+    if (!confirm("¿Confirmas que la mesa está limpia y deseas liberarla?")) return;
+
+    try {
+        await api(`${API}/sessions/${encodeURIComponent(sessionId)}/release`, { method: "PATCH" });
+        selectedSession = null;
+        selectedAccount = null;
+        if (accountPanel) accountPanel.hidden = true;
+        alert("Mesa liberada correctamente.");
+        await loadCashier();
+    } catch (error) {
+        alert(error.message || "No se pudo liberar la mesa.");
+    }
+}
 
 
 // ==========================================================

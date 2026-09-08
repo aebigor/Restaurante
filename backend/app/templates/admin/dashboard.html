@@ -1,40 +1,117 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}
-Dashboard
-{% endblock %}
+{% block title %}Administración | CRIPTONIX{% endblock %}
 
 {% block css %}
-
 <link rel="stylesheet" href="/static/css/admin/sidebar.css">
 <link rel="stylesheet" href="/static/css/admin/topbar.css">
 <link rel="stylesheet" href="/static/css/admin/dashboard.css">
-<link rel="stylesheet" href="/static/css/admin/card.css">
-<link rel="stylesheet" href="/static/css/admin/resumen.css">
-
 {% endblock %}
 
-
 {% block content %}
-
-<div class="layout">
-
+<div class="layout admin-dashboard-layout">
     {% include "admin/components/sidebar.html" %}
 
     <div class="contenido">
-
         {% include "admin/components/topbar.html" %}
 
-        <div class="panel">
+        <main class="admin-main">
+            <header class="admin-welcome">
+                <div>
+                    <span class="admin-kicker">PANEL ADMINISTRATIVO</span>
+                    <h1>Control general del restaurante</h1>
+                    <p>Supervisa las ventas del día y el estado de todas las cajas sin intervenir en el cobro.</p>
+                </div>
+                <a class="admin-cash-control" href="/admin/cash-control">💳 Control de cajas <span>→</span></a>
+            </header>
 
-            {% include "admin/panels/resumen.html" %}
+            <section class="admin-stats" aria-label="Indicadores del día">
+                <article class="admin-stat stat-primary">
+                    <div class="stat-icon">💰</div>
+                    <div>
+                        <span>VENTAS DEL DÍA</span>
+                        <strong id="salesToday">$0</strong>
+                        <small>Recaudado por todas las cajas</small>
+                    </div>
+                </article>
 
-        </div>
+                <article class="admin-stat">
+                    <div class="stat-icon">🧾</div>
+                    <div>
+                        <span>PEDIDOS DEL DÍA</span>
+                        <strong id="ordersToday">0</strong>
+                        <small>Pedidos no cancelados</small>
+                    </div>
+                </article>
 
+                <article class="admin-stat">
+                    <div class="stat-icon">💵</div>
+                    <div>
+                        <span>CUENTAS COBRADAS</span>
+                        <strong id="paidSessionsToday">0</strong>
+                        <small>Cuentas autorizadas por caja</small>
+                    </div>
+                </article>
+
+                <article class="admin-stat">
+                    <div class="stat-icon">🏧</div>
+                    <div>
+                        <span>CAJAS ABIERTAS</span>
+                        <strong id="openRegisters">0</strong>
+                        <small>Turnos activos ahora</small>
+                    </div>
+                </article>
+            </section>
+
+            <section class="admin-overview-grid">
+                <article class="admin-panel-box money-breakdown">
+                    <div class="panel-heading">
+                        <div>
+                            <span>INGRESOS</span>
+                            <h2>Cómo va la venta hoy</h2>
+                        </div>
+                        <span id="adminDate" class="date-badge">Hoy</span>
+                    </div>
+
+                    <div class="admin-big-total">
+                        <span>Total vendido</span>
+                        <strong id="earningsTotal">$0</strong>
+                    </div>
+
+                    <div class="payment-breakdown">
+                        <div><span>💵 Efectivo</span><strong id="cashToday">$0</strong></div>
+                        <div><span>💳 Tarjeta</span><strong id="cardToday">$0</strong></div>
+                        <div><span>🏦 Transferencias</span><strong id="transferToday">$0</strong></div>
+                    </div>
+                </article>
+
+                <article class="admin-panel-box active-registers">
+                    <div class="panel-heading">
+                        <div>
+                            <span>CONTROL</span>
+                            <h2>Cajas abiertas ahora</h2>
+                        </div>
+                        <a href="/admin/cash-control">Administrar →</a>
+                    </div>
+                    <div id="registerStatusList" class="register-status-list">Cargando...</div>
+                </article>
+            </section>
+
+            <section class="admin-panel-box register-history-box">
+                <div class="panel-heading">
+                    <div>
+                        <span>ARQUEO</span>
+                        <h2>Cuenta de las cajas cerradas hoy</h2>
+                    </div>
+                    <span id="closedRegistersBadge" class="date-badge">0 cerradas</span>
+                </div>
+
+                <div id="closedRegisterList" class="closed-register-list">Cargando cierres...</div>
+            </section>
+        </main>
     </div>
-
 </div>
 
 <script src="/static/js/admin/sidebar.js"></script>
-
+<script src="/static/js/admin/dashboard.js?v=20260908"></script>
 {% endblock %}

@@ -339,8 +339,13 @@ async function loadMenu() {
         activeMenu =
             data.menu;
 
-        menuDishes =
-            data.dishes || [];
+        const dishes = data.dishes || [];
+        const products = (data.products || []).map(product => ({
+            ...product,
+            is_product: true
+        }));
+
+        menuDishes = [...dishes, ...products];
 
         activeMenuName.textContent =
             activeMenu.title;
@@ -399,14 +404,25 @@ async function loadTables() {
 // ==========================================================
 
 function isTableOccupied(table) {
-
     return (
         table.status === "OCCUPIED" ||
         table.status === "occupied" ||
+        table.status === "PAID" ||
+        table.status === "paid" ||
+        table.status === "CLEAN" ||
+        table.status === "clean" ||
         table.occupied === true ||
         table.is_occupied === true ||
         table.session_active === true
     );
+}
+
+function isTablePaid(table) {
+    return table.status === "PAID" || table.status === "paid";
+}
+
+function isTableClean(table) {
+    return table.status === "CLEAN" || table.status === "clean";
 }
 
 
@@ -416,186 +432,109 @@ function isTableOccupied(table) {
 
 function renderTables() {
 
-    const total =
-        tablesData.length;
+    const total = tablesData.length;
 
-    const occupied =
-        tablesData.filter(
-            isTableOccupied
-        ).length;
+    const occupied = tablesData.filter(isTableOccupied).length;
+    const free = total - occupied;
+    const paid = tablesData.filter(isTablePaid).length;
 
-    const free =
-        total - occupied;
-
-    totalTablesElement.textContent =
-        total;
-
-    freeTablesElement.textContent =
-        free;
-
-    occupiedTablesElement.textContent =
-        occupied;
+    totalTablesElement.textContent = total;
+    freeTablesElement.textContent = free;
+    occupiedTablesElement.textContent = occupied;
 
     if (!total) {
-
         tablesContainer.innerHTML = `
-            <div class="empty-state">
-                No hay mesas registradas.
-            </div>
+            <div class="empty-state">No hay mesas registradas.</div>
         `;
-
         return;
     }
 
-    tablesContainer.innerHTML =
-        tablesData.map(table => {
+    tablesContainer.innerHTML = tablesData.map(table => {
+        const occupiedTable = isTableOccupied(table);
+        const paidTable = isTablePaid(table);
+        const cleanTable = isTableClean(table);
+        const statusClass = cleanTable ? "clean" : paidTable ? "paid" : occupiedTable ? "occupied" : "free";
+        const statusText = cleanTable ? "Limpia · espera Caja" : paidTable ? "Pagada" : occupiedTable ? "Ocupada" : "Libre";
+        const tableName = table.name || `Mesa ${table.number}`;
+        const selectedClass = selectedTable && String(selectedTable.id) === String(table.id) ? "selected" : "";
 
-            const occupied =
-                isTableOccupied(table);
+        return `
+            <article class="table-card ${statusClass} ${selectedClass}">
+                <div class="table-card-top">
+                    <div class="table-number">${escapeHtml(table.number || "")}</div>
+                    <span class="table-status"><span></span>${statusText}</span>
+                </div>
 
-            const statusClass =
-                occupied
-                    ? "occupied"
-                    : "free";
+                <div class="table-card-body">
+                    <h3>${escapeHtml(tableName)}</h3>
+                    <p>${table.zone ? escapeHtml(table.zone) : "Salón principal"}</p>
 
-            const statusText =
-                occupied
-                    ? "Ocupada"
-                    : "Libre";
-
-            const tableName =
-                table.name ||
-                `Mesa ${table.number}`;
-
-            const selectedClass =
-                selectedTable &&
-                String(
-                    selectedTable.id
-                ) ===
-                String(table.id)
-                    ? "selected"
-                    : "";
-
-            return `
-                <button
-                    type="button"
-                    class="table-card ${statusClass} ${selectedClass}"
-                    data-table-id="${escapeHtml(table.id)}"
-                >
-
-                    <div class="table-card-top">
-
-                        <div class="table-number">
-                            ${escapeHtml(
-                                table.number || ""
-                            )}
-                        </div>
-
-                        <span class="table-status">
-                            <span></span>
-                            ${statusText}
-                        </span>
-
-                    </div>
-
-                    <div class="table-card-body">
-
-                        <h3>
-                            ${escapeHtml(
-                                tableName
-                            )}
-                        </h3>
-
-                        <p>
-                            ${
-                                table.zone
-                                    ? escapeHtml(
-                                        table.zone
-                                    )
-                                    : "Salón principal"
-                            }
-                        </p>
-
-                        ${
-                            occupied &&
-                            table.session_opened_at
+                    ${
+                        paidTable || cleanTable
+                            ? `
+                                <div class="table-paid-notice">
+                                    <strong>${cleanTable ? "✓ Mesa marcada como limpia" : "✓ Pago autorizado por caja"}</strong>
+                                    <span>${cleanTable ? "Caja debe realizar la liberación." : "Entrega todos los pedidos y marca la mesa como limpia."}</span>
+                                </div>
+                                ${table.last_served_at ? `
+                                    <div class="table-live-time">
+                                        <span>🍽 Último pedido entregado</span>
+                                        <strong data-timer-start="${escapeHtml(table.last_served_at)}">
+                                            ${formatDuration(elapsedSince(table.last_served_at))}
+                                        </strong>
+                                    </div>
+                                ` : ""}
+                            `
+                            : occupiedTable && table.session_opened_at
                                 ? `
                                     <div class="table-live-time">
-
-                                        <span>
-                                            ⏱ Tiempo en mesa
-                                        </span>
-
-                                        <strong
-                                            data-timer-start="${escapeHtml(
-                                                table.session_opened_at
-                                            )}"
-                                        >
-                                            ${formatDuration(
-                                                elapsedSince(
-                                                    table.session_opened_at
-                                                )
-                                            )}
+                                        <span>⏱ Tiempo en mesa</span>
+                                        <strong data-timer-start="${escapeHtml(table.session_opened_at)}">
+                                            ${formatDuration(elapsedSince(table.session_opened_at))}
                                         </strong>
-
                                     </div>
                                 `
                                 : ""
-                        }
-
-                    </div>
-
-                    <div class="table-card-footer">
-
-                        <span>
-                            👥 ${table.capacity || 0} personas
-                        </span>
-
-                        <strong>
-                            ${
-                                occupied
-                                    ? "+ Nuevo pedido"
-                                    : "Tomar pedido"
-                            }
-                            →
-                        </strong>
-
-                    </div>
-
-                </button>
-            `;
-
-        }).join("");
-
-    document
-        .querySelectorAll(
-            ".table-card"
-        )
-        .forEach(card => {
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    const table =
-                        tablesData.find(
-                            item =>
-                                String(item.id) ===
-                                String(
-                                    card.dataset.tableId
-                                )
-                        );
-
-                    if (table) {
-
-                        openOrder(table);
-
                     }
+                </div>
 
-                }
-            );
+                <div class="table-card-footer">
+                    <span>👥 ${table.capacity || 0} personas</span>
+                    ${
+                        paidTable
+                            ? table.can_mark_clean
+                                ? `
+                                    <button type="button" class="clean-table-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}')">
+                                        🧹 Marcar mesa limpia
+                                    </button>
+                                `
+                                : `<span class="waiting-cash-release">🍽️ Pendiente: ${table.pending_delivery || 0} pedido(s) por entregar</span>`
+                            : cleanTable
+                                ? `<span class="waiting-cash-release">🔒 Esperando liberación de Caja</span>`
+                            : `
+                                <button type="button" class="table-open-button">
+                                    ${occupiedTable ? "+ Nuevo pedido" : "Tomar pedido"} →
+                                </button>
+                            `
+                    }
+                </div>
+            </article>
+        `;
+    }).join("");
 
+    document.querySelectorAll(".table-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const table = tablesData.find(item => String(item.id) === String(card.dataset.tableId));
+            if (!table || isTablePaid(table) || isTableClean(table)) return;
+            openOrder(table);
         });
+        card.dataset.tableId = card.querySelector(".table-number")?.textContent?.trim() || "";
+    });
+
+    // Corregimos el identificador real de cada tarjeta sin confiar en el texto visual.
+    document.querySelectorAll(".table-card").forEach((card, index) => {
+        card.dataset.tableId = String(tablesData[index].id);
+    });
 }
 
 
@@ -1032,7 +971,9 @@ function addToCart(dish) {
                 dish.price
             ),
 
-            quantity: 1
+            quantity: 1,
+
+            is_product: Boolean(dish.is_product)
         });
     }
 
@@ -1316,14 +1257,12 @@ async function sendOrder() {
 
                     items: cart.map(item => ({
 
-                        dish_id:
-                            item.id,
+                        dish_id: item.is_product ? null : item.id,
+                        product_id: item.is_product ? item.id : null,
 
-                        quantity:
-                            item.quantity,
+                        quantity: item.quantity,
 
-                        notes:
-                            item.notes || null
+                        notes: item.notes || null
 
                     }))
 
@@ -1673,8 +1612,23 @@ function renderActiveOrders(
     activeOrdersContainer.innerHTML =
         orders.map(order => {
 
+            const readyItems = (order.items || []).filter(
+                item => item.status === "READY"
+            ).length;
+
+            const totalItems = (order.items || []).filter(
+                item => item.status !== "CANCELLED"
+            ).length;
+
+            const servedItems = (order.items || []).filter(
+                item => item.status === "SERVED"
+            ).length;
+
             const allReady =
-                order.status === "READY";
+                totalItems > 0 && readyItems + servedItems === totalItems;
+
+            const allServed =
+                totalItems > 0 && servedItems === totalItems;
 
             const served =
                 Boolean(
@@ -1753,11 +1707,13 @@ function renderActiveOrders(
                             ${
                                 served
                                     ? "🍽 ENTREGADO"
-                                    : allReady
-                                        ? "✓ TODO LISTO"
-                                        : orderStatusLabel(
-                                            order.status
-                                        )
+                                    : allServed
+                                        ? "✓ TODO ENTREGADO"
+                                        : readyItems > 0
+                                            ? `✓ ${readyItems + servedItems}/${totalItems} DISPONIBLE`
+                                            : orderStatusLabel(
+                                                order.status
+                                            )
                             }
 
                         </span>
@@ -1905,19 +1861,19 @@ function renderActiveOrders(
                                             >
 
                                                 ${
-                                                    item.status ===
-                                                    "READY"
-
-                                                        ? "✓ Listo"
-
-                                                        : item.status ===
-                                                          "SERVED"
-
+                                                    item.status === "READY"
+                                                        ? `
+                                                            <button
+                                                                type="button"
+                                                                class="item-deliver-button"
+                                                                onclick="serveOrderItem('${escapeHtml(order.id)}','${escapeHtml(item.id)}')"
+                                                            >
+                                                                ✓ Entregar
+                                                            </button>
+                                                          `
+                                                        : item.status === "SERVED"
                                                             ? "✓ Entregado"
-
-                                                            : orderStatusLabel(
-                                                                item.status
-                                                            )
+                                                            : orderStatusLabel(item.status)
                                                 }
 
                                             </span>
@@ -1979,23 +1935,16 @@ function renderActiveOrders(
                     <div class="active-order-actions">
 
                         ${
-                            allReady &&
-                            !served
-
+                            allServed && !served
                                 ? `
-
                                     <button
                                         type="button"
                                         class="order-action primary-action"
-                                        onclick="serveOrder('${escapeHtml(
-                                            order.id
-                                        )}')"
+                                        onclick="serveOrder('${escapeHtml(order.id)}')"
                                     >
-                                        ✓ Entregar pedido
+                                        ✓ Confirmar entrega total
                                     </button>
-
                                 `
-
                                 : ""
                         }
 
@@ -2027,9 +1976,11 @@ function renderActiveOrders(
                                     <span class="kitchen-note">
 
                                         ${
-                                            allReady
-                                                ? "Listo para entregar"
-                                                : "La cocina está trabajando"
+                                            allServed
+                                                ? "Todos los productos fueron entregados. Confirma la entrega total."
+                                                : readyItems > 0
+                                                    ? `${readyItems + servedItems} de ${totalItems} producto(s) disponible(s) — entrega los que ya están listos`
+                                                    : "La cocina está trabajando"
                                         }
 
                                     </span>
@@ -2068,27 +2019,7 @@ function renderActiveOrders(
                             </button>
 
 
-                            <!-- LIBERAR MESA -->
-
-                            ${
-                                served
-
-                                    ? `
-
-                                        <button
-                                            type="button"
-                                            class="close-table-inline"
-                                            onclick="closeTableSession('${escapeHtml(
-                                                order.session_id
-                                            )}')"
-                                        >
-                                            🔓 Liberar mesa
-                                        </button>
-
-                                    `
-
-                                    : ""
-                            }
+                            <!-- La liberación de la mesa pertenece exclusivamente a Caja. -->
 
                         </div>
 
@@ -2103,7 +2034,24 @@ function renderActiveOrders(
 
 
 // ==========================================================
-// ENTREGAR PEDIDO
+// ENTREGAR PRODUCTO INDIVIDUAL
+// ==========================================================
+
+async function serveOrderItem(orderId, itemId) {
+    try {
+        await api(
+            `${API_BASE}/waiter/orders/${encodeURIComponent(orderId)}/items/${encodeURIComponent(itemId)}/serve`,
+            { method: "PATCH" }
+        );
+        await loadActiveOrders();
+    } catch (error) {
+        alert(error.message || "No se pudo entregar el producto.");
+    }
+}
+
+
+// ==========================================================
+// CONFIRMAR COMANDA COMPLETA
 // ==========================================================
 
 async function serveOrder(
@@ -2466,52 +2414,31 @@ async function newOrderForTable(
 // LIBERAR MESA
 // ==========================================================
 
-async function closeTableSession(
-    sessionId
-) {
+async function markTableClean(sessionId) {
+    if (!sessionId) return;
 
-    if (!sessionId) {
+    const confirmed = confirm(
+        "¿Confirmas que la mesa ya está completamente limpia?\n\nEl pago ya fue autorizado por Caja. Solo se marcará como LIMPIA; Caja será quien la libere."
+    );
 
-        return;
-    }
-
-    const confirmed =
-        confirm(
-            "¿Confirmas que la cuenta ya fue pagada y la mesa está limpia?\n\nLa mesa pasará a LIBRE."
-        );
-
-    if (!confirmed) {
-
-        return;
-    }
+    if (!confirmed) return;
 
     try {
-
         await api(
-            `${API_BASE}/waiter/sessions/${encodeURIComponent(
-                sessionId
-            )}/close`,
-            {
-                method: "PATCH"
-            }
+            `${API_BASE}/waiter/sessions/${encodeURIComponent(sessionId)}/clean`,
+            { method: "PATCH" }
         );
 
-        alert(
-            "Mesa liberada correctamente."
-        );
-
-        await Promise.all([
-            loadTables(),
-            loadActiveOrders()
-        ]);
-
+        alert("Mesa marcada como limpia. Caja debe liberarla.");
+        await Promise.all([loadTables(), loadActiveOrders()]);
     } catch (error) {
-
-        alert(
-            error.message ||
-            "No se pudo liberar la mesa."
-        );
+        alert(error.message || "No se pudo marcar la mesa como limpia.");
     }
+}
+
+// Compatibilidad: ningún botón del mesero debe llamar esta función para liberar.
+async function closeTableSession() {
+    alert("El mesero no puede liberar mesas. Marca la mesa como limpia y Caja realizará la liberación.");
 }
 
 
@@ -2642,9 +2569,11 @@ init();
 // ACTUALIZACIÓN AUTOMÁTICA
 // ==========================================================
 
+// Refresco rápido para que el estado de pago/limpieza y las mesas
+// se reflejen casi en tiempo real sin depender de recargar la página.
 setInterval(
     loadTables,
-    10000
+    1000
 );
 
 setInterval(
@@ -2652,9 +2581,11 @@ setInterval(
     5000
 );
 
+// La cocina puede marcar un solo producto como LISTO. El mesero debe
+// verlo en la comanda aunque los demás productos todavía estén trabajando.
 setInterval(
     loadActiveOrders,
-    5000
+    1000
 );
 
 setInterval(

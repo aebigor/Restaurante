@@ -10,6 +10,7 @@ from fastapi import (
     HTTPException
 )
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -47,19 +48,26 @@ router = APIRouter(
 # ==========================================================
 
 def get_open_register(
-    db: Session
+    db: Session,
+    cashier_id=None
 ):
+    """Obtiene la caja abierta del cajero actual.
 
-    return (
-        db.query(CashRegister)
-        .filter(
-            CashRegister.status == "OPEN"
-        )
-        .order_by(
-            CashRegister.opened_at.desc()
-        )
-        .first()
+    Se permite más de una caja abierta en el restaurante, pero
+    cada cajero opera únicamente su propio turno.
+    """
+    query = db.query(CashRegister).filter(
+        CashRegister.status == "OPEN"
     )
+
+    if cashier_id is not None:
+        query = query.filter(
+            CashRegister.opened_by == cashier_id
+        )
+
+    return query.order_by(
+        CashRegister.opened_at.desc()
+    ).first()
 
 
 # ==========================================================
@@ -112,7 +120,7 @@ def cashier_summary(
     current_user=Depends(get_current_user)
 ):
 
-    register = get_open_register(db)
+    register = get_open_register(db, current_user.id)
 
     if not register:
 
@@ -184,7 +192,7 @@ def cashier_summary(
             Table.id == RestaurantSession.table_id
         )
         .filter(
-            RestaurantSession.status == "OPEN"
+            RestaurantSession.status.in_(["OPEN", "PAID", "CLEAN"])
         )
         .order_by(
             Table.number.asc()
@@ -253,7 +261,17 @@ def cashier_summary(
 
             "paid": paid_total,
 
-            "balance": balance
+            "balance": balance,
+
+            "status": session.status,
+
+            "paid_at": (
+                db.query(CashPayment.paid_at)
+                .filter(CashPayment.session_id == session.id)
+                .order_by(CashPayment.paid_at.desc())
+                .limit(1)
+                .scalar()
+            )
 
         })
 
@@ -297,6 +315,159 @@ def cashier_summary(
 
 
 # ==========================================================
+# RESUMEN ADMINISTRATIVO DE CAJAS Y GANANCIAS
+# ==========================================================
+
+@router.get("/admin-summary")
+def admin_cash_summary(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    if not current_user.role or current_user.role.name != "Administrador":
+        raise HTTPException(
+            status_code=403,
+            detail="Solo el administrador puede consultar este resumen."
+        )
+
+    from datetime import date
+
+    today = date.today()
+
+    # ------------------------------------------------------
+    # VENTAS DEL DÍA
+    # ------------------------------------------------------
+    payments_today = (
+        db.query(CashPayment)
+        .filter(func.date(CashPayment.paid_at) == today)
+        .all()
+    )
+
+    sales_today = sum(
+        (Decimal(str(p.amount or 0)) for p in payments_today),
+        Decimal("0")
+    )
+
+    cash_today = sum(
+        (Decimal(str(p.amount or 0)) for p in payments_today if p.method == "CASH"),
+        Decimal("0")
+    )
+    card_today = sum(
+        (Decimal(str(p.amount or 0)) for p in payments_today if p.method == "CARD"),
+        Decimal("0")
+    )
+    transfer_today = sum(
+        (Decimal(str(p.amount or 0)) for p in payments_today if p.method == "TRANSFER"),
+        Decimal("0")
+    )
+
+    orders_today = (
+        db.query(Order)
+        .filter(
+            func.date(Order.created_at) == today,
+            Order.status != "CANCELLED"
+        )
+        .count()
+    )
+
+    # Sesiones que ya fueron cobradas hoy, aunque todavía estén
+    # esperando que el mesero confirme que la mesa quedó limpia.
+    paid_sessions_today = (
+        db.query(RestaurantSession)
+        .join(
+            CashPayment,
+            CashPayment.session_id == RestaurantSession.id
+        )
+        .filter(func.date(CashPayment.paid_at) == today)
+        .distinct()
+        .count()
+    )
+
+    # ------------------------------------------------------
+    # CAJAS ABIERTAS
+    # ------------------------------------------------------
+    open_registers = (
+        db.query(CashRegister)
+        .options(joinedload(CashRegister.opened_by_user))
+        .filter(CashRegister.status == "OPEN")
+        .order_by(CashRegister.opened_at.asc())
+        .all()
+    )
+
+    # ------------------------------------------------------
+    # CAJAS CERRADAS HOY + CUENTA DE CADA CAJA
+    # ------------------------------------------------------
+    closed_registers = (
+        db.query(CashRegister)
+        .options(joinedload(CashRegister.opened_by_user))
+        .filter(
+            CashRegister.status == "CLOSED",
+            func.date(CashRegister.closed_at) == today
+        )
+        .order_by(CashRegister.closed_at.desc())
+        .all()
+    )
+
+    def register_totals(register):
+        payments = (
+            db.query(CashPayment)
+            .filter(CashPayment.cash_register_id == register.id)
+            .all()
+        )
+        cash = sum(
+            (Decimal(str(p.amount or 0)) for p in payments if p.method == "CASH"),
+            Decimal("0")
+        )
+        card = sum(
+            (Decimal(str(p.amount or 0)) for p in payments if p.method == "CARD"),
+            Decimal("0")
+        )
+        transfer = sum(
+            (Decimal(str(p.amount or 0)) for p in payments if p.method == "TRANSFER"),
+            Decimal("0")
+        )
+        return cash, card, transfer, cash + card + transfer, len(payments)
+
+    def serialize_register(register, status):
+        cash, card, transfer, total, payment_count = register_totals(register)
+        return {
+            "id": str(register.id),
+            "status": status,
+            "opened_by": (
+                register.opened_by_user.full_name
+                if register.opened_by_user
+                else "Sin usuario"
+            ),
+            "opened_at": register.opened_at,
+            "closed_at": register.closed_at,
+            "opening_amount": register.opening_amount,
+            "cash_sales": cash,
+            "card_sales": card,
+            "transfer_sales": transfer,
+            "total_sales": total,
+            "payment_count": payment_count,
+            "expected_cash": register.expected_cash,
+            "closing_amount": register.closing_amount,
+            "difference": register.difference,
+        }
+
+    return {
+        "date": today.isoformat(),
+        "sales_today": sales_today,
+        "cash_today": cash_today,
+        "card_today": card_today,
+        "transfer_today": transfer_today,
+        "payments_today": len(payments_today),
+        "orders_today": orders_today,
+        "paid_sessions_today": paid_sessions_today,
+        "open_registers": len(open_registers),
+        "closed_registers_today": len(closed_registers),
+        "registers": [serialize_register(r, "OPEN") for r in open_registers],
+        "closed_registers": [serialize_register(r, "CLOSED") for r in closed_registers],
+    }
+
+
+# ==========================================================
 # ABRIR CAJA
 # ==========================================================
 
@@ -307,14 +478,12 @@ def open_register(
     current_user=Depends(get_current_user)
 ):
 
-    existing = get_open_register(db)
-
+    existing = get_open_register(db, current_user.id)
 
     if existing:
-
         raise HTTPException(
             status_code=400,
-            detail="Ya existe una caja abierta."
+            detail="Este cajero ya tiene una caja abierta."
         )
 
 
@@ -370,7 +539,7 @@ def session_account(
         )
         .filter(
             RestaurantSession.id == session_id,
-            RestaurantSession.status == "OPEN"
+            RestaurantSession.status.in_(["OPEN", "PAID", "CLEAN"])
         )
         .first()
     )
@@ -591,7 +760,7 @@ def pay_session(
     current_user=Depends(get_current_user)
 ):
 
-    register = get_open_register(db)
+    register = get_open_register(db, current_user.id)
 
 
     if not register:
@@ -773,12 +942,14 @@ def pay_session(
 
 
     # ======================================================
-    # CERRAR SESIÓN / LIBERAR MESA
+    # AUTORIZAR PAGO SIN LIBERAR LA MESA
     # ======================================================
+    #
+    # La caja es la única que confirma que la cuenta fue pagada.
+    # La sesión permanece abierta en estado PAID para que el mesero
+    # pueda comprobar que la mesa ya quedó limpia y liberarla.
 
-    session.status = "CLOSED"
-
-    session.closed_at = now
+    session.status = "PAID"
 
 
     db.commit()
@@ -819,6 +990,60 @@ def pay_session(
 
 
 # ==========================================================
+# LIBERAR MESA DESDE CAJA
+# ==========================================================
+
+@router.patch("/sessions/{session_id}/release")
+def release_table_from_cashier(
+    session_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(
+            status_code=403,
+            detail="Solo Caja puede liberar una mesa."
+        )
+
+    session = (
+        db.query(RestaurantSession)
+        .filter(
+            RestaurantSession.id == session_id,
+            RestaurantSession.status == "CLEAN"
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(
+            status_code=409,
+            detail="La mesa debe estar pagada y marcada como limpia por el mesero antes de liberarla."
+        )
+
+    now = datetime.now(timezone.utc)
+    orders = db.query(Order).filter(Order.session_id == session.id).all()
+
+    for order in orders:
+        if order.status != "CANCELLED":
+            order.status = "CLOSED"
+            order.closed_at = now
+
+    session.status = "CLOSED"
+    session.closed_at = now
+
+    db.commit()
+
+    return {
+        "message": "Mesa liberada correctamente por Caja.",
+        "session_id": str(session.id),
+        "table_id": session.table_id,
+        "status": "CLOSED",
+        "closed_at": session.closed_at
+    }
+
+
+# ==========================================================
 # CERRAR CAJA
 # ==========================================================
 
@@ -829,7 +1054,7 @@ def close_register(
     current_user=Depends(get_current_user)
 ):
 
-    register = get_open_register(db)
+    register = get_open_register(db, current_user.id)
 
 
     if not register:

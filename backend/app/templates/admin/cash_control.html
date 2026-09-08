@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Control de cajas | CRIPTONIX{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<link rel="stylesheet" href="/static/css/admin/cash_control.css">
+{% endblock %}
+
+{% block content %}
+<div class="layout">
+    {% include "admin/components/sidebar.html" %}
+    <div class="contenido">
+        {% include "admin/components/topbar.html" %}
+        <main class="admin-main cash-control-page">
+            <header class="admin-welcome">
+                <div>
+                    <span class="admin-kicker">SUPERVISIÓN ADMINISTRATIVA</span>
+                    <h1>Control de cajas</h1>
+                    <p>Revisa cuántas cajas están abiertas y cuánto se ha recaudado hoy.</p>
+                </div>
+                <a class="back-dashboard" href="/admin">← Dashboard</a>
+            </header>
+
+            <section class="control-summary">
+                <div class="control-card main-control"><span>Cajas abiertas</span><strong id="controlOpenCount">0</strong><small>Turnos activos</small></div>
+                <div class="control-card"><span>Ganancias de hoy</span><strong id="controlSales">$0</strong><small>Ingresos por ventas</small></div>
+                <div class="control-card"><span>Cajas cerradas hoy</span><strong id="controlClosedCount">0</strong><small>Turnos finalizados</small></div>
+            </section>
+
+            <section class="admin-panel-box control-list-box">
+                <div class="panel-heading">
+                    <div><span>CAJAS ACTIVAS</span><h2>Turnos abiertos</h2></div>
+                    <button id="refreshAdminCash" class="refresh-admin" type="button">↻ Actualizar</button>
+                </div>
+                <div id="controlRegisterList" class="control-register-list">Cargando...</div>
+            </section>
+
+            <section class="admin-panel-box control-list-box">
+                <div class="panel-heading">
+                    <div><span>ARQUEO</span><h2>Cajas cerradas hoy</h2></div>
+                </div>
+                <div id="controlClosedRegisterList" class="control-register-list">Cargando cierres...</div>
+            </section>
+        </main>
+    </div>
+</div>
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/cash_control.js?v=20260908"></script>
+{% endblock %}

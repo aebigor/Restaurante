@@ -282,3 +282,9 @@
     }
 
 }
+/* El topbar ocupa únicamente el área de contenido; el sidebar queda por encima. */
+.topbar {
+    z-index: 900;
+    width: 100%;
+    box-sizing: border-box;
+}

@@ -250,3 +250,8 @@
 
 .sidebar > div:first-child{ min-height:max-content; }
 .sidebar-footer{ flex-shrink:0; }
+
+/* El menú siempre queda por encima del topbar y no es tapado por él. */
+.sidebar {
+    z-index: 1100;
+}

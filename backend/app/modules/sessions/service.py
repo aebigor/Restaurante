@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
@@ -42,7 +42,7 @@ class SessionService:
 
             status="OPEN",
 
-            opened_at=datetime.now()
+            opened_at=datetime.now(timezone.utc)
 
         )
 

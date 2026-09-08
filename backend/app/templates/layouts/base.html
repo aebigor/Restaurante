@@ -18,6 +18,41 @@
 
 <body>
 
+<script>
+(function () {
+    const path = window.location.pathname;
+    const token = localStorage.getItem("token");
+    let user = null;
+
+    try { user = JSON.parse(localStorage.getItem("user") || "null"); }
+    catch (_) { user = null; }
+
+    if (!token || !user) {
+        if (path !== "/" && !path.startsWith("/m/")) window.location.replace("/");
+        return;
+    }
+
+    const role = user.role;
+    const redirects = {
+        Administrador: "/admin",
+        Caja: "/cashier",
+        Mesero: "/waiter",
+        Cocina: "/kitchen",
+        Parrilla: "/kitchen",
+        Sopas: "/kitchen"
+    };
+
+    if (path.startsWith("/admin") && role !== "Administrador") {
+        window.location.replace(redirects[role] || "/");
+        return;
+    }
+
+    if (path === "/cashier" && role !== "Caja") {
+        window.location.replace(redirects[role] || "/");
+    }
+})();
+</script>
+
 {% block content %}
 {% endblock %}
 

@@ -1,0 +1,38 @@
+
+.cash-control-page{padding-top:30px;}
+.control-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:22px;}
+.control-card{background:#fff;border:1px solid #e8e8e8;border-radius:17px;padding:23px;box-shadow:0 8px 25px rgba(0,0,0,.05);}
+.control-card span{display:block;color:#777;font-size:11px;font-weight:800;letter-spacing:.07em;}
+.control-card strong{display:block;font-size:34px;color:#171717;margin:9px 0 4px;}
+.control-card small{color:#999;font-size:12px;}
+.control-card.main-control{border-left:5px solid #b80000;}
+.control-list-box{min-height:260px;}
+.refresh-admin{border:1px solid #ddd;background:#fafafa;border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700;color:#555;}
+.refresh-admin:hover{background:#f1f1f1;}
+.control-register-list{display:flex;flex-direction:column;gap:10px;}
+.control-register{display:grid;grid-template-columns:45px 1fr auto;align-items:center;gap:14px;padding:15px;border:1px solid #e7e7e7;border-radius:13px;}
+.control-register-number{width:42px;height:42px;border-radius:11px;background:#f4f4f4;display:grid;place-items:center;font-weight:800;}
+.control-register-info strong{display:block;color:#222;font-size:14px;}
+.control-register-info span{display:block;color:#888;font-size:12px;margin-top:4px;}
+.control-register-status{font-size:11px;font-weight:800;color:#2e8a5c;}
+.control-register-status::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#35a66d;margin-right:6px;}
+.control-empty{padding:45px 20px;text-align:center;color:#888;border:1px dashed #ddd;border-radius:13px;}
+@media(max-width:850px){.control-summary{grid-template-columns:1fr}.control-register{grid-template-columns:42px 1fr}.control-register-status{grid-column:2;}}
+
+
+/* Arqueo de cajas cerradas */
+.control-closed-register{border:1px solid #e7e7e7;border-radius:14px;padding:16px;background:#fcfcfc;}
+.control-closed-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px;}
+.control-closed-head div{display:flex;flex-direction:column;gap:4px;}
+.control-closed-head strong{font-size:14px;color:#222;}
+.control-closed-head span{font-size:11px;color:#888;}
+.control-closed-head b{font-size:10px;color:#777;background:#ededed;padding:7px 10px;border-radius:999px;}
+.control-closed-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
+.control-closed-grid>div{background:#fff;border:1px solid #ededed;border-radius:10px;padding:10px;}
+.control-closed-grid span{display:block;color:#888;font-size:10px;margin-bottom:5px;}
+.control-closed-grid strong{display:block;color:#222;font-size:12px;}
+.control-closed-grid .ok strong,.control-closed-grid .positive strong{color:#2d8a5b;}
+.control-closed-grid .negative strong{color:#b80000;}
+.control-closed-time{display:block;margin-top:11px;color:#888;font-size:10px;}
+@media(max-width:900px){.control-closed-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.control-closed-grid{grid-template-columns:1fr;}}

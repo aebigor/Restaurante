@@ -760,3 +760,27 @@ button:disabled {
     }
 
 }
+
+.cash-table-card {
+    position: relative;
+}
+.cash-table-card .cash-release-button {
+    background: #b40000;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.cash-table-card .cash-release-button:hover { opacity: .9; }
+.cash-wait-clean {
+    display: inline-flex;
+    align-items: center;
+    color: #8a6500;
+    background: #fff8dc;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}

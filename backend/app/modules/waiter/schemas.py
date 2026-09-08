@@ -6,7 +6,8 @@ class WaiterSessionCreate(BaseModel):
     people: int = Field(default=1, ge=1, le=50)
 
 class WaiterOrderItem(BaseModel):
-    dish_id: UUID
+    dish_id: UUID | None = None
+    product_id: UUID | None = None
     quantity: int = Field(default=1, ge=1, le=99)
     notes: str | None = None
 

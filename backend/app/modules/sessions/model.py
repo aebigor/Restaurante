@@ -43,9 +43,9 @@ class Session(Base):
         default="OPEN"
     )
 
-    opened_at = Column(DateTime)
+    opened_at = Column(DateTime(timezone=True))
 
-    closed_at = Column(DateTime)
+    closed_at = Column(DateTime(timezone=True))
 
     # Relaciones
     table = relationship("Table")
