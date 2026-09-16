@@ -1,0 +1,22 @@
+{% extends "layouts/base.html" %}
+{% block title %}Crear cuenta | El Imperio del Barril{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/login.css">{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <a href="/" class="auth-logo"><img src="/static/img/logo.png" alt="El Imperio del Barril"></a>
+        <span class="auth-kicker">CLUB DEL IMPERIO</span>
+        <h1>Crear cuenta</h1>
+        <p>Regístrate como cliente frecuente y guarda tus beneficios.</p>
+        <form id="registerForm">
+            <label>Nombre completo<input type="text" id="fullName" placeholder="Tu nombre" required minlength="2"></label>
+            <label>Correo<input type="email" id="email" placeholder="correo@ejemplo.com" required></label>
+            <label>Contraseña<input type="password" id="password" placeholder="Mínimo 6 caracteres" required minlength="6"></label>
+            <button type="submit">CREAR CUENTA</button>
+        </form>
+        <p id="mensaje" class="message"></p>
+        <div class="auth-footer"><span>¿Ya tienes cuenta?</span><a href="/login">Ingresar</a></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/register.js"></script>{% endblock %}

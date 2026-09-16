@@ -6,6 +6,8 @@ from fastapi import Depends
 from uuid import UUID
 from app.core.database import get_db
 from app.modules.dashboard.service import DashboardService
+from app.modules.menu.model import Menu
+from app.modules.menu_items.model import MenuItem
 
 
 router = APIRouter()
@@ -18,11 +20,65 @@ templates = Jinja2Templates(directory="app/templates")
 # ======================================================
 
 @router.get("/")
-async def login(request: Request):
+async def public_home(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Landing pública del restaurante. No requiere autenticación."""
+
+    active_menu = (
+        db.query(Menu)
+        .filter(Menu.active == True)
+        .order_by(Menu.display_order.asc(), Menu.created_at.desc())
+        .first()
+    )
+
+    menu_items = []
+    if active_menu:
+        menu_items = (
+            db.query(MenuItem)
+            .join(MenuItem.dish)
+            .filter(
+                MenuItem.menu_id == active_menu.id,
+                MenuItem.active == True,
+            )
+            .order_by(MenuItem.display_order.asc(), MenuItem.id.asc())
+            .all()
+        )
 
     return templates.TemplateResponse(
         request=request,
+        name="public/home.html",
+        context={
+            "active_menu": active_menu,
+            "menu_items": menu_items,
+        }
+    )
+
+
+@router.get("/login")
+async def customer_login(request: Request):
+    return templates.TemplateResponse(
+        request=request,
         name="auth/login.html",
+        context={"login_mode": "customer"}
+    )
+
+
+@router.get("/admin/login")
+async def admin_login(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/admin_login.html",
+        context={"login_mode": "admin"}
+    )
+
+
+@router.get("/register")
+async def customer_register(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/register.html",
         context={}
     )
 

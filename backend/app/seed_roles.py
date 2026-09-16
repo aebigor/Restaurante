@@ -10,6 +10,7 @@ roles = [
     "Cocina",
     "Parrilla",
     "Sopas",
+    "Cliente",
 ]
 
 for role in roles:

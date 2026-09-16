@@ -1,23 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <title>{% block title %}{% endblock %}</title>
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1">
-
-    {% block css %}
-    {% endblock %}
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17110d">
+    <title>{% block title %}El Imperio del Barril{% endblock %}</title>
+    {% block css %}{% endblock %}
 </head>
-
 <body>
-
 <script>
 (function () {
     const path = window.location.pathname;
@@ -27,8 +17,10 @@
     try { user = JSON.parse(localStorage.getItem("user") || "null"); }
     catch (_) { user = null; }
 
+    // Las vistas públicas no necesitan sesión.
+    const publicPaths = path === "/" || path === "/login" || path === "/register" || path === "/admin/login" || path.startsWith("/m/");
     if (!token || !user) {
-        if (path !== "/" && !path.startsWith("/m/")) window.location.replace("/");
+        if (!publicPaths && path !== "/favicon.ico") window.location.replace("/");
         return;
     }
 
@@ -39,26 +31,22 @@
         Mesero: "/waiter",
         Cocina: "/kitchen",
         Parrilla: "/kitchen",
-        Sopas: "/kitchen"
+        Sopas: "/kitchen",
+        Cliente: "/"
     };
 
-    if (path.startsWith("/admin") && role !== "Administrador") {
+    if (path.startsWith("/admin") && path !== "/admin/login" && role !== "Administrador") {
         window.location.replace(redirects[role] || "/");
         return;
     }
 
     if (path === "/cashier" && role !== "Caja") {
         window.location.replace(redirects[role] || "/");
+        return;
     }
 })();
 </script>
-
-{% block content %}
-{% endblock %}
-
-{% block scripts %}
-{% endblock %}
-
+{% block content %}{% endblock %}
+{% block scripts %}{% endblock %}
 </body>
-
 </html>

@@ -1,0 +1,141 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}El Imperio del Barril | Pedidos{% endblock %}
+
+{% block css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/public/home.css">
+{% endblock %}
+
+{% block content %}
+<div class="site-shell">
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="El Imperio del Barril">
+            <img src="/static/img/logo.png" alt="El Imperio del Barril">
+        </a>
+        <nav class="main-nav" aria-label="Navegación principal">
+            <a href="#menu">Ordenar</a>
+            <a href="#contacto">Contactos</a>
+            <a href="#nosotros">Nosotros</a>
+            <a href="#ubicacion">Ubicación</a>
+        </nav>
+        <div class="top-actions">
+            <a class="profile-link" href="/login"><span class="icon">♙</span><span>Perfil</span></a>
+            <a class="login-btn" href="/login">Ingresar</a>
+            <button class="cart-icon" id="openCart" type="button" aria-label="Abrir carrito">🛒<span id="cartCount">0</span></button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-copy">
+                <span class="eyebrow">SABOR • FUEGO • BARRIL</span>
+                <h1>El sabor que<br><strong>manda en la mesa.</strong></h1>
+                <p>Descubre nuestro menú, arma tu pedido y disfruta una experiencia hecha al estilo de El Imperio del Barril.</p>
+                <div class="hero-actions">
+                    <a class="primary-btn" href="#menu">PEDIR AHORA <span>→</span></a>
+                    <a class="secondary-btn" href="#ubicacion">Ver ubicación</a>
+                </div>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <div class="wood-circle"></div>
+                <div class="hero-badge">
+                    <span>HOY</span>
+                    <strong>MENÚ<br>ACTIVO</strong>
+                </div>
+                <img src="/static/img/Picada-2025.webp" alt="" onerror="this.style.display='none'">
+            </div>
+        </section>
+
+        <section class="order-strip">
+            <div><span class="strip-icon">🔥</span><strong>Preparado al momento</strong><small>Productos frescos y calientes</small></div>
+            <div><span class="strip-icon">🛍️</span><strong>Ordena fácil</strong><small>Arma tu pedido en segundos</small></div>
+            <div><span class="strip-icon">⭐</span><strong>Cliente frecuente</strong><small>Promociones y beneficios exclusivos</small></div>
+        </section>
+
+        <section class="menu-section" id="menu">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">NUESTRO MENÚ</span>
+                    <h2>{% if active_menu %}{{ active_menu.title }}{% else %}Menú del día{% endif %}</h2>
+                    <p>{% if active_menu and active_menu.description %}{{ active_menu.description }}{% else %}Elige tus favoritos y agrégalos al carrito.{% endif %}</p>
+                </div>
+                <div class="menu-status"><span></span> Disponible hoy</div>
+            </div>
+
+            {% if menu_items %}
+            <div class="category-tabs" id="categoryTabs">
+                <button class="category-tab active" data-category="all">Todo</button>
+                {% set seen = [] %}
+                {% for item in menu_items %}
+                    {% if item.dish.category and item.dish.category.id|string not in seen %}
+                        {% set _ = seen.append(item.dish.category.id|string) %}
+                        <button class="category-tab" data-category="{{ item.dish.category.id }}">{{ item.dish.category.icon or '🍽️' }} {{ item.dish.category.name }}</button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="dish-grid" id="dishGrid">
+                {% for item in menu_items %}
+                    {% set dish = item.dish %}
+                    <article class="dish-card" data-category="{{ dish.category_id }}" data-id="{{ dish.id }}" data-name="{{ dish.name|e }}" data-price="{{ dish.price }}" data-image="{{ dish.image or '/static/img/no-image.png' }}">
+                        <div class="dish-image">
+                            <img src="{{ dish.image or '/static/img/no-image.png' }}" alt="{{ dish.name }}" loading="lazy" onerror="this.src='/static/img/no-image.png'">
+                            {% if dish.featured %}<span class="dish-badge">⭐ Recomendado</span>{% endif %}
+                        </div>
+                        <div class="dish-body">
+                            <div class="dish-top"><h3>{{ dish.name }}</h3><strong>${{ '{:,.0f}'.format(dish.price|float) }}</strong></div>
+                            <p>{{ dish.description or 'Una preparación de la casa para disfrutar.' }}</p>
+                            <div class="dish-meta"><span>⏱ {{ dish.preparation_time or 10 }} min</span><span>🍽️ {{ dish.portion or '1 porción' }}</span></div>
+                            <button class="add-btn" type="button" data-add>AGREGAR <span>+</span></button>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-menu"><div>🍽️</div><h3>El menú está por llegar</h3><p>En este momento no hay un menú activo. Vuelve a intentarlo en unos minutos.</p></div>
+            {% endif %}
+        </section>
+
+        <section class="loyalty-banner" id="nosotros">
+            <div class="loyalty-icon">👑</div>
+            <div><span class="eyebrow">CLUB DEL IMPERIO</span><h2>Conviértete en cliente frecuente</h2><p>Regístrate para recibir promociones, novedades y beneficios exclusivos.</p></div>
+            <a class="light-btn" href="/register">REGISTRARME</a>
+        </section>
+
+        <section class="info-section" id="ubicacion">
+            <div class="info-copy">
+                <span class="eyebrow">ENCUÉNTRANOS</span>
+                <h2>Ven al Imperio</h2>
+                <p id="contacto">Aquí dejaremos conectada la información real del local, teléfonos, redes sociales y horarios.</p>
+                <div class="contact-list">
+                    <div><span>📍</span><div><strong>Ubicación</strong><small>Mapa del restaurante próximamente</small></div></div>
+                    <div><span>📞</span><div><strong>Teléfono</strong><small>Agrega aquí el número del local</small></div></div>
+                    <div><span>📱</span><div><strong>Redes sociales</strong><small>Instagram · Facebook · WhatsApp</small></div></div>
+                </div>
+            </div>
+            <div class="map-placeholder"><span>📍</span><strong>MAPA DEL LOCAL</strong><small>Espacio listo para Google Maps / OpenStreetMap</small></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div><img src="/static/img/logo.png" alt="El Imperio del Barril"><p>El sabor que manda en la mesa.</p></div>
+        <div class="footer-links"><a href="#menu">Menú</a><a href="/login">Mi cuenta</a><a href="#contacto">Contacto</a><a href="/admin/login">Acceso administrativo</a></div>
+        <small>© 2026 El Imperio del Barril · Todos los derechos reservados.</small>
+    </footer>
+</div>
+
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+    <div class="cart-head"><div><span class="eyebrow">TU PEDIDO</span><h2>Carrito</h2></div><button id="closeCart" type="button">×</button></div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-empty" id="cartEmpty"><div>🛒</div><strong>Tu carrito está vacío</strong><span>Agrega platos del menú para comenzar.</span></div>
+    <div class="cart-footer"><div><span>Total</span><strong id="cartTotal">$0</strong></div><button class="checkout-btn" type="button" id="checkoutBtn">CONTINUAR PEDIDO</button></div>
+</aside>
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/public/home.js"></script>
+{% endblock %}

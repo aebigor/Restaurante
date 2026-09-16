@@ -1,53 +1,22 @@
 {% extends "layouts/base.html" %}
-
-{% block title %}
-Iniciar Sesión
-{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="/static/css/login.css">
-{% endblock %}
-
+{% block title %}Ingresar | El Imperio del Barril{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/login.css">{% endblock %}
 {% block content %}
-
-<div class="login">
-
-    <h1>EL IMPERIO DEL BARRIL</h1>
-
-    <h3>Iniciar Sesión</h3>
-
-    <form id="loginForm">
-
-        <input
-            type="email"
-            id="email"
-            placeholder="Correo"
-            required
-        >
-
-        <input
-            type="password"
-            id="password"
-            placeholder="Contraseña"
-            required
-        >
-
-        <button type="submit">
-
-            INGRESAR
-
-        </button>
-
-    </form>
-
-    <p id="mensaje"></p>
-
+<div class="auth-page">
+    <div class="auth-card">
+        <a href="/" class="auth-logo"><img src="/static/img/logo.png" alt="El Imperio del Barril"></a>
+        <span class="auth-kicker">CLIENTE FRECUENTE</span>
+        <h1>Bienvenido de nuevo</h1>
+        <p>Ingresa para consultar tu cuenta y disfrutar de tus beneficios.</p>
+        <form id="loginForm" data-mode="customer">
+            <label>Correo<input type="email" id="email" placeholder="correo@ejemplo.com" required></label>
+            <label>Contraseña<input type="password" id="password" placeholder="••••••••" required></label>
+            <button type="submit">INGRESAR</button>
+        </form>
+        <p id="mensaje" class="message"></p>
+        <div class="auth-footer"><span>¿No tienes cuenta?</span><a href="/register">Crear cuenta</a></div>
+        <a class="admin-access" href="/admin/login">Acceso administrativo →</a>
+    </div>
 </div>
-
 {% endblock %}
-
-{% block scripts %}
-
-<script src="/static/js/login.js"></script>
-
-{% endblock %}
+{% block scripts %}<script src="/static/js/login.js"></script>{% endblock %}

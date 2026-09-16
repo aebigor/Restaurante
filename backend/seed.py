@@ -136,6 +136,14 @@ caja_role = create_role(
 
 )
 
+cliente_role = create_role(
+
+    "Cliente",
+
+    "Cliente frecuente del restaurante"
+
+)
+
 
 # =====================================================
 # USUARIOS INICIALES

@@ -31,7 +31,7 @@ class AuthService:
 
         )
 
-        if not user:
+        if not user or not user.is_active:
 
             raise HTTPException(
 
