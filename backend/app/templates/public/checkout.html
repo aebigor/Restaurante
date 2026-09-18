@@ -1,0 +1,44 @@
+{% extends "layouts/base.html" %}
+{% block title %}Finalizar pedido | El Imperio del Barril{% endblock %}
+{% block css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/public/checkout.css">
+{% endblock %}
+{% block content %}
+<div class="checkout-page">
+    <header class="checkout-header"><a href="/"><img src="/static/img/logo.png" alt="El Imperio del Barril"></a><a href="/" class="back-link">← Seguir comprando</a></header>
+    <main class="checkout-layout">
+        <section class="checkout-card">
+            <span class="eyebrow">CASI LISTO</span>
+            <h1>Finaliza tu pedido</h1>
+            <p>Confirma tus productos y envíanos el pedido directamente.</p>
+            <div class="customer-box" id="customerBox"></div>
+            <div class="order-items" id="checkoutItems"></div>
+            <div class="checkout-totals"><div><span>Subtotal</span><strong id="checkoutSubtotal">$0</strong></div><div><span>Domicilio</span><strong id="deliveryFee">$0</strong></div><div class="checkout-total"><span>Total</span><strong id="checkoutTotal">$0</strong></div></div>
+            <label class="checkout-label">Tipo de pedido
+                <select id="orderType">
+                    <option value="ONLINE">Pedido para recoger</option>
+                    <option value="DOMICILIO">Domicilio</option>
+                </select>
+            </label>
+            <div id="deliveryFields" class="delivery-fields" hidden>
+                <label class="checkout-label">Dirección de entrega
+                    <input id="deliveryAddress" type="text" maxlength="300" placeholder="Dirección, barrio, apartamento/casa">
+                </label>
+                <label class="checkout-label">Teléfono de contacto
+                    <input id="deliveryPhone" type="tel" maxlength="30" placeholder="300 000 0000">
+                </label>
+                <p class="delivery-note">🔒 Los domicilios solo están disponibles para clientes registrados.</p>
+            </div>
+            <label class="checkout-label">Nota para el restaurante (opcional)
+                <textarea id="orderNotes" maxlength="300" placeholder="Ej. sin cebolla, llamar al llegar..."></textarea>
+            </label>
+            <button id="placeOrder" class="place-order">CONFIRMAR PEDIDO</button>
+            <p id="checkoutMessage" class="checkout-message"></p>
+        </section>
+    </main>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/public/checkout.js"></script>{% endblock %}

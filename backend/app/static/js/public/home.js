@@ -62,7 +62,14 @@
     document.getElementById("checkoutBtn")?.addEventListener("click", () => {
         if (!cart.length) return alert("Agrega al menos un producto al pedido.");
         localStorage.setItem("imperio_pending_order", JSON.stringify(cart));
-        window.location.href = "/login?next=checkout";
+        const token = localStorage.getItem("customer_token") || localStorage.getItem("token");
+        let user = null;
+        try { user = JSON.parse(localStorage.getItem("customer_user") || localStorage.getItem("user") || "null"); } catch (_) {}
+        if (token && user?.role === "Cliente") {
+            window.location.href = "/checkout";
+        } else {
+            window.location.href = "/login?next=checkout";
+        }
     });
 
     document.querySelectorAll(".category-tab").forEach(tab => {
@@ -75,6 +82,46 @@
             });
         });
     });
+
+
+    function setupCustomerHeader() {
+        const token = localStorage.getItem("customer_token") || localStorage.getItem("token");
+        let user = null;
+        try { user = JSON.parse(localStorage.getItem("customer_user") || localStorage.getItem("user") || "null"); } catch (_) {}
+        const profile = document.getElementById("customerProfileLink");
+        const avatar = document.getElementById("customerAvatar");
+        const profileText = document.getElementById("customerProfileText");
+        const login = document.getElementById("customerLoginButton");
+        const logout = document.getElementById("customerLogoutButton");
+        if (token && user?.role === "Cliente") {
+            const initials = user.initials || (user.full_name || "C").split(/\s+/).slice(0,2).map(x => x[0]).join("").toUpperCase();
+            avatar.textContent = initials || "C";
+            profile.href = "/mis-pedidos";
+            profile.title = `Pedidos de ${user.full_name || "cliente"}`;
+            profileText.textContent = "Mis pedidos";
+            login.style.display = "none";
+            if (logout) logout.style.display = "inline-flex";
+        } else {
+            avatar.textContent = "♙";
+            profile.href = "/login";
+            profileText.textContent = "Perfil";
+            login.style.display = "inline-flex";
+            if (logout) logout.style.display = "none";
+        }
+    }
+
+    document.getElementById("customerLogoutButton")?.addEventListener("click", () => {
+        localStorage.removeItem("customer_token");
+        localStorage.removeItem("customer_user");
+        const currentUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch (_) { return null; } })();
+        if (currentUser?.role === "Cliente") {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+        }
+        window.location.replace("/");
+    });
+
+    setupCustomerHeader();
 
     renderCart();
 })();

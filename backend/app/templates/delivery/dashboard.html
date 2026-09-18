@@ -1,0 +1,8 @@
+{% extends "layouts/base.html" %}
+{% block title %}Domiciliarios | El Imperio del Barril{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/delivery/dashboard.css">{% endblock %}
+{% block content %}
+<div class="delivery-page"><header><a href="/"><img src="/static/img/logo.png" alt="El Imperio del Barril"></a><div><b>Panel de Domiciliario</b><button id="logout">🚪 Cerrar sesión</button></div></header>
+<main><section class="delivery-hero"><h1>Mis entregas</h1><p>Recibe pedidos, consulta la dirección y confirma la entrega con el código del cliente.</p><div id="locationState">📍 Solicitando ubicación…</div></section>
+<section><h2>Pedidos listos</h2><div id="available" class="cards"></div></section><section><h2>Mi entrega activa</h2><div id="active" class="cards"></div></section><section><h2>Mensajes de Caja</h2><div id="messages" class="messages"></div><form id="messageForm"><input id="messageInput" maxlength="1000" placeholder="Escribe a Caja…"><button>Enviar</button></form></section></main></div>
+<script src="/static/js/delivery/dashboard.js"></script>{% endblock %}

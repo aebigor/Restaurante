@@ -74,6 +74,38 @@ async def admin_login(request: Request):
     )
 
 
+@router.get("/checkout")
+async def customer_checkout(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="public/checkout.html",
+        context={}
+    )
+
+
+@router.get("/mis-pedidos")
+async def customer_orders_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="public/customer_orders.html",
+        context={}
+    )
+
+
+@router.get("/domiciliario")
+async def courier_page(request: Request):
+    return templates.TemplateResponse(request=request, name="delivery/dashboard.html", context={})
+
+@router.get("/terms")
+async def terms(request: Request):
+    return templates.TemplateResponse(request=request, name="public/terms.html", context={})
+
+
+@router.get("/privacy")
+async def privacy(request: Request):
+    return templates.TemplateResponse(request=request, name="public/privacy.html", context={})
+
+
 @router.get("/register")
 async def customer_register(request: Request):
     return templates.TemplateResponse(

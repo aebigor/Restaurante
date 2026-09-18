@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+{% block title %}Mis pedidos | El Imperio del Barril{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/public/customer_orders.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<div class="customer-orders-page">
+  <header class="customer-orders-header"><a href="/"><img src="/static/img/logo.png" alt="El Imperio del Barril"></a><nav><a href="/">← Menú</a><button id="logoutCustomer" type="button">🚪 Cerrar sesión</button></nav></header>
+  <main>
+    <div class="orders-heading"><div><span class="eyebrow">MI CUENTA</span><h1>Mis pedidos</h1><p>Consulta el estado de tus pedidos en tiempo real.</p></div><button id="refreshOrders">↻ Actualizar</button></div>
+    <div id="ordersMessage" class="orders-message"></div>
+    <div id="ordersList" class="orders-list"></div>
+
+    <div id="trackingModal" class="tracking-modal" aria-hidden="true">
+      <div class="tracking-panel">
+        <div class="tracking-panel-head">
+          <div>
+            <span class="eyebrow">SEGUIMIENTO</span>
+            <h2 id="trackingTitle">Ubicación del domiciliario</h2>
+            <p id="trackingStatus">Esperando ubicación…</p>
+          </div>
+          <button id="closeTracking" type="button" aria-label="Cerrar">✕</button>
+        </div>
+        <div id="courierMap" class="courier-map"></div>
+        <div class="tracking-footer">
+          <span id="trackingUpdated">Sin ubicación todavía</span>
+          <button id="centerCourier" type="button">📍 Centrar domiciliario</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/public/customer_orders.js"></script>
+{% endblock %}

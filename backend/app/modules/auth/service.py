@@ -49,6 +49,8 @@ class AuthService:
 
                 "email": user.email,
 
+                "initials": "".join(part[0] for part in user.full_name.split()[:2]).upper(),
+
                 "role": user.role.name
 
             }
@@ -68,6 +70,8 @@ class AuthService:
                 "full_name": user.full_name,
 
                 "email": user.email,
+
+                "initials": "".join(part[0] for part in user.full_name.split()[:2]).upper(),
 
                 "role": user.role.name
 

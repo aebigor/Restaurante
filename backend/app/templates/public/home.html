@@ -22,8 +22,12 @@
             <a href="#ubicacion">Ubicación</a>
         </nav>
         <div class="top-actions">
-            <a class="profile-link" href="/login"><span class="icon">♙</span><span>Perfil</span></a>
-            <a class="login-btn" href="/login">Ingresar</a>
+            <button class="profile-link" id="customerLogoutButton" type="button" style="display:none" aria-label="Cerrar sesión">🚪</button>
+            <a class="profile-link" id="customerProfileLink" href="/login" aria-label="Mi cuenta">
+                <span class="customer-avatar" id="customerAvatar">♙</span>
+                <span id="customerProfileText">Perfil</span>
+            </a>
+            <a class="login-btn" id="customerLoginButton" href="/login">Ingresar</a>
             <button class="cart-icon" id="openCart" type="button" aria-label="Abrir carrito">🛒<span id="cartCount">0</span></button>
         </div>
     </header>

@@ -62,6 +62,9 @@ const paymentBox =
         "paymentBox"
     );
 
+const onlineOrdersPanel = document.getElementById("onlineOrdersPanel");
+const onlineOrdersContainer = document.getElementById("onlineOrdersContainer");
+
 
 // ==========================================================
 // API
@@ -202,6 +205,8 @@ async function loadCashier() {
         renderTables(
             cashierData.tables
         );
+
+        await loadOnlineOrders();
 
     } catch (error) {
 
@@ -423,6 +428,67 @@ function renderTables(
         ).join("");
 
 }
+
+
+// ==========================================================
+// PEDIDOS ONLINE
+// ==========================================================
+
+async function loadOnlineOrders() {
+    if (!onlineOrdersPanel) return;
+    try {
+        const orders = await api(`${API}/online-orders`);
+        onlineOrdersPanel.hidden = false;
+        if (!orders.length) {
+            onlineOrdersContainer.innerHTML = '<div class="empty-state">No hay pedidos online pendientes.</div>';
+            return;
+        }
+        onlineOrdersContainer.innerHTML = orders.map(order => {
+            const delivery = order.order_type === "DOMICILIO";
+            const items = order.items.map(item => `<div class="online-order-item"><span>${item.quantity} × ${escapeHtml(item.name)}</span><strong>${money(item.total)}</strong></div>`).join("");
+            let actions = "";
+            if (order.status === "PENDING_CASHIER") {
+                actions = `<button class="btn-primary" type="button" onclick="confirmOnlineOrder('${order.id}')">✓ Confirmar y enviar a cocina</button>`;
+            } else if (order.status === "READY" && delivery) {
+                actions = `<span class="online-waiting-courier">🚚 Esperando que un domiciliario tome el pedido</span>`;
+            } else if (order.status === "DELIVERED_PENDING_PAYMENT") {
+                actions = `<button class="btn-pay" type="button" onclick="closeOnlinePayment('${order.id}')">💵 Registrar pago y cerrar</button>`;
+            } else if (order.status === "OUT_FOR_DELIVERY") {
+                actions = `<span>🛵 ${escapeHtml(order.courier_name || 'Domiciliario')} · entrega en curso</span>`;
+            }
+            return `<article class="online-order-card"><div class="online-order-head"><div><span>PEDIDO #${escapeHtml(order.short_id)}</span><h3>${escapeHtml(order.customer.name)}</h3><small>${delivery ? "Domicilio" : "Recoger"} · ${new Date(order.created_at).toLocaleString("es-CO")}</small></div><strong>${money(order.total)}</strong></div><div class="online-order-items">${items}</div>${delivery ? `<div class="online-delivery"><b>Dirección:</b> ${escapeHtml(order.delivery_address || "-")}<br><b>Teléfono:</b> ${escapeHtml(order.delivery_phone || "-")}</div>` : ""}${order.notes ? `<div class="online-delivery"><b>Nota:</b> ${escapeHtml(order.notes)}</div>` : ""}<div class="online-order-footer"><span class="status-pill">${escapeHtml(order.status)}</span>${actions}</div></article>`;
+        }).join("");
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function confirmOnlineOrder(orderId) {
+    if (!confirm("¿Confirmar este pedido y enviarlo a cocina?")) return;
+    try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/confirm`, {method:"PATCH"}); await loadOnlineOrders(); }
+    catch(error){ alert(error.message); }
+}
+
+async function dispatchOnlineOrder(orderId) {
+    try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/dispatch`, {method:"PATCH"}); await loadOnlineOrders(); } catch(error){ alert(error.message); }
+}
+
+async function closeOnlinePayment(orderId) {
+    const method = prompt("Método de pago: CASH (efectivo), TRANSFER (Nequi/transferencia) o CARD", "CASH");
+    if (!method) return;
+    const normalized = method.trim().toUpperCase();
+    if (!["CASH","TRANSFER","CARD"].includes(normalized)) { alert("Método inválido."); return; }
+    try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/close-payment`, {method:"PATCH", body:JSON.stringify({payment_method:normalized})}); await loadOnlineOrders(); } catch(error){ alert(error.message); }
+}
+
+async function deliverOnlineOrder(orderId) {
+    alert("La entrega la confirma el domiciliario con el código del cliente. Luego Caja registra el pago y cierra el pedido.");
+}
+
+async function loadCourierLocations(){
+    const box=document.getElementById('courierLocations'); if(!box) return;
+    try{const rows=await api('/api/delivery/locations'); box.innerHTML=rows.length?rows.map(x=>`<article class="courier-location-card"><b>🚚 ${escapeHtml(x.name)}</b><span>${x.order_id?'Pedido activo #'+x.order_id.slice(0,8).toUpperCase():'Sin pedido activo'}</span><small>${x.latitude!=null?`📍 ${Number(x.latitude).toFixed(6)}, ${Number(x.longitude).toFixed(6)}`:'Sin ubicación reportada'}${x.recorded_at?' · '+new Date(x.recorded_at).toLocaleTimeString('es-CO'):''}</small></article>`).join(''):'No hay domiciliarios registrados.'}catch(e){box.textContent=e.message}}
+
 
 
 // ==========================================================
@@ -891,6 +957,10 @@ document
         "click",
         loadCashier
     );
+
+document.getElementById("refreshOnlineOrders")?.addEventListener("click", loadOnlineOrders);
+setInterval(loadCourierLocations, 5000);
+setTimeout(loadCourierLocations, 1000);
 
 
 // ==========================================================

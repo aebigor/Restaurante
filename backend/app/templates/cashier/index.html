@@ -48,6 +48,19 @@
                 <div class="resume-card total-card"><span>VENTAS</span><strong id="salesValue">$0</strong></div>
             </section>
 
+            <section id="onlineOrdersPanel" class="cashier-panel" hidden>
+                <div class="panel-title">
+                    <div><span>PEDIDOS ONLINE</span><h2>Pedidos de clientes</h2><p>Caja confirma el pedido y recién entonces se envía a cocina.</p></div>
+                    <button id="refreshOnlineOrders" class="btn-refresh" type="button">↻ Actualizar</button>
+                </div>
+                <div id="onlineOrdersContainer" class="online-orders-container"></div>
+            </section>
+
+            <section class="cashier-panel">
+                <div class="panel-title"><div><span>DOMICILIARIOS</span><h2>Repartidores en ruta</h2><p>Ubicación reportada por la aplicación del domiciliario.</p></div></div>
+                <div id="courierLocations" class="courier-locations">Cargando ubicaciones…</div>
+            </section>
+
             <section id="accountsPanel" class="cashier-panel" hidden>
                 <div class="panel-title">
                     <div>

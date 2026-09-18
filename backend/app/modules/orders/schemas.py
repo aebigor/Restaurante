@@ -23,3 +23,16 @@ class OrderResponse(BaseModel):
     class Config:
 
         from_attributes = True
+
+class CustomerOrderItem(BaseModel):
+    dish_id: UUID
+    quantity: int = 1
+    notes: str | None = None
+
+
+class CustomerOrderCreate(BaseModel):
+    items: list[CustomerOrderItem]
+    order_type: str = "ONLINE"
+    notes: str | None = None
+    delivery_address: str | None = None
+    delivery_phone: str | None = None

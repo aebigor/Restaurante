@@ -144,6 +144,14 @@ cliente_role = create_role(
 
 )
 
+domiciliario_role = create_role(
+
+    "Domiciliario",
+
+    "Repartidor autorizado para entregas a domicilio"
+
+)
+
 
 # =====================================================
 # USUARIOS INICIALES
@@ -195,6 +203,12 @@ create_user(
 
     caja_role
 
+)
+create_user(
+    "Domiciliario Principal",
+    "domiciliario@imperio.com",
+    "admin123",
+    domiciliario_role
 )
 
 

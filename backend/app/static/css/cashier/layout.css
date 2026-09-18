@@ -169,3 +169,5 @@ body {
     .cashier-logout { padding: 10px 12px; font-size: 12px; }
     .cashier-page { padding: 18px 14px; }
 }
+
+.online-orders-container{display:grid;gap:14px}.online-order-card{background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.04)}.online-order-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.online-order-head span{font-size:10px;color:#c70000;font-weight:900;letter-spacing:.12em}.online-order-head h3{margin:4px 0;font-size:18px}.online-order-head small{color:#777}.online-order-head>strong{font-size:20px}.online-order-items{margin-top:14px;border-top:1px solid #eee;padding-top:10px;display:grid;gap:7px}.online-order-item{display:flex;justify-content:space-between;gap:15px;font-size:13px}.online-delivery{margin-top:12px;background:#f7f7f7;border-radius:9px;padding:10px;font-size:12px;line-height:1.6}.online-order-footer{margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.status-pill{display:inline-flex;padding:7px 10px;border-radius:20px;background:#f0f0f0;font-size:10px;font-weight:900}

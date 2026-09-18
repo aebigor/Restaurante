@@ -1,0 +1,100 @@
+/* ============================================================
+   ADMIN > PEDIDOS
+   Diseño separado del topbar para evitar que las tarjetas se
+   oculten debajo de la barra superior.
+   ============================================================ */
+.admin-orders-page{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:1600px;
+    margin:0 auto;
+    padding:32px 34px 50px;
+    box-sizing:border-box;
+}
+.orders-toolbar{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+    margin:0 0 26px;
+    padding:20px 22px;
+    background:#fff;
+    border:1px solid #e8e8e8;
+    border-radius:18px;
+    box-shadow:0 8px 24px rgba(0,0,0,.05);
+}
+.orders-toolbar > div{min-width:0}
+.orders-toolbar h1{margin:5px 0 6px;font-size:32px;line-height:1.15;color:#181818}
+.orders-toolbar p{margin:0;color:#777;line-height:1.5}
+.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9a6a32}
+.btn-refresh,.icon-btn,.btn{border:0;border-radius:10px;padding:11px 16px;cursor:pointer;font-weight:700}
+.btn-refresh{background:#17110d;color:#fff;white-space:nowrap;flex:0 0 auto}
+.btn-refresh:hover{background:#2a211b}
+.orders-message{min-height:20px;color:#a14d2d;margin:0 0 12px}
+.orders-grid{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:20px;
+    align-items:start;
+    margin:0;
+}
+.order-card{
+    position:relative;
+    z-index:1;
+    min-width:0;
+    background:#fff;
+    border:1px solid #e8e8e8;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 8px 24px rgba(0,0,0,.06);
+    cursor:pointer;
+    overflow:hidden;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.order-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.09);border-color:#d9d0c8}
+.order-card .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.order-card h3{margin:0 0 5px;color:#181818}
+.status{display:inline-block;padding:5px 9px;border-radius:999px;background:#f3eee9;font-size:12px;font-weight:800;white-space:nowrap}
+.order-card p{margin:7px 0;color:#555;line-height:1.45}
+.mini-row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #eee;padding-top:10px;margin-top:12px;font-size:13px}
+.courier-online{color:#287b45;font-weight:800}
+.hidden{display:none!important}
+.order-detail{margin-top:26px;background:#fff;border:1px solid #eadfd6;border-radius:18px;padding:22px;box-shadow:0 12px 32px rgba(0,0,0,.08);position:relative;z-index:1}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.detail-head h2{margin:4px 0 20px}
+.icon-btn{background:#eee}
+.detail-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:20px;align-items:start}
+.panel{border:1px solid #eee3da;border-radius:14px;padding:16px;min-width:0;background:#fff}
+.panel h3{margin:0 0 13px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fact{background:#faf7f4;border-radius:10px;padding:10px;min-width:0}
+.fact small{display:block;color:#888;margin-bottom:3px}.fact b{overflow-wrap:anywhere}
+.code-box{margin:15px 0;padding:15px;border:2px dashed #b37b3c;border-radius:12px;text-align:center}
+.code-box strong{font-size:28px;letter-spacing:.18em}
+.timeline{display:grid;gap:8px}.timeline div{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #eee}
+.map{height:350px;border-radius:12px;overflow:hidden;background:#eee}.map-state{font-size:12px;color:#777;margin-top:7px}
+.chat{display:flex;flex-direction:column;gap:10px}.messages{height:260px;overflow:auto;background:#faf7f4;border-radius:12px;padding:12px}
+.bubble{margin-bottom:10px}.bubble b{font-size:12px}.bubble p{margin:3px 0;background:#fff;border-radius:10px;padding:8px;display:inline-block;max-width:90%;overflow-wrap:anywhere}.bubble small{display:block;color:#999}
+.chat-form{display:flex;gap:8px}.chat-form input{flex:1;min-width:0;border:1px solid #ddd;border-radius:10px;padding:10px}.chat-form button{background:#17110d;color:#fff}
+.danger{background:#a83232!important;color:#fff}.empty{padding:30px;text-align:center;background:#fff;border-radius:14px;color:#777}
+@media(max-width:1000px){
+    .admin-orders-page{padding:24px 22px 40px}
+    .orders-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .detail-layout{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+    .admin-orders-page{padding:18px 14px 35px}
+    .orders-toolbar{align-items:stretch;flex-direction:column;padding:18px;margin-bottom:18px}
+    .orders-toolbar h1{font-size:27px}
+    .btn-refresh{width:100%}
+    .orders-grid{grid-template-columns:1fr;gap:14px}
+    .facts{grid-template-columns:1fr}
+    .map{height:280px}
+    .detail-layout{gap:14px}
+    .order-detail{padding:15px;margin-top:18px}
+}

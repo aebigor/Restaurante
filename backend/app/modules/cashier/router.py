@@ -24,6 +24,9 @@ from app.modules.tables.model import Table
 from app.modules.orders.model import Order
 
 from app.modules.order_items.model import OrderItem
+from app.modules.order_batches.service import OrderBatchService
+from app.modules.kitchen_queue.model import KitchenQueue
+from app.modules.dishes.model import Dish
 
 from .model import (
     CashRegister,
@@ -35,12 +38,155 @@ from .schemas import (
     CashRegisterClose,
     CashPaymentCreate
 )
+from app.modules.delivery.schemas import PaymentClose
 
 
 router = APIRouter(
     prefix="/api/cashier",
     tags=["Cashier"]
 )
+
+
+def _online_order_payload(db: Session, order: Order):
+    items = (
+        db.query(OrderItem)
+        .options(joinedload(OrderItem.dish), joinedload(OrderItem.product))
+        .filter(OrderItem.order_id == order.id)
+        .all()
+    )
+    return {
+        "id": str(order.id),
+        "short_id": str(order.id)[:8].upper(),
+        "status": order.status,
+        "order_type": order.order_type,
+        "customer": {
+            "id": str(order.customer_id) if order.customer_id else None,
+            "name": order.customer.full_name if order.customer else "Cliente",
+            "email": order.customer.email if order.customer else None,
+        },
+        "created_at": order.created_at,
+        "notes": order.notes,
+        "delivery_address": order.delivery_address,
+        "delivery_phone": order.delivery_phone,
+        "delivery_fee": float(order.delivery_fee or 0),
+        "courier_id": str(order.courier_id) if order.courier_id else None,
+        "courier_name": order.courier.full_name if order.courier else None,
+        "dispatched_at": order.dispatched_at,
+        "courier_delivered_at": order.courier_delivered_at,
+        "items": [
+            {
+                "id": str(item.id),
+                "name": item.dish.name if item.dish else item.product.name if item.product else "Producto",
+                "quantity": item.quantity,
+                "unit_price": item.unit_price,
+                "total": item.total,
+            }
+            for item in items
+        ],
+        "total": sum(Decimal(str(item.total or 0)) for item in items),
+    }
+
+
+@router.get("/online-orders")
+def online_orders(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede gestionar pedidos online.")
+    orders = (
+        db.query(Order)
+        .options(joinedload(Order.customer))
+        .filter(
+            Order.customer_id.isnot(None),
+            Order.order_type.in_(["ONLINE", "DOMICILIO"]),
+            Order.status.in_(["PENDING_CASHIER", "OPEN", "PREPARING", "READY", "OUT_FOR_DELIVERY", "DELIVERED_PENDING_PAYMENT"])
+        )
+        .order_by(Order.created_at.asc())
+        .limit(100)
+        .all()
+    )
+    return [_online_order_payload(db, order) for order in orders]
+
+
+@router.patch("/online-orders/{order_id}/confirm")
+def confirm_online_order(
+    order_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede confirmar pedidos online.")
+    order = db.query(Order).filter(Order.id == order_id, Order.customer_id.isnot(None)).first()
+    if not order:
+        raise HTTPException(404, "Pedido online no encontrado.")
+    if order.status != "PENDING_CASHIER":
+        raise HTTPException(409, f"El pedido ya está en estado {order.status}.")
+
+    items = db.query(OrderItem).filter(OrderItem.order_id == order.id).all()
+    if not items:
+        raise HTTPException(409, "El pedido no tiene productos.")
+
+    batch_service = OrderBatchService()
+    for item in items:
+        dish = item.dish or db.query(Dish).filter(Dish.id == item.dish_id).first()
+        if not dish or not dish.station_id:
+            raise HTTPException(409, "Uno de los productos no tiene estación de cocina configurada.")
+        batch_service.get_or_create(db, order.id, dish.station_id)
+        exists = db.query(KitchenQueue).filter(KitchenQueue.order_item_id == item.id).first()
+        if not exists:
+            db.add(KitchenQueue(station_id=dish.station_id, order_item_id=item.id, status="WAITING", created_at=datetime.utcnow()))
+        item.status = "PENDING"
+
+    order.status = "OPEN"
+    order.cashier_confirmed_at = datetime.now(timezone.utc)
+    db.commit()
+    return {"message": "Pedido confirmado y enviado a cocina.", "order_id": str(order.id), "status": order.status}
+
+
+@router.patch("/online-orders/{order_id}/dispatch")
+def dispatch_online_order(
+    order_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede marcar un domicilio en camino.")
+    order = db.query(Order).filter(Order.id == order_id, Order.customer_id.isnot(None)).first()
+    if not order:
+        raise HTTPException(404, "Pedido online no encontrado.")
+    if order.order_type != "DOMICILIO":
+        raise HTTPException(400, "Solo los domicilios pueden pasar a estado En camino.")
+    if order.status != "READY":
+        raise HTTPException(409, "El pedido debe estar listo antes de salir a domicilio.")
+    # La salida real la registra el Domiciliario al tomar la entrega.
+    return {"message": "Pedido listo para que un domiciliario lo tome.", "order_id": str(order.id), "status": order.status}
+
+
+@router.patch("/online-orders/{order_id}/close-payment")
+def close_online_payment(
+    order_id: UUID,
+    data: PaymentClose,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede cerrar el pedido y registrar el pago.")
+    order = db.query(Order).filter(Order.id == order_id, Order.customer_id.isnot(None)).first()
+    if not order:
+        raise HTTPException(404, "Pedido online no encontrado.")
+    if order.status != "DELIVERED_PENDING_PAYMENT":
+        raise HTTPException(409, "El domiciliario debe validar primero la entrega con el código del cliente.")
+    method = (data.payment_method or "CASH").upper()
+    if method not in {"CASH", "CARD", "TRANSFER"}:
+        raise HTTPException(400, "Método de pago inválido.")
+    now = datetime.now(timezone.utc)
+    order.payment_method = method
+    order.payment_confirmed_at = now
+    order.status = "CLOSED"
+    order.closed_at = now
+    db.commit()
+    return {"message":"Pago registrado y pedido cerrado por Caja.","order_id":str(order.id),"status":order.status,"payment_method":method}
 
 
 # ==========================================================

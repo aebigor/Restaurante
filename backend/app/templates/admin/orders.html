@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+{% block title %}Pedidos | Criptonix Restaurant ERP{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/orders.css">
+{% endblock %}
+{% block content %}
+<div class="layout admin-dashboard-layout">
+{% include "admin/components/sidebar.html" %}
+<div class="contenido">{% include "admin/components/topbar.html" %}
+<div class="admin-orders-page">
+  <div class="orders-toolbar">
+    <div>
+      <span class="eyebrow">OPERACIÓN EN TIEMPO REAL</span>
+      <h1>Pedidos</h1>
+      <p>Seguimiento de pedidos online y domicilios, repartidores, ubicación y comunicación.</p>
+    </div>
+    <button id="refreshOrders" class="btn-refresh">↻ Actualizar</button>
+  </div>
+
+  <div id="ordersMessage" class="orders-message"></div>
+  <div id="ordersGrid" class="orders-grid"></div>
+
+  <section id="orderDetail" class="order-detail hidden">
+    <div class="detail-head">
+      <div>
+        <span class="eyebrow">DETALLE DEL PEDIDO</span>
+        <h2 id="detailTitle">Pedido</h2>
+      </div>
+      <button id="closeDetail" class="icon-btn">✕</button>
+    </div>
+    <div id="detailBody"></div>
+  </section>
+</div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/orders.js"></script>
+{% endblock %}

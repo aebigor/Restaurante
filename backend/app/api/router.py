@@ -33,6 +33,7 @@ from app.modules.waiter.router import router as waiter_router
 from app.modules.waiter_calls.router import router as waiter_calls_router
 from app.modules.menu_items.router import router as menu_items_router
 from app.modules.cashier.router import router as cashier_router
+from app.modules.delivery.router import router as delivery_router
 
 
 api_router = APIRouter()
@@ -55,3 +56,4 @@ api_router.include_router(waiter_calls_router)
 api_router.include_router(waiter_router)
 api_router.include_router(screens_router)
 api_router.include_router(cashier_router)
+api_router.include_router(delivery_router)

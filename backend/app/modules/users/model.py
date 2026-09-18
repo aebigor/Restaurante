@@ -3,11 +3,15 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    String,
+    func,
+    ForeignKey,
+)
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.modules.roles.model import Role
@@ -16,11 +20,19 @@ from app.modules.roles.model import Role
 class User(Base):
     __tablename__ = "users"
 
+    # ==========================================================
+    # ID
+    # ==========================================================
+
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
     )
+
+    # ==========================================================
+    # DATOS DEL USUARIO
+    # ==========================================================
 
     full_name: Mapped[str] = mapped_column(
         String(150),
@@ -45,6 +57,45 @@ class User(Base):
         nullable=False,
     )
 
+    # ==========================================================
+    # TÉRMINOS Y CONDICIONES
+    # ==========================================================
+
+    terms_accepted: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    terms_version: Mapped[str | None] = mapped_column(
+        String(30),
+        nullable=True,
+    )
+
+    # ==========================================================
+    # MARKETING / PUBLICIDAD
+    # ==========================================================
+
+    marketing_opt_in: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
+    marketing_consent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # ==========================================================
+    # FECHAS
+    # ==========================================================
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -57,9 +108,17 @@ class User(Base):
         onupdate=func.now(),
         nullable=False,
     )
-    role_id: Mapped[uuid.UUID] = mapped_column(
+
+    # ==========================================================
+    # ROL
+    # ==========================================================
+
+    role_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("roles.id"),
         nullable=True,
     )
-    role = relationship(Role)
+
+    role = relationship(
+        Role
+    )
