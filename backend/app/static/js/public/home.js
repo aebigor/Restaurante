@@ -84,31 +84,70 @@
     });
 
 
-    function setupCustomerHeader() {
-        const token = localStorage.getItem("customer_token") || localStorage.getItem("token");
-        let user = null;
-        try { user = JSON.parse(localStorage.getItem("customer_user") || localStorage.getItem("user") || "null"); } catch (_) {}
-        const profile = document.getElementById("customerProfileLink");
-        const avatar = document.getElementById("customerAvatar");
-        const profileText = document.getElementById("customerProfileText");
-        const login = document.getElementById("customerLoginButton");
-        const logout = document.getElementById("customerLogoutButton");
-        if (token && user?.role === "Cliente") {
-            const initials = user.initials || (user.full_name || "C").split(/\s+/).slice(0,2).map(x => x[0]).join("").toUpperCase();
-            avatar.textContent = initials || "C";
-            profile.href = "/mis-pedidos";
-            profile.title = `Pedidos de ${user.full_name || "cliente"}`;
-            profileText.textContent = "Mis pedidos";
-            login.style.display = "none";
-            if (logout) logout.style.display = "inline-flex";
-        } else {
-            avatar.textContent = "♙";
-            profile.href = "/login";
-            profileText.textContent = "Perfil";
-            login.style.display = "inline-flex";
-            if (logout) logout.style.display = "none";
+  
+    
+        function setupCustomerHeader() {
+            const token =
+                localStorage.getItem("customer_token") ||
+                localStorage.getItem("token");
+
+            let user = null;
+
+            try {
+                user = JSON.parse(
+                    localStorage.getItem("customer_user") ||
+                    localStorage.getItem("user") ||
+                    "null"
+                );
+            } catch (_) {
+                user = null;
+            }
+
+            const login = document.getElementById("customerLoginButton");
+            const profile = document.getElementById("customerProfileLink");
+            const avatar = document.getElementById("customerAvatar");
+            const profileText = document.getElementById("customerProfileText");
+            const logout = document.getElementById("customerLogoutButton");
+
+            if (!login || !profile || !avatar || !profileText || !logout) {
+                return;
+            }
+
+            const isCustomer =
+                Boolean(token) &&
+                user?.role === "Cliente";
+
+            if (isCustomer) {
+                const fullName = user.full_name || "Cliente";
+
+                const initials = fullName
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(word => word[0])
+                    .join("")
+                    .toUpperCase();
+
+                avatar.textContent = initials || "C";
+                profileText.textContent = "Mi perfil";
+
+                profile.href = "/mis-pedidos";
+
+                // Usuario autenticado
+                login.hidden = true;
+                profile.hidden = false;
+                logout.hidden = false;
+
+            } else {
+                // Visitante
+                login.hidden = false;
+                profile.hidden = true;
+                logout.hidden = true;
+
+                avatar.textContent = "C";
+                profileText.textContent = "Mi perfil";
+            }
         }
-    }
 
     document.getElementById("customerLogoutButton")?.addEventListener("click", () => {
         localStorage.removeItem("customer_token");

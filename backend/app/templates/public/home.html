@@ -21,15 +21,58 @@
             <a href="#nosotros">Nosotros</a>
             <a href="#ubicacion">Ubicación</a>
         </nav>
-        <div class="top-actions">
-            <button class="profile-link" id="customerLogoutButton" type="button" style="display:none" aria-label="Cerrar sesión">🚪</button>
-            <a class="profile-link" id="customerProfileLink" href="/login" aria-label="Mi cuenta">
-                <span class="customer-avatar" id="customerAvatar">♙</span>
-                <span id="customerProfileText">Perfil</span>
-            </a>
-            <a class="login-btn" id="customerLoginButton" href="/login">Ingresar</a>
-            <button class="cart-icon" id="openCart" type="button" aria-label="Abrir carrito">🛒<span id="cartCount">0</span></button>
-        </div>
+       
+       
+    <div class="top-actions">
+
+        <!-- Ingresar: visible para visitantes -->
+        <a
+            class="login-btn"
+            id="customerLoginButton"
+            href="/login"
+        >
+            INGRESAR
+        </a>
+
+        <!-- Perfil: visible para clientes autenticados -->
+        <a
+            class="profile-link"
+            id="customerProfileLink"
+            href="/mis-pedidos"
+            aria-label="Mi perfil"
+            hidden
+        >
+            <span class="customer-avatar" id="customerAvatar">C</span>
+
+            <span class="profile-info">
+                <span class="profile-label">MI CUENTA</span>
+                <span id="customerProfileText">Mi perfil</span>
+            </span>
+        </a>
+
+        <!-- Cerrar sesión: visible para clientes autenticados -->
+        <button
+            class="customer-logout"
+            id="customerLogoutButton"
+            type="button"
+            hidden
+        >
+            <span class="logout-icon">↪</span>
+            <span class="logout-label">Cerrar sesión</span>
+        </button>
+
+        <!-- Carrito -->
+        <button
+            class="cart-icon"
+            id="openCart"
+            type="button"
+            aria-label="Abrir carrito"
+        >
+            🛒
+            <span id="cartCount">0</span>
+        </button>
+
+    </div>
     </header>
 
     <main>
@@ -109,26 +152,211 @@
             <a class="light-btn" href="/register">REGISTRARME</a>
         </section>
 
+
         <section class="info-section" id="ubicacion">
             <div class="info-copy">
                 <span class="eyebrow">ENCUÉNTRANOS</span>
+
                 <h2>Ven al Imperio</h2>
-                <p id="contacto">Aquí dejaremos conectada la información real del local, teléfonos, redes sociales y horarios.</p>
+
+                <p>
+                    El sabor del barril te espera.
+                    Visítanos, disfruta nuestras preparaciones
+                    y vive la experiencia de El Imperio del Barril.
+                </p>
+
                 <div class="contact-list">
-                    <div><span>📍</span><div><strong>Ubicación</strong><small>Mapa del restaurante próximamente</small></div></div>
-                    <div><span>📞</span><div><strong>Teléfono</strong><small>Agrega aquí el número del local</small></div></div>
-                    <div><span>📱</span><div><strong>Redes sociales</strong><small>Instagram · Facebook · WhatsApp</small></div></div>
+                    <div>
+                        <span>📍</span>
+                        <div>
+                            <strong>Visítanos</strong>
+                            <small>
+                                Tv. 24I #13-07 sur, Bogotá
+                            </small>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span>📱</span>
+                        <div>
+                            <strong>Síguenos en redes sociales</strong>
+                            <small>
+                                Facebook · Instagram · TikTok
+                            </small>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span>🔥</span>
+                        <div>
+                            <strong>El sabor que manda en la mesa</strong>
+                            <small>
+                                Parrilla y preparaciones al barril
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="location-actions">
+                    <a
+                        class="primary-btn"
+                        href="https://www.google.com/maps/search/?api=1&query=Tv.%2024I%20%2313-07%20sur%2C%20Bogot%C3%A1"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        CÓMO LLEGAR →
+                    </a>
+
+                    <a
+                        class="secondary-btn location-secondary-btn"
+                        href="https://www.google.com/maps/search/?api=1&query=Tv.%2024I%20%2313-07%20sur%2C%20Bogot%C3%A1"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Ver ubicación
+                    </a>
                 </div>
             </div>
-            <div class="map-placeholder"><span>📍</span><strong>MAPA DEL LOCAL</strong><small>Espacio listo para Google Maps / OpenStreetMap</small></div>
+
+            <div class="map-card">
+                <div class="map-card-header">
+                    <div>
+                        <span class="eyebrow">NUESTRA UBICACIÓN</span>
+                        <h3>Estamos aquí</h3>
+                    </div>
+
+                    <span class="map-pin">📍</span>
+                </div>
+
+                <div class="map-frame">
+                    <iframe
+                        title="Ubicación de El Imperio del Barril"
+                        src="https://www.google.com/maps?q=Tv.%2024I%20%2313-07%20sur%2C%20Bogot%C3%A1&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+
+                <div class="map-card-footer">
+                    <span>📍 Tv. 24I #13-07 sur, Bogotá</span>
+
+                    <a
+                        href="https://www.google.com/maps/search/?api=1&query=Tv.%2024I%20%2313-07%20sur%2C%20Bogot%C3%A1"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Abrir mapa ↗
+                    </a>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer class="footer">
-        <div><img src="/static/img/logo.png" alt="El Imperio del Barril"><p>El sabor que manda en la mesa.</p></div>
-        <div class="footer-links"><a href="#menu">Menú</a><a href="/login">Mi cuenta</a><a href="#contacto">Contacto</a><a href="/admin/login">Acceso administrativo</a></div>
-        <small>© 2026 El Imperio del Barril · Todos los derechos reservados.</small>
-    </footer>
+    
+<footer class="footer">
+    <div class="footer-main">
+        <div class="footer-brand">
+            <img
+                src="/static/img/logo.png"
+                alt="El Imperio del Barril"
+            >
+
+            <span class="footer-kicker">
+                SABOR • FUEGO • BARRIL
+            </span>
+
+            <p>
+                El sabor que manda en la mesa.
+                Disfruta la experiencia de El Imperio del Barril.
+            </p>
+
+            <div class="footer-socials">
+                <a
+                    href="https://www.facebook.com/elimperiodelbarriloficial/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Facebook de El Imperio del Barril"
+                >
+                    <span>f</span>
+                    <div>
+                        <small>Facebook</small>
+                        <strong>Visítanos</strong>
+                    </div>
+                </a>
+
+                <a
+                    href="https://www.instagram.com/elimperiodelbarril_oficial/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram de El Imperio del Barril"
+                >
+                    <span>◎</span>
+                    <div>
+                        <small>Instagram</small>
+                        <strong>Síguenos</strong>
+                    </div>
+                </a>
+
+                <a
+                    href="https://www.tiktok.com/@imperiodelbarril_oficial"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="TikTok de El Imperio del Barril"
+                >
+                    <span>♪</span>
+                    <div>
+                        <small>TikTok</small>
+                        <strong>Descúbrenos</strong>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-column">
+            <h3>Explora</h3>
+
+            <a href="#menu">Nuestro menú</a>
+            <a href="#nosotros">Club del Imperio</a>
+            <a href="#ubicacion">Ubicación</a>
+            <a href="#contacto">Contacto</a>
+        </div>
+
+        <div class="footer-column">
+            <h3>Atención</h3>
+
+            <a href="/login">Mi cuenta</a>
+            <a href="/register">Crear cuenta</a>
+            <a href="/terms">Términos y condiciones</a>
+            <a href="/privacy">Política de privacidad</a>
+        </div>
+
+        <div class="footer-column footer-location">
+            <h3>Visítanos</h3>
+
+            <p>📍 Tv. 24I #13-07 sur</p>
+            <p>Bogotá, Colombia</p>
+
+            <a
+                href="https://www.google.com/maps/search/?api=1&query=Tv.%2024I%20%2313-07%20sur%2C%20Bogot%C3%A1"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Cómo llegar ↗
+            </a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <span>
+            © 2026 El Imperio del Barril. Todos los derechos reservados.
+        </span>
+
+        <span>
+            Hecho con 🔥 para los amantes del buen sabor.
+        </span>
+    </div>
+</footer>
 </div>
 
 <aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
