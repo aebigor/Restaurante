@@ -438,7 +438,7 @@
 /* ==========================================
    PERFIL DEL CLIENTE
    ========================================== */
-
+.login-btn[hidden],
 .profile-link[hidden],
 .customer-logout[hidden] {
     display: none !important;
@@ -654,4 +654,34 @@
         padding: 0 12px;
         font-size: 9px;
     }
+}
+/* ==========================================
+   ORDEN DEL HEADER - PERFIL, CARRITO Y SALIR
+   ========================================== */
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* 1. Botón ingresar */
+.login-btn {
+    order: 1;
+}
+
+/* 2. Perfil del cliente */
+.profile-link {
+    order: 3;
+}
+
+/* 3. Carrito de compras */
+.cart-icon {
+    order: 2;
+}
+
+/* 4. Cerrar sesión al extremo derecho */
+.customer-logout {
+    order: 4;
+    margin-left: 4px;
 }

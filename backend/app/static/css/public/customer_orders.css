@@ -1,7 +1,906 @@
-*{box-sizing:border-box}body{margin:0;background:#f5f0e9;color:#211711;font-family:"DM Sans",system-ui,sans-serif}.customer-orders-page{min-height:100vh}.customer-orders-header{height:76px;background:#17110d;display:flex;align-items:center;justify-content:space-between;padding:0 7%}.customer-orders-header img{height:52px;max-width:170px;object-fit:contain}.customer-orders-header a{color:#fff;text-decoration:none;font-weight:800;font-size:13px}.customer-orders-page main{max-width:1050px;margin:0 auto;padding:45px 20px}.orders-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:25px}.eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;color:#9b321e}.orders-heading h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:44px;margin:6px 0}.orders-heading p{color:#756a61;margin:0}.orders-heading button{border:1px solid #d9cbbd;background:#fff;padding:11px 16px;border-radius:10px;font-weight:800;cursor:pointer}.orders-list{display:grid;gap:18px}.order-card{background:#fff;border:1px solid #e4d8cc;border-radius:18px;padding:22px;box-shadow:0 12px 35px rgba(33,23,17,.07)}.order-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.order-head h2{margin:0;font-family:Oswald;font-size:25px}.order-meta{color:#766a61;font-size:12px;margin-top:5px}.status-pill{display:inline-flex;padding:8px 12px;border-radius:30px;background:#f0e7dc;font-size:11px;font-weight:900}.progress{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:22px 0}.step{height:7px;background:#e5ddd4;border-radius:20px}.step.active{background:#9b321e}.items{border-top:1px solid #eee5dc;padding-top:15px;display:grid;gap:8px}.item{display:flex;justify-content:space-between;gap:12px;font-size:13px}.item span{color:#756a61}.order-bottom{display:flex;justify-content:space-between;gap:20px;margin-top:18px;padding-top:14px;border-top:1px solid #eee5dc}.order-total{font-family:Oswald;font-size:25px}.delivery-box{margin-top:14px;padding:12px;background:#faf6f1;border-radius:10px;font-size:12px;color:#655950}.empty-orders{text-align:center;background:#fff;border:1px dashed #d8c9ba;padding:50px;border-radius:18px;color:#766a61}.empty-orders a{color:#9b321e;font-weight:800}.orders-message{color:#9b321e;margin-bottom:12px}@media(max-width:650px){.customer-orders-header{padding:0 18px}.customer-orders-page main{padding:30px 14px}.orders-heading{align-items:start;flex-direction:column}.orders-heading h1{font-size:36px}.progress{grid-template-columns:1fr;gap:5px}.step{height:6px}.order-head{flex-direction:column}.order-bottom{align-items:start;flex-direction:column}}
-/* ============================================================
-   CÓDIGO DE ENTREGA Y SEGUIMIENTO DEL DOMICILIARIO
-   ============================================================ */
-.delivery-code-box{margin-top:14px;padding:16px;background:#fff8e7;border:1px solid #e8c96d;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:15px}.delivery-code-box>div{display:flex;flex-direction:column;gap:4px}.code-label{font-size:10px;font-weight:900;letter-spacing:.12em;color:#7b5b00}.delivery-code{font-family:Oswald,sans-serif;font-size:31px;letter-spacing:.18em;color:#211711}.delivery-code-box small{font-size:11px;color:#756a61}.copy-code,.tracking-button{border:0;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}.copy-code{background:#211711;color:#fff}.tracking-button{display:block;width:100%;margin-top:12px;background:#9b321e;color:#fff;font-size:13px}.tracking-button:hover,.copy-code:hover{filter:brightness(.92)}
-.tracking-modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}.tracking-modal.open{display:flex}.tracking-panel{width:min(950px,100%);height:min(720px,92vh);background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.3);display:flex;flex-direction:column}.tracking-panel-head{padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #eee5dc}.tracking-panel-head h2{margin:4px 0 2px;font-family:Oswald,sans-serif;font-size:27px}.tracking-panel-head p{margin:0;color:#756a61;font-size:12px}.tracking-panel-head button{width:38px;height:38px;border:1px solid #ddd0c5;background:#fff;border-radius:50%;font-size:18px;cursor:pointer}.courier-map{flex:1;min-height:350px;background:#eee}.tracking-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:13px 20px;border-top:1px solid #eee5dc;font-size:11px;color:#756a61}.tracking-footer button{border:1px solid #d9cbbd;background:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.leaflet-container{font-family:"DM Sans",system-ui,sans-serif}
-@media(max-width:650px){.delivery-code-box{align-items:stretch;flex-direction:column}.delivery-code{font-size:28px}.copy-code{width:100%}.tracking-panel{height:94vh}.tracking-panel-head{padding:15px}.tracking-panel-head h2{font-size:23px}.courier-map{min-height:300px}.tracking-footer{align-items:stretch;flex-direction:column}.tracking-footer button{width:100%}}
+
+/* =========================================================
+   EL IMPERIO DEL BARRIL
+   MIS PEDIDOS - DISEÑO OFICIAL
+   Paleta: Café + Rojo + Dorado + Crema
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --barril-cafe: #291510;
+    --barril-cafe-2: #3b1d14;
+    --barril-cafe-3: #542719;
+    --barril-rojo: #b52c20;
+    --barril-rojo-hover: #d13b2d;
+    --barril-dorado: #d39b43;
+    --barril-dorado-claro: #edc477;
+    --barril-crema: #f4e9da;
+    --barril-blanco: #fffaf4;
+    --barril-texto: #291b15;
+    --barril-muted: #876f61;
+    --barril-borde: #e6d4c1;
+    --barril-sombra: rgba(41, 21, 16, 0.12);
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(211, 155, 67, 0.07),
+            transparent 28%
+        ),
+        var(--barril-crema);
+
+    color: var(--barril-texto);
+    font-family: "DM Sans", system-ui, sans-serif;
+}
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+   ========================================================= */
+
+.customer-orders-page {
+    min-height: 100vh;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 250, 244, 0.6),
+            rgba(244, 233, 218, 0.85)
+        );
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.customer-orders-header {
+    min-height: 82px;
+    background: var(--barril-cafe);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 12px 6%;
+    border-bottom: 3px solid var(--barril-dorado);
+
+    box-shadow: 0 6px 25px rgba(41, 21, 16, 0.2);
+}
+
+.customer-orders-header > a {
+    display: flex;
+    align-items: center;
+}
+
+.customer-orders-header img {
+    height: 56px;
+    max-width: 170px;
+    object-fit: contain;
+}
+
+.customer-orders-header nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+}
+
+.customer-orders-header nav > a {
+    color: var(--barril-crema);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+
+    padding: 12px 14px;
+    border-radius: 8px;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.customer-orders-header nav > a:hover {
+    color: var(--barril-dorado-claro);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* =========================================================
+   BOTÓN CERRAR SESIÓN
+   ========================================================= */
+
+#logoutCustomer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background: var(--barril-rojo);
+    color: #ffffff;
+
+    border: 1px solid rgba(237, 196, 119, 0.45);
+    border-radius: 9px;
+
+    padding: 12px 18px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 0 #761b14;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#logoutCustomer:hover {
+    background: var(--barril-rojo-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #761b14;
+}
+
+#logoutCustomer:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #761b14;
+}
+
+#logoutCustomer:focus-visible,
+.orders-heading button:focus-visible,
+.tracking-button:focus-visible,
+.copy-code:focus-visible {
+    outline: 3px solid var(--barril-dorado-claro);
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+   ========================================================= */
+
+.customer-orders-page main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 52px 24px 70px;
+}
+
+/* =========================================================
+   ENCABEZADO DE PEDIDOS
+   ========================================================= */
+
+.orders-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 30px;
+    padding-bottom: 28px;
+
+    border-bottom: 1px solid var(--barril-borde);
+}
+
+.eyebrow {
+    display: inline-block;
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.19em;
+
+    color: var(--barril-rojo);
+}
+
+.orders-heading h1 {
+    margin: 8px 0 8px;
+
+    font-family: Oswald, sans-serif;
+    text-transform: uppercase;
+    font-size: clamp(36px, 5vw, 58px);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+
+    color: var(--barril-cafe);
+}
+
+.orders-heading p {
+    margin: 0;
+    color: var(--barril-muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   BOTÓN ACTUALIZAR
+   ========================================================= */
+
+.orders-heading button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background: var(--barril-cafe);
+    color: var(--barril-crema);
+
+    border: 1px solid var(--barril-cafe);
+    border-radius: 9px;
+
+    padding: 13px 18px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.orders-heading button:hover {
+    background: var(--barril-rojo);
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   MENSAJES
+   ========================================================= */
+
+.orders-message {
+    color: var(--barril-rojo);
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+/* =========================================================
+   LISTA DE PEDIDOS
+   ========================================================= */
+
+.orders-list {
+    display: grid;
+    gap: 22px;
+}
+
+/* =========================================================
+   TARJETA DE PEDIDO
+   ========================================================= */
+
+.order-card {
+    position: relative;
+    overflow: hidden;
+
+    background: var(--barril-blanco);
+    border: 1px solid var(--barril-borde);
+    border-radius: 16px;
+
+    padding: 25px;
+
+    box-shadow: 0 12px 35px var(--barril-sombra);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.order-card::before {
+    content: "";
+    display: block;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 5px;
+    background: var(--barril-rojo);
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(41, 21, 16, 0.16);
+}
+
+.order-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+
+    padding-top: 4px;
+}
+
+.order-head h2 {
+    margin: 0;
+
+    font-family: Oswald, sans-serif;
+    font-size: 27px;
+    letter-spacing: 0.01em;
+
+    color: var(--barril-cafe);
+}
+
+.order-meta {
+    color: var(--barril-muted);
+    font-size: 12px;
+    margin-top: 7px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   ESTADO DEL PEDIDO
+   ========================================================= */
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 9px 13px;
+    border-radius: 30px;
+
+    background: #f8e4c0;
+    color: #704515;
+
+    border: 1px solid #e8c98f;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   PROGRESO DEL PEDIDO
+   ========================================================= */
+
+.progress {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+
+    margin: 24px 0;
+    padding: 15px;
+
+    background: var(--barril-crema);
+    border: 1px solid #ead8c4;
+    border-radius: 10px;
+}
+
+.step {
+    height: 8px;
+    background: #dfd0c0;
+    border-radius: 20px;
+
+    transition: background 0.2s ease;
+}
+
+.step.active {
+    background: var(--barril-rojo);
+}
+
+/* =========================================================
+   PRODUCTOS DEL PEDIDO
+   ========================================================= */
+
+.items {
+    display: grid;
+    gap: 10px;
+
+    border-top: 1px solid #eddfd0;
+    padding-top: 17px;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.item span {
+    color: var(--barril-muted);
+}
+
+.item strong {
+    color: var(--barril-cafe);
+    font-weight: 900;
+}
+
+/* =========================================================
+   INFORMACIÓN DE DOMICILIO
+   ========================================================= */
+
+.delivery-box {
+    margin-top: 16px;
+    padding: 15px;
+
+    background: #f8eee1;
+    border: 1px solid #e8d4bd;
+    border-left: 4px solid var(--barril-dorado);
+
+    border-radius: 10px;
+
+    color: #6b5040;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.delivery-box strong {
+    color: var(--barril-cafe);
+}
+
+/* =========================================================
+   CÓDIGO DE ENTREGA
+   ========================================================= */
+
+.delivery-code-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    margin-top: 16px;
+    padding: 18px;
+
+    background: #fff3d8;
+    border: 1px solid #e4c477;
+    border-radius: 12px;
+}
+
+.delivery-code-box > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.code-label {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: #805b1d;
+}
+
+.delivery-code {
+    font-family: Oswald, sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.18em;
+    color: var(--barril-cafe);
+}
+
+.delivery-code-box small {
+    color: #866d55;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   BOTONES DE DOMICILIO
+   ========================================================= */
+
+.copy-code,
+.tracking-button {
+    border: 0;
+    border-radius: 9px;
+
+    padding: 12px 15px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.copy-code {
+    background: var(--barril-cafe);
+    color: #ffffff;
+}
+
+.copy-code:hover {
+    background: var(--barril-rojo);
+    transform: translateY(-2px);
+}
+
+.tracking-button {
+    display: block;
+    width: 100%;
+
+    margin-top: 14px;
+
+    background: var(--barril-rojo);
+    color: #ffffff;
+
+    box-shadow: 0 4px 0 #761b14;
+}
+
+.tracking-button:hover {
+    background: var(--barril-rojo-hover);
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   TIEMPOS DEL PEDIDO
+   ========================================================= */
+
+.timing-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+
+    margin-top: 18px;
+    padding: 14px;
+
+    background: #f9f1e8;
+    border-radius: 9px;
+
+    color: var(--barril-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.timing-box b {
+    color: var(--barril-cafe);
+}
+
+/* =========================================================
+   TOTAL DEL PEDIDO
+   ========================================================= */
+
+.order-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+
+    margin-top: 20px;
+    padding-top: 18px;
+
+    border-top: 1px solid #eddfd0;
+}
+
+.order-bottom span {
+    color: var(--barril-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.order-total {
+    margin-top: 4px;
+
+    font-family: Oswald, sans-serif;
+    font-size: 30px;
+
+    color: var(--barril-rojo);
+}
+
+/* =========================================================
+   PEDIDOS VACÍOS
+   ========================================================= */
+
+.empty-orders {
+    text-align: center;
+
+    background: var(--barril-blanco);
+    border: 1px dashed #cdb59c;
+    border-radius: 16px;
+
+    padding: 65px 30px;
+
+    color: var(--barril-muted);
+    font-size: 14px;
+    line-height: 2;
+
+    box-shadow: 0 8px 25px var(--barril-sombra);
+}
+
+.empty-orders a {
+    color: var(--barril-rojo);
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.empty-orders a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   MODAL DE SEGUIMIENTO
+   ========================================================= */
+
+.tracking-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    background: rgba(28, 13, 8, 0.78);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.tracking-modal.open {
+    display: flex;
+}
+
+.tracking-panel {
+    width: min(950px, 100%);
+    height: min(720px, 92vh);
+
+    background: var(--barril-blanco);
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.tracking-panel-head {
+    padding: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    background: var(--barril-cafe);
+    border-bottom: 3px solid var(--barril-dorado);
+}
+
+.tracking-panel-head .eyebrow {
+    color: var(--barril-dorado-claro);
+}
+
+.tracking-panel-head h2 {
+    margin: 5px 0 3px;
+
+    font-family: Oswald, sans-serif;
+    font-size: 27px;
+    color: var(--barril-crema);
+}
+
+.tracking-panel-head p {
+    margin: 0;
+    color: #d9c3b2;
+    font-size: 12px;
+}
+
+.tracking-panel-head button {
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid #805345;
+    background: var(--barril-cafe-2);
+    color: var(--barril-crema);
+
+    border-radius: 50%;
+
+    font-size: 18px;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.tracking-panel-head button:hover {
+    background: var(--barril-rojo);
+    transform: rotate(90deg);
+}
+
+.courier-map {
+    flex: 1;
+    min-height: 350px;
+    background: #eee;
+}
+
+.tracking-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+
+    padding: 14px 20px;
+
+    background: var(--barril-crema);
+    border-top: 1px solid var(--barril-borde);
+
+    font-size: 11px;
+    color: var(--barril-muted);
+}
+
+.tracking-footer button {
+    border: 1px solid var(--barril-cafe);
+    background: var(--barril-cafe);
+    color: #ffffff;
+
+    border-radius: 9px;
+    padding: 10px 14px;
+
+    font-family: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.tracking-footer button:hover {
+    background: var(--barril-rojo);
+}
+
+/* =========================================================
+   LEAFLET
+   ========================================================= */
+
+.leaflet-container {
+    font-family: "DM Sans", system-ui, sans-serif;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .customer-orders-header {
+        min-height: auto;
+        padding: 14px 18px;
+
+        align-items: center;
+    }
+
+    .customer-orders-header img {
+        height: 48px;
+        max-width: 120px;
+    }
+
+    .customer-orders-header nav {
+        gap: 6px;
+    }
+
+    .customer-orders-header nav > a {
+        padding: 9px 7px;
+        font-size: 11px;
+    }
+
+    #logoutCustomer {
+        padding: 10px 11px;
+        font-size: 10px;
+    }
+
+    .customer-orders-page main {
+        padding: 35px 14px 50px;
+    }
+
+    .orders-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .orders-heading h1 {
+        font-size: 40px;
+    }
+
+    .orders-heading button {
+        width: 100%;
+    }
+
+    .order-card {
+        padding: 19px;
+        border-radius: 13px;
+    }
+
+    .order-head {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .order-head h2 {
+        font-size: 24px;
+    }
+
+    .status-pill {
+        align-self: flex-start;
+    }
+
+    .progress {
+        grid-template-columns: 1fr;
+        gap: 5px;
+        padding: 12px;
+    }
+
+    .step {
+        height: 6px;
+    }
+
+    .delivery-code-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .delivery-code {
+        font-size: 28px;
+    }
+
+    .copy-code {
+        width: 100%;
+    }
+
+    .order-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tracking-panel {
+        height: 94vh;
+    }
+
+    .tracking-panel-head {
+        padding: 15px;
+    }
+
+    .tracking-panel-head h2 {
+        font-size: 23px;
+    }
+
+    .courier-map {
+        min-height: 300px;
+    }
+
+    .tracking-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .tracking-footer button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+
+    .customer-orders-header {
+        padding: 12px;
+    }
+
+    .customer-orders-header img {
+        max-width: 100px;
+    }
+
+    .customer-orders-header nav > a {
+        font-size: 10px;
+    }
+
+    #logoutCustomer {
+        padding: 9px 8px;
+        font-size: 9px;
+    }
+
+    .orders-heading h1 {
+        font-size: 34px;
+    }
+
+    .order-total {
+        font-size: 27px;
+    }
+}
