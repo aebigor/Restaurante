@@ -160,7 +160,27 @@
         window.location.replace("/");
     });
 
+    function updateClubVisibility(userOverride = null) {
+        const promotions = document.getElementById("promociones");
+        const guestClub = document.querySelector(".guest-only");
+        let user = userOverride;
+        if (!user) {
+            try {
+                user = JSON.parse(localStorage.getItem("customer_user") || localStorage.getItem("user") || "null");
+            } catch (_) { user = null; }
+        }
+        const token = localStorage.getItem("customer_token") || localStorage.getItem("token");
+        const loggedCustomer = Boolean(token) && user?.role === "Cliente";
+        if (promotions) promotions.hidden = !loggedCustomer;
+        if (guestClub) guestClub.hidden = loggedCustomer;
+    }
+
     setupCustomerHeader();
+    updateClubVisibility();
+    window.addEventListener("customer-auth-ready", event => {
+        setupCustomerHeader();
+        updateClubVisibility(event.detail);
+    });
 
     renderCart();
 })();

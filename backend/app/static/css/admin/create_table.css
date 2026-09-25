@@ -317,3 +317,21 @@ textarea{
     }
 
 }
+.table-operation-settings {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    background: rgba(255,255,255,.025);
+}
+
+.table-operation-settings h3 {
+    margin: 0 0 16px;
+}
+
+.table-operation-settings small {
+    display: block;
+    margin-top: 7px;
+    opacity: .72;
+    line-height: 1.45;
+}

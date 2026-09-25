@@ -47,9 +47,9 @@
                 <article class="admin-stat">
                     <div class="stat-icon">💵</div>
                     <div>
-                        <span>CUENTAS COBRADAS</span>
-                        <strong id="paidSessionsToday">0</strong>
-                        <small>Cuentas autorizadas por caja</small>
+                        <span>VENTAS REALIZADAS</span>
+                        <strong id="salesCountToday">0</strong>
+                        <small>Cobros registrados hoy</small>
                     </div>
                 </article>
 
@@ -97,6 +97,18 @@
                 </article>
             </section>
 
+
+            <section class="admin-panel-box pending-payment-box">
+                <div class="panel-heading">
+                    <div>
+                        <span>ATENCIÓN EN CAJA</span>
+                        <h2>Mesas esperando pago anticipado</h2>
+                    </div>
+                    <span id="pendingPrepaymentBadge" class="date-badge">0 pendientes</span>
+                </div>
+                <div id="pendingPrepaymentList" class="pending-payment-list">Cargando...</div>
+            </section>
+
             <section class="admin-panel-box register-history-box">
                 <div class="panel-heading">
                     <div>
@@ -113,5 +125,5 @@
 </div>
 
 <script src="/static/js/admin/sidebar.js"></script>
-<script src="/static/js/admin/dashboard.js?v=20260908"></script>
+<script src="/static/js/admin/dashboard.js?v=20260924"></script>
 {% endblock %}

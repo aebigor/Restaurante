@@ -1,6 +1,8 @@
 const stationApi = "/api/stations/";
 
 const $ = (id) => document.getElementById(id);
+let editingStationId = null;
+let deletingStationId = null;
 
 
 /* =========================================================
@@ -38,6 +40,8 @@ function closeStationModal() {
     if (form) {
         form.reset();
     }
+    editingStationId = null;
+    if ($("saveStationButton")) $("saveStationButton").textContent = "Crear estación";
 
     const color = $("stationColor");
 
@@ -123,13 +127,11 @@ function stationCard(station) {
                 ></span>
             </div>
 
-            <button
-                type="button"
-                class="station-link"
-                onclick="openKds('${station.id}')"
-            >
-                Ver pantalla de cocina →
-            </button>
+            <div class="station-actions">
+                <button type="button" class="station-link" onclick="openKds('${station.id}')">🖥 Ver pantalla</button>
+                <button type="button" class="station-action edit" onclick="editStation('${station.id}')">✎ Editar</button>
+                <button type="button" class="station-action delete" onclick="askDeleteStation('${station.id}', '${escapeHtml(station.name)}')">🗑 Eliminar</button>
+            </div>
 
         </article>
     `;
@@ -333,9 +335,9 @@ async function createStation(event) {
     try {
 
         const response = await fetch(
-            stationApi,
+            editingStationId ? `${stationApi}${editingStationId}` : stationApi,
             {
-                method: "POST",
+                method: editingStationId ? "PUT" : "POST",
 
                 headers: {
                     "Content-Type":
@@ -415,7 +417,8 @@ async function createStation(event) {
 
 
         closeStationModal();
-
+        editingStationId = null;
+        if ($("saveStationButton")) $("saveStationButton").textContent = "Crear estación";
         await loadStations();
 
     }
@@ -434,6 +437,38 @@ async function createStation(event) {
     }
 }
 
+
+async function editStation(stationId) {
+    try {
+        const response = await fetch(`${stationApi}${stationId}`, {headers:{Accept:"application/json"}});
+        if (!response.ok) throw new Error("No se pudo cargar la estación.");
+        const station = await response.json();
+        editingStationId = station.id;
+        $("stationName").value = station.name || "";
+        $("stationPrinter").value = station.printer_name || "";
+        $("stationColor").value = station.color || "#3498db";
+        $("stationModal").hidden = false;
+        $("saveStationButton").textContent = "Guardar cambios";
+        $("stationError").textContent = "";
+        $("stationName").focus();
+    } catch(e) { alert(e.message); }
+}
+function askDeleteStation(stationId, stationName) {
+    deletingStationId = stationId;
+    $("deleteStationText").textContent = `¿Quieres eliminar "${stationName}"? Dejará de aparecer en las estaciones activas.`;
+    $("deleteStationModal").hidden = false;
+}
+async function deleteStation() {
+    if (!deletingStationId) return;
+    try {
+        const response = await fetch(`${stationApi}${deletingStationId}`, {method:"DELETE",headers:{Accept:"application/json"}});
+        const data = await response.json().catch(()=>({}));
+        if (!response.ok) throw new Error(data.detail || "No se pudo eliminar la estación.");
+        $("deleteStationModal").hidden = true;
+        deletingStationId = null;
+        await loadStations();
+    } catch(e) { alert(e.message); }
+}
 
 /* =========================================================
    KDS
@@ -525,6 +560,9 @@ document.addEventListener(
 
         const modal =
             $("stationModal");
+        $("closeDeleteStation")?.addEventListener("click", () => $("deleteStationModal").hidden = true);
+        $("cancelDeleteStation")?.addEventListener("click", () => $("deleteStationModal").hidden = true);
+        $("confirmDeleteStation")?.addEventListener("click", deleteStation);
 
 
         /* -------------------------------

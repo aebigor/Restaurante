@@ -28,3 +28,7 @@ class StationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class StationUpdate(StationCreate):
+    pass

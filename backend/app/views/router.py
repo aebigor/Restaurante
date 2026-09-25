@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.modules.dashboard.service import DashboardService
 from app.modules.menu.model import Menu
 from app.modules.menu_items.model import MenuItem
+from app.modules.promotions.model import Promotion
 
 
 router = APIRouter()
@@ -46,13 +47,12 @@ async def public_home(
             .all()
         )
 
+    promotions = (db.query(Promotion).filter(Promotion.active == True)
+                  .order_by(Promotion.display_order.asc(), Promotion.created_at.desc()).all())
     return templates.TemplateResponse(
         request=request,
         name="public/home.html",
-        context={
-            "active_menu": active_menu,
-            "menu_items": menu_items,
-        }
+        context={"active_menu": active_menu, "menu_items": menu_items, "promotions": promotions}
     )
 
 
@@ -157,6 +157,16 @@ async def tables_create(request: Request):
         request=request,
         name="admin/tables/create.html",
         context={}
+    )
+
+
+@router.get("/admin/tables/edit/{table_id}")
+async def tables_edit(request: Request, table_id: int):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/tables/edit.html",
+        context={"table_id": table_id}
     )
 
 

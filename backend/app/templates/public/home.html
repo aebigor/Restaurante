@@ -146,10 +146,32 @@
             {% endif %}
         </section>
 
-        <section class="loyalty-banner" id="nosotros">
+        <section class="loyalty-banner guest-only" id="nosotros">
             <div class="loyalty-icon">👑</div>
             <div><span class="eyebrow">CLUB DEL IMPERIO</span><h2>Conviértete en cliente frecuente</h2><p>Regístrate para recibir promociones, novedades y beneficios exclusivos.</p></div>
             <a class="light-btn" href="/register">REGISTRARME</a>
+        </section>
+
+        <section class="customer-promotions" id="promociones" hidden>
+            <div class="section-heading">
+                <div><span class="eyebrow">CLUB DEL IMPERIO</span><h2>Promociones y combos para ti</h2><p>Beneficios exclusivos para clientes registrados.</p></div>
+                <span class="promo-live">⭐ EXCLUSIVO</span>
+            </div>
+            {% if promotions %}
+            <div class="promotion-grid">
+                {% for promo in promotions %}
+                <article class="promotion-card">
+                    <div class="promotion-media">
+                        {% if promo.image_url %}<img src="{{ promo.image_url }}" alt="{{ promo.title }}" loading="lazy">{% else %}<span>{{ '🍟' if promo.promo_type == 'COMBO' else '🔥' }}</span>{% endif %}
+                        <span class="promotion-badge">{{ 'COMBO' if promo.promo_type == 'COMBO' else 'PROMO' }}</span>
+                    </div>
+                    <div class="promotion-content"><h3>{{ promo.title }}</h3>{% if promo.description %}<p>{{ promo.description }}</p>{% endif %}{% if promo.price is not none %}<strong class="promotion-price">${{ "{:,.0f}".format(promo.price) }}</strong>{% endif %}</div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="promotion-empty"><span>🎁</span><h3>Próximamente tendremos promociones</h3><p>El administrador podrá publicar aquí los nuevos combos y beneficios del Club.</p></div>
+            {% endif %}
         </section>
 
 

@@ -39,13 +39,7 @@ Panel del Mesero
 
         </div>
 
-        <div class="live">
-
-            <span></span>
-
-            EN VIVO
-
-        </div>
+        <div class="waiter-header-actions"><div class="live"><span></span> EN VIVO</div><button id="logoutWaiter" class="btn-logout" type="button">↪ Cerrar sesión</button></div>
 
     </header>
 
@@ -424,6 +418,15 @@ Panel del Mesero
                 </button>
 
                 <button
+                    class="secondary print-comanda-button"
+                    id="printComanda"
+                    type="button"
+                    disabled
+                >
+                    🖨 Imprimir comanda
+                </button>
+
+                <button
                     class="primary"
                     id="sendOrder"
                     type="button"
@@ -442,7 +445,7 @@ Panel del Mesero
 
 
 <script
-    src="/static/js/waiter/index.js?v=20260908"
+    src="/static/js/waiter/index.js?v=20260924"
 ></script>
 
 {% endblock %}

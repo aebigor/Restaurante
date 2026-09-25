@@ -4,6 +4,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
+from app.modules.orders.model import Order
+from app.modules.sessions.model import Session as RestaurantSession
+from app.modules.tables.model import Table
+
 from app.core.database import get_db
 
 from .model import KitchenQueue
@@ -60,7 +64,14 @@ def list_queue(
             joinedload(KitchenQueue.order_item)
             .joinedload(OrderItem.product)
         )
-        .order_by(KitchenQueue.created_at.asc())
+        .join(OrderItem, OrderItem.id == KitchenQueue.order_item_id)
+        .join(Order, Order.id == OrderItem.order_id)
+        .join(RestaurantSession, RestaurantSession.id == Order.session_id)
+        .join(Table, Table.id == RestaurantSession.table_id)
+        .order_by(
+            Table.comanda_print_priority.asc(),
+            KitchenQueue.created_at.asc()
+        )
         .all()
     )
 
@@ -89,7 +100,14 @@ def station_queue(
             joinedload(KitchenQueue.order_item)
             .joinedload(OrderItem.product)
         )
-        .order_by(KitchenQueue.created_at.asc())
+        .join(OrderItem, OrderItem.id == KitchenQueue.order_item_id)
+        .join(Order, Order.id == OrderItem.order_id)
+        .join(RestaurantSession, RestaurantSession.id == Order.session_id)
+        .join(Table, Table.id == RestaurantSession.table_id)
+        .order_by(
+            Table.comanda_print_priority.asc(),
+            KitchenQueue.created_at.asc()
+        )
         .all()
     )
 
@@ -107,7 +125,14 @@ def waiting(
     rows = (
         db.query(KitchenQueue)
         .filter(KitchenQueue.status == "WAITING")
-        .order_by(KitchenQueue.created_at.asc())
+        .join(OrderItem, OrderItem.id == KitchenQueue.order_item_id)
+        .join(Order, Order.id == OrderItem.order_id)
+        .join(RestaurantSession, RestaurantSession.id == Order.session_id)
+        .join(Table, Table.id == RestaurantSession.table_id)
+        .order_by(
+            Table.comanda_print_priority.asc(),
+            KitchenQueue.created_at.asc()
+        )
         .all()
     )
 

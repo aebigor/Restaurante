@@ -68,3 +68,17 @@
 @media(max-width:1200px){.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-overview-grid{grid-template-columns:1fr}.closed-register-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){.closed-register-grid{grid-template-columns:repeat(2,1fr)}.register-row{grid-template-columns:38px minmax(0,1fr) auto;}.register-opened{grid-column:2 / -1;justify-self:start;}.register-sales{grid-column:3;grid-row:1;}}
 @media(max-width:768px){.contenido{margin-left:0;width:100%}.sidebar.closed + .contenido{margin-left:0;width:100%}.admin-main{padding:22px 18px 35px}.admin-welcome{align-items:flex-start;flex-direction:column}.admin-stats{grid-template-columns:1fr}.admin-cash-control{width:100%;justify-content:center}.payment-breakdown{grid-template-columns:1fr}.closed-register-grid{grid-template-columns:1fr 1fr}.closed-register-footer{flex-direction:column}.admin-big-total strong{font-size:32px;}.register-row{grid-template-columns:38px minmax(0,1fr);}.register-sales,.register-opened{grid-column:2;grid-row:auto;justify-self:start;}}
+
+.pending-payment-box{margin-bottom:22px;}
+.pending-payment-list{display:flex;flex-direction:column;gap:10px;}
+.pending-payment-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:14px;border:1px solid #eadfcd;border-radius:13px;padding:13px 15px;background:#fffaf0;}
+.pending-payment-main{display:flex;align-items:center;gap:11px;min-width:0;}
+.pending-table-number{width:38px;height:38px;border-radius:10px;background:#ffe8b0;display:grid;place-items:center;font-weight:900;color:#8a5a00;}
+.pending-payment-main>div:last-child{display:flex;flex-direction:column;min-width:0;}
+.pending-payment-main strong{font-size:13px;color:#222;}
+.pending-payment-main span{font-size:11px;color:#888;margin-top:3px;}
+.pending-payment-time{font-size:12px;color:#8a5a00;white-space:nowrap;}
+.pending-payment-time b{font-variant-numeric:tabular-nums;}
+.pending-payment-total{font-size:14px;font-weight:900;color:#222;white-space:nowrap;}
+.pending-payment-badge{padding:7px 9px;border-radius:999px;background:#fff0c9;color:#8a5a00;font-size:10px;font-weight:900;white-space:nowrap;}
+@media(max-width:800px){.pending-payment-row{grid-template-columns:1fr 1fr}.pending-payment-badge{justify-self:start}.pending-payment-total{justify-self:end}}

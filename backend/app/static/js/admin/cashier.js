@@ -6,6 +6,7 @@ let cashierData = null;
 let selectedSession = null;
 
 let selectedAccount = null;
+let prepaymentCodeVerified = false;
 
 
 // ==========================================================
@@ -338,6 +339,28 @@ function renderRegister(
 }
 
 
+function parseDate(value) {
+    if (!value) return null;
+    const text = String(value);
+    const d = new Date(text.endsWith("Z") || text.includes("+") ? text : `${text}Z`);
+    return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function formatElapsed(value) {
+    const d = parseDate(value);
+    if (!d) return "00:00";
+    const seconds = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function updateCashTimers() {
+    document.querySelectorAll("[data-cash-timer]").forEach(el => {
+        el.textContent = formatElapsed(el.dataset.cashTimer);
+    });
+}
+
 // ==========================================================
 // MESAS
 // ==========================================================
@@ -388,6 +411,7 @@ function renderTables(
                                 table.table_name
                             )}
                         </p>
+                        ${table.payment_pending ? `<div class="cash-pending-badge">💳 PAGO ANTICIPADO · <span data-cash-timer="${escapeHtml(table.payment_pending_since || table.opened_at || '')}">${formatElapsed(table.payment_pending_since || table.opened_at)}</span></div>` : ''}
 
                     </div>
 
@@ -704,6 +728,16 @@ function renderAccount(
     accountContent.innerHTML =
         html;
 
+    prepaymentCodeVerified = !Boolean(account.table?.prepayment_required);
+    const codeBox = document.getElementById("prepaymentCodeBox");
+    const codeInput = document.getElementById("prepaymentCode");
+    const codeStatus = document.getElementById("prepaymentCodeStatus");
+    const payButton = document.getElementById("payButton");
+    if (codeBox) codeBox.hidden = !Boolean(account.table?.prepayment_required);
+    if (codeInput) codeInput.value = "";
+    if (codeStatus) codeStatus.textContent = account.table?.prepayment_required ? "Pendiente de validar." : "";
+    if (payButton) payButton.disabled = Boolean(account.table?.prepayment_required);
+
 
     document.getElementById(
         "paymentTotal"
@@ -775,13 +809,55 @@ function updateChange() {
     }
 
 
-    document.getElementById(
-        "changeValue"
-    ).textContent =
-        money(change);
+    const changeElement = document.getElementById("changeValue");
+    const receivedElement = document.getElementById("receivedAmount");
+    if (method === "CASH" && received < total) {
+        changeElement.textContent = `Faltan ${money(total - received)}`;
+        changeElement.closest(".change-box")?.classList.add("change-short");
+    } else {
+        changeElement.textContent = money(change);
+        changeElement.closest(".change-box")?.classList.remove("change-short");
+    }
 
 }
 
+
+// ==========================================================
+// VALIDAR CÓDIGO DE COMANDA DE PAGO ANTICIPADO
+// ==========================================================
+
+document.getElementById("verifyPrepaymentCode")?.addEventListener("click", async () => {
+    if (!selectedAccount || !selectedAccount.table?.prepayment_required) return;
+    const input = document.getElementById("prepaymentCode");
+    const status = document.getElementById("prepaymentCodeStatus");
+    const button = document.getElementById("verifyPrepaymentCode");
+    const code = String(input?.value || "").trim();
+
+    if (!/^\d{6}$/.test(code)) {
+        if (status) status.textContent = "El código debe tener 6 dígitos.";
+        return;
+    }
+
+    button.disabled = true;
+    if (status) status.textContent = "Validando…";
+    try {
+        const result = await api(`${API}/payments/prepayment/verify`, {
+            method: "POST",
+            body: JSON.stringify({ session_id: selectedSession, confirmation_code: code })
+        });
+        prepaymentCodeVerified = true;
+        if (status) status.textContent = `✅ Código válido para Mesa ${result.table_number}. Ahora puedes cobrar.`;
+        const payButton = document.getElementById("payButton");
+        if (payButton) payButton.disabled = false;
+    } catch (error) {
+        prepaymentCodeVerified = false;
+        if (status) status.textContent = `❌ ${error.message || "Código inválido."}`;
+        const payButton = document.getElementById("payButton");
+        if (payButton) payButton.disabled = true;
+    } finally {
+        button.disabled = false;
+    }
+});
 
 // ==========================================================
 // EVENTOS DE PAGO
@@ -823,6 +899,10 @@ document
                 return;
             }
 
+            if (selectedAccount.table?.prepayment_required && !prepaymentCodeVerified) {
+                alert("Primero debes validar el código de la comanda.");
+                return;
+            }
 
             const method =
                 document.getElementById(
@@ -877,7 +957,7 @@ document
 
                 const result =
                     await api(
-                        `${API}/payments`,
+                        `${API}/${selectedAccount?.table?.prepayment_required ? "payments/prepayment" : "payments"}`,
                         {
 
                             method: "POST",
@@ -899,7 +979,12 @@ document
                                     reference:
 
                                         reference ||
-                                        null
+                                        null,
+
+                                    confirmation_code:
+                                        selectedAccount?.table?.prepayment_required
+                                            ? document.getElementById("prepaymentCode")?.value.trim()
+                                            : null
 
                                 })
 
@@ -908,7 +993,7 @@ document
 
 
                 alert(
-                    `Cuenta cobrada correctamente.\n\n` +
+                    `${selectedAccount?.table?.prepayment_required ? "Pago anticipado registrado. La comanda fue enviada a cocina." : "Cuenta cobrada correctamente."}\n\n` +
                     `Total: ${money(result.total)}\n` +
                     `Cambio: ${money(result.change_amount)}`
                 );
@@ -919,6 +1004,7 @@ document
 
                 selectedSession =
                     null;
+                prepaymentCodeVerified = false;
 
 
                 accountPanel.hidden =
@@ -961,6 +1047,8 @@ document
 document.getElementById("refreshOnlineOrders")?.addEventListener("click", loadOnlineOrders);
 setInterval(loadCourierLocations, 5000);
 setTimeout(loadCourierLocations, 1000);
+setInterval(() => loadCashier().catch(console.error), 3000);
+setInterval(updateCashTimers, 1000);
 
 
 // ==========================================================

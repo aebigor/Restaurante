@@ -2084,3 +2084,122 @@ body.modal-open {
     cursor: pointer;
     font-weight: 700;
 }
+
+.waiter-header-actions{display:flex;align-items:center;gap:12px}.btn-logout{border:1px solid #e0d1c6;background:#fff8f5;color:#8f271e;border-radius:9px;padding:10px 13px;font-weight:900;cursor:pointer}.btn-logout:hover{background:#9d261c;color:#fff}@media(max-width:650px){.waiter-header-actions{align-items:flex-end;flex-direction:column}.btn-logout{font-size:10px}}
+
+.table-operation-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.table-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .03em;
+}
+
+.table-badge.prepay { background: rgba(255,193,7,.15); }
+.table-badge.high { background: rgba(220,53,69,.14); }
+.table-badge.low { background: rgba(108,117,125,.16); }
+
+.table-operation-badges {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:7px;
+}
+.table-badge {
+    display:inline-flex;
+    align-items:center;
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:800;
+}
+.table-badge.prepay { background:rgba(255,193,7,.15); }
+.table-badge.high { background:rgba(220,53,69,.14); }
+.table-badge.low { background:rgba(108,117,125,.16); }
+
+.payment-waiting-box{margin-top:12px;padding:12px;border-radius:12px;background:#fff7df;border:1px solid #efd38c;color:#7b5500;display:flex;flex-direction:column;gap:5px;font-size:11px;}
+.payment-waiting-box strong{font-size:12px;color:#6c4800;}
+.payment-waiting-box b{font-variant-numeric:tabular-nums;}
+.print-comanda-button{min-width:180px;}
+
+
+/* Aviso exclusivo para mesas configuradas con pago anticipado. */
+.meal-time-warning {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.meal-time-warning strong {
+    display: block;
+    margin-top: 4px;
+    color: #fef3c7;
+}
+
+.meal-time-warning span {
+    display: block;
+    margin-top: 4px;
+    color: #fde68a;
+}
+
+/* Avisos automáticos para mesas configuradas con pago anticipado. */
+.waiter-meal-notifications {
+    position: fixed;
+    top: 84px;
+    right: 22px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(390px, calc(100vw - 44px));
+    pointer-events: none;
+}
+
+.waiter-meal-alert {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(245, 158, 11, .65);
+    border-left: 5px solid #f59e0b;
+    border-radius: 12px;
+    background: #21170b;
+    color: #fef3c7;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    animation: waiterMealAlertIn .25s ease-out;
+}
+
+.waiter-meal-alert strong {
+    font-size: .9rem;
+    line-height: 1.45;
+}
+
+.waiter-meal-alert button {
+    border: 0;
+    background: transparent;
+    color: #fef3c7;
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+@keyframes waiterMealAlertIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}

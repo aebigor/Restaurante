@@ -57,3 +57,6 @@ api_router.include_router(waiter_router)
 api_router.include_router(screens_router)
 api_router.include_router(cashier_router)
 api_router.include_router(delivery_router)
+
+from app.modules.promotions.router import router as promotions_router
+api_router.include_router(promotions_router)

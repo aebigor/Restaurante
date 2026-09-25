@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -6,7 +7,8 @@ from app.core.database import get_db
 
 from .schemas import (
     StationCreate,
-    StationResponse
+    StationResponse,
+    StationUpdate
 )
 
 from .service import StationService
@@ -45,6 +47,15 @@ def create_station(
     db: Session = Depends(get_db)
 ):
     return StationService(db).create(data)
+
+
+@router.put("/{station_id}", response_model=StationResponse)
+def update_station(station_id: UUID, data: StationUpdate, db: Session = Depends(get_db)):
+    return StationService(db).update(station_id, data)
+
+@router.delete("/{station_id}")
+def delete_station(station_id: UUID, db: Session = Depends(get_db)):
+    return StationService(db).delete(station_id)
 
 
 # =========================================================

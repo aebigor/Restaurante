@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+{% block title %}Promociones y combos<script src="/static/js/admin/sidebar.js"></script>
+{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/css/admin/sidebar.css"><link rel="stylesheet" href="/static/css/admin/topbar.css"><link rel="stylesheet" href="/static/css/admin/dashboard.css"><link rel="stylesheet" href="/static/css/admin/promotions.css"><script src="/static/js/admin/sidebar.js"></script>
+{% endblock %}
+{% block content %}
+<div class="layout">{% include "admin/components/sidebar.html" %}<div class="contenido">{% include "admin/components/topbar.html" %}
+<main class="panel promotions-admin">
+<section class="promo-head"><div><span class="eyebrow">CLUB DEL IMPERIO</span><h1>Promociones y combos</h1><p>Publica beneficios que solo verán los clientes registrados.</p></div><button class="btn-primary" id="newPromotion">＋ Nueva promoción</button></section>
+<section class="promo-stats"><div><span>Publicadas</span><strong id="activeCount">0</strong></div><div><span>Total</span><strong id="totalCount">0</strong></div></section>
+<div id="promotionGrid" class="promotion-admin-grid"></div><div id="emptyPromotions" class="promo-empty" hidden>🎁<h3>Aún no hay promociones</h3><p>Crea el primer combo o beneficio para tus clientes.</p></div>
+</main></div></div>
+<div class="modal-backdrop" id="promotionModal" hidden><div class="promotion-modal"><button class="modal-close" id="closePromotion">×</button><span class="eyebrow">CLUB DEL IMPERIO</span><h2 id="promotionModalTitle">Nueva promoción</h2>
+<form id="promotionForm"><input type="hidden" id="promotionId"><label>Nombre<input id="promotionTitle" maxlength="120" required placeholder="Ej. Combo Imperio"></label><label>Tipo<select id="promotionType"><option value="PROMO">Promoción</option><option value="COMBO">Combo</option></select></label><label>Descripción<textarea id="promotionDescription" rows="4" maxlength="1000" placeholder="Describe lo que incluye..."></textarea></label><div class="form-two"><label>Precio (opcional)<input id="promotionPrice" type="number" min="0" step="1" placeholder="25000"></label><label>Orden<input id="promotionOrder" type="number" min="1" value="1"></label></div><label>Imagen URL (opcional)<input id="promotionImage" maxlength="500" placeholder="https://..."></label><label class="switch-row"><input id="promotionActive" type="checkbox" checked> Mostrar a clientes</label><div class="modal-actions"><button type="button" class="btn-secondary" id="cancelPromotion">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div><div class="form-error" id="promotionError"></div></form></div></div>
+<script src="/static/js/admin/promotions.js"></script>
+<script src="/static/js/admin/sidebar.js"></script>
+{% endblock %}

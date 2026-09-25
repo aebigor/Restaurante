@@ -46,6 +46,19 @@ class CashPaymentCreate(BaseModel):
 
     reference: str | None = None
 
+    # Obligatorio para mesas con pago anticipado.
+    confirmation_code: str | None = None
+
+
+# ==========================================================
+# RESPUESTA DE PAGO
+# ==========================================================
+
+class PrepaymentCodeVerify(BaseModel):
+
+    session_id: UUID
+    confirmation_code: str = Field(min_length=6, max_length=6)
+
 
 # ==========================================================
 # RESPUESTA DE PAGO

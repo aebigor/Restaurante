@@ -41,3 +41,17 @@ class Table(Base):
         Boolean,
         default=True
     )
+
+    # Si esta mesa exige pago antes de enviar la comanda a cocina.
+    prepayment_required = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    # 1 = comanda primero, 2 = normal, 3 = comanda última.
+    comanda_print_priority = Column(
+        Integer,
+        default=2,
+        nullable=False
+    )

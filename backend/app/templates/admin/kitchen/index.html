@@ -1,12 +1,14 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Cocina{% endblock %}
+{% block title %}Cocina<script src="/static/js/admin/sidebar.js"></script>
+{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/admin/sidebar.css">
 <link rel="stylesheet" href="/static/css/admin/topbar.css">
 <link rel="stylesheet" href="/static/css/admin/dashboard.css">
 <link rel="stylesheet" href="/static/css/admin/kitchen_dashboard.css">
+<script src="/static/js/admin/sidebar.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -58,11 +60,24 @@
             <label>Color<input id="stationColor" type="color" value="#3498db"></label>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" id="cancelStation">Cancelar</button>
-                <button type="submit" class="btn-primary">Crear estación</button>
+                <button type="submit" class="btn-primary" id="saveStationButton">Crear estación</button>
             </div>
             <div class="form-error" id="stationError"></div>
         </form>
     </div>
 </div>
+<div class="modal-backdrop" id="deleteStationModal" hidden>
+    <div class="station-modal delete-modal">
+        <button class="modal-close" id="closeDeleteStation">×</button>
+        <span class="eyebrow">CONFIRMAR</span>
+        <h2>Eliminar estación</h2>
+        <p id="deleteStationText">La estación dejará de aparecer en el panel.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelDeleteStation">Cancelar</button>
+            <button type="button" class="btn-danger" id="confirmDeleteStation">Eliminar</button>
+        </div>
+    </div>
+</div>
 <script src="/static/js/admin/kitchen_dashboard.js"></script>
+<script src="/static/js/admin/sidebar.js"></script>
 {% endblock %}

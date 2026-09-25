@@ -63,6 +63,12 @@ const cancelOrderButton =
 const sendOrderButton =
     document.getElementById("sendOrder");
 
+const printComandaButton =
+    document.getElementById("printComanda");
+
+let lastComandaConfirmationCode = null;
+let preopenedPrintWindow = null;
+
 const orderTitle =
     document.getElementById("orderTitle");
 
@@ -285,7 +291,70 @@ function formatTime(value) {
 }
 
 
+const mealNotificationState = new Map();
+
+function showMealTimeNotification(table, minutes) {
+    const tableName = table.name || `Mesa ${table.number}`;
+    const message = `⚠️ ${tableName} lleva ${minutes} minutos. Revisa si el cliente necesita atención.`;
+
+    let container = document.getElementById("waiterMealNotifications");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "waiterMealNotifications";
+        container.className = "waiter-meal-notifications";
+        document.body.appendChild(container);
+    }
+
+    const alert = document.createElement("div");
+    alert.className = "waiter-meal-alert";
+    alert.innerHTML = `<strong>${escapeHtml(message)}</strong><button type="button" aria-label="Cerrar aviso">×</button>`;
+    alert.querySelector("button").addEventListener("click", () => alert.remove());
+    container.appendChild(alert);
+
+    window.setTimeout(() => alert.remove(), 12000);
+
+    // La notificación del navegador es opcional; el aviso visible del panel
+    // siempre se muestra aunque el navegador no tenga permisos.
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Aviso de mesa", { body: message });
+    }
+}
+
+function checkMealTimeNotifications() {
+    tablesData.forEach(table => {
+        if (!table.prepayment_required || !table.session_opened_at) return;
+        if (table.status === "FREE" || table.status === "CLOSED") return;
+
+        const elapsed = elapsedSince(table.session_opened_at);
+        const milestone = Math.floor(elapsed / 1800);
+        if (milestone < 1) return;
+
+        const key = `${table.id}:${table.session_id || "session"}`;
+        const previous = mealNotificationState.get(key) || 0;
+        if (milestone > previous) {
+            mealNotificationState.set(key, milestone);
+            showMealTimeNotification(table, milestone * 30);
+        }
+    });
+}
+
+function updateMealTimeWarnings() {
+    document.querySelectorAll("[data-meal-warning-start]").forEach(element => {
+        const start = element.dataset.mealWarningStart;
+        const elapsed = elapsedSince(start);
+        const reached = elapsed >= 1800;
+        element.hidden = !reached;
+        if (reached) {
+            element.innerHTML = "⚠️ Esta mesa lleva <strong>30 minutos o más comiendo.</strong><span>Revisa la mesa y verifica si el cliente necesita atención.</span>";
+        }
+    });
+}
+
+
 function updateWaiterTimers() {
+
+    checkMealTimeNotifications();
+    updateMealTimeWarnings();
 
     document
         .querySelectorAll(
@@ -468,9 +537,21 @@ function renderTables() {
                 <div class="table-card-body">
                     <h3>${escapeHtml(tableName)}</h3>
                     <p>${table.zone ? escapeHtml(table.zone) : "Salón principal"}</p>
+                    <div class="table-operation-badges">
+                        ${table.prepayment_required ? '<span class="table-badge prepay">💳 PAGA PRIMERO</span>' : ''}
+                        ${table.comanda_print_priority === 1 ? '<span class="table-badge high">🔴 COMANDA PRIMERO</span>' : table.comanda_print_priority === 3 ? '<span class="table-badge low">⚪ COMANDA ÚLTIMA</span>' : ''}
+                    </div>
 
                     ${
-                        paidTable || cleanTable
+                        table.payment_pending
+                            ? `
+                                <div class="payment-waiting-box">
+                                    <strong>💳 Esperando pago en Caja</strong>
+                                    <span>El cliente debe acercarse con la comanda antes de enviar la preparación.</span>
+                                    <div>⏱ Tiempo en espera <b data-timer-start="${escapeHtml(table.payment_pending_since || table.session_opened_at)}">${formatDuration(elapsedSince(table.payment_pending_since || table.session_opened_at))}</b></div>
+                                </div>
+                            `
+                            : paidTable || cleanTable
                             ? `
                                 <div class="table-paid-notice">
                                     <strong>${cleanTable ? "✓ Mesa marcada como limpia" : "✓ Pago autorizado por caja"}</strong>
@@ -484,6 +565,12 @@ function renderTables() {
                                         </strong>
                                     </div>
                                 ` : ""}
+                                ${table.prepayment_required && table.session_opened_at ? `
+                                    <div class="meal-time-warning"
+                                         data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
+                                         hidden>
+                                    </div>
+                                ` : ""}
                             `
                             : occupiedTable && table.session_opened_at
                                 ? `
@@ -493,6 +580,12 @@ function renderTables() {
                                             ${formatDuration(elapsedSince(table.session_opened_at))}
                                         </strong>
                                     </div>
+                                    ${table.prepayment_required ? `
+                                        <div class="meal-time-warning"
+                                             data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
+                                             hidden>
+                                        </div>
+                                    ` : ""}
                                 `
                                 : ""
                     }
@@ -503,11 +596,17 @@ function renderTables() {
                     ${
                         paidTable
                             ? table.can_mark_clean
-                                ? `
-                                    <button type="button" class="clean-table-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}')">
-                                        🧹 Marcar mesa limpia
-                                    </button>
-                                `
+                                ? table.prepayment_required
+                                    ? `
+                                        <button type="button" class="clean-table-button prepayment-release-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', true)">
+                                            ✅ Confirmar salida y liberar mesa
+                                        </button>
+                                    `
+                                    : `
+                                        <button type="button" class="clean-table-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', false)">
+                                            🧹 Marcar mesa limpia
+                                        </button>
+                                    `
                                 : `<span class="waiting-cash-release">🍽️ Pendiente: ${table.pending_delivery || 0} pedido(s) por entregar</span>`
                             : cleanTable
                                 ? `<span class="waiting-cash-release">🔒 Esperando liberación de Caja</span>`
@@ -1039,7 +1138,7 @@ function renderCart() {
 
         cartTotalBottom.textContent =
             formatCurrency(0);
-
+        if (printComandaButton) printComandaButton.disabled = true;
         return;
     }
 
@@ -1168,8 +1267,33 @@ function renderCart() {
 
     cartTotalBottom.textContent =
         formatCurrency(total);
+    if (printComandaButton) printComandaButton.disabled = false;
 }
 
+
+function renderComandaPrint(win, confirmationCode = null) {
+    if (!win || win.closed || !selectedTable || !cart.length) return;
+
+    const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
+    const tableName = selectedTable.name || `Mesa ${selectedTable.number}`;
+    const rows = cart.map(item => `<tr><td>${escapeHtml(item.quantity)} × ${escapeHtml(item.name)}</td><td>${formatCurrency(Number(item.price || 0) * Number(item.quantity || 0))}</td></tr>`).join("");
+    const isPrepayment = Boolean(selectedTable.prepayment_required);
+    const mode = isPrepayment ? "PAGO ANTICIPADO · LLEVAR A CAJA" : "COMANDA DE MESA";
+    const codeBlock = isPrepayment && confirmationCode ? `<div class="code"><small>CÓDIGO DE COMANDA</small><strong>${escapeHtml(confirmationCode)}</strong><span>Entrégalo en Caja para autorizar el paso a cocina.</span></div>` : "";
+
+    win.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Comanda ${escapeHtml(tableName)}</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:22px;margin:0 0 6px}h2{font-size:13px;margin:0 0 18px}table{width:100%;border-collapse:collapse}td{padding:8px 0;border-bottom:1px dashed #bbb}td:last-child{text-align:right;font-weight:700}.total{display:flex;justify-content:space-between;margin-top:18px;font-size:18px;font-weight:800}.note{margin:16px 0;padding:10px;background:#f3f3f3;font-weight:800;font-size:12px;text-align:center}.code{margin:16px 0;padding:14px;border:2px solid #111;text-align:center}.code small{display:block;font-size:10px;font-weight:700}.code strong{display:block;font-size:30px;letter-spacing:6px;margin:7px 0}.code span{display:block;font-size:10px}</style></head><body><h1>CRIPTONIX</h1><h2>${escapeHtml(tableName)} · ${escapeHtml(selectedTable.zone || "Salón")}</h2><div class="note">${mode}</div>${codeBlock}<table>${rows}</table><div class="total"><span>TOTAL</span><span>${formatCurrency(total)}</span></div><p style="margin-top:24px;font-size:11px">Fecha: ${new Date().toLocaleString("es-CO")}</p><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),500)}<\/script></body></html>`);
+    win.document.close();
+}
+
+function printComanda(confirmationCode = lastComandaConfirmationCode) {
+    if (!selectedTable || !cart.length) {
+        alert("Agrega productos antes de imprimir la comanda.");
+        return;
+    }
+    const win = window.open("", "_blank", "width=420,height=700");
+    if (!win) { alert("El navegador bloqueó la ventana de impresión. Permite ventanas emergentes para este sitio."); return; }
+    renderComandaPrint(win, confirmationCode);
+}
 
 // ==========================================================
 // ENVIAR PEDIDO
@@ -1231,6 +1355,15 @@ async function sendOrder() {
             selectedTable.session_id || null;
 
         // ==================================================
+        // PREABRIR IMPRESIÓN PARA MESAS DE PAGO ANTICIPADO
+        // El popup se abre antes del await para que el navegador no lo bloquee.
+        // ==================================================
+
+        if (selectedTable.prepayment_required) {
+            preopenedPrintWindow = window.open("", "_blank", "width=420,height=700");
+        }
+
+        // ==================================================
         // ENVIAR PEDIDO
         // ==================================================
 
@@ -1285,7 +1418,18 @@ async function sendOrder() {
         // MENSAJE
         // ==================================================
 
-        if (sessionId) {
+        if (data.payment_pending) {
+            lastComandaConfirmationCode = data.confirmation_code || null;
+            if (preopenedPrintWindow && !preopenedPrintWindow.closed) {
+                renderComandaPrint(preopenedPrintWindow, lastComandaConfirmationCode);
+            } else {
+                alert(
+                    "Comanda registrada. Esta mesa exige pago anticipado.\n\nImprime la comanda y entrega el código en Caja. Cocina la recibirá después del pago."
+                );
+            }
+            preopenedPrintWindow = null;
+            if (printComandaButton) printComandaButton.disabled = false;
+        } else if (sessionId) {
 
             alert(
                 "Pedido agregado a la comanda existente." +
@@ -1309,15 +1453,13 @@ async function sendOrder() {
         }
 
         // ==================================================
-        // CERRAR MODAL
-        // ==================================================
-
-        closeOrder();
-
-        // ==================================================
         // ACTUALIZAR MESAS Y PEDIDOS
         // ==================================================
-
+        // Para pago anticipado mantenemos la comanda abierta para que
+        // el mesero pueda imprimirla. Para mesas normales cerramos.
+        if (!data.payment_pending) {
+            closeOrder();
+        }
         await Promise.all([
             loadTables(),
             loadActiveOrders()
@@ -2331,6 +2473,12 @@ async function printOrder(
                     )}
                 </p>
 
+                ${order.prepayment_required ? `
+                    <p style="font-weight:800;text-align:center;border:2px solid #111;padding:8px;margin:12px 0;">
+                        💳 PAGO ANTICIPADO — PASAR POR CAJA
+                    </p>
+                ` : ""}
+
                 <table>
 
                     ${items}
@@ -2414,25 +2562,31 @@ async function newOrderForTable(
 // LIBERAR MESA
 // ==========================================================
 
-async function markTableClean(sessionId) {
+async function markTableClean(sessionId, isPrepayment = false) {
     if (!sessionId) return;
 
-    const confirmed = confirm(
-        "¿Confirmas que la mesa ya está completamente limpia?\n\nEl pago ya fue autorizado por Caja. Solo se marcará como LIMPIA; Caja será quien la libere."
-    );
+    const message = isPrepayment
+        ? "¿Confirmas que los clientes ya se retiraron y que la mesa está completamente limpia?\\n\\nLa mesa de pago anticipado quedará LIBRE inmediatamente."
+        : "¿Confirmas que la mesa ya está completamente limpia?\\n\\nEl pago ya fue autorizado por Caja. La mesa quedará en estado LIMPIA y Caja será quien la libere.";
 
+    const confirmed = confirm(message);
     if (!confirmed) return;
 
     try {
-        await api(
+        const response = await api(
             `${API_BASE}/waiter/sessions/${encodeURIComponent(sessionId)}/clean`,
             { method: "PATCH" }
         );
 
-        alert("Mesa marcada como limpia. Caja debe liberarla.");
+        alert(response.message || (
+            isPrepayment
+                ? "Mesa liberada correctamente."
+                : "Mesa marcada como limpia. Caja debe liberarla."
+        ));
+
         await Promise.all([loadTables(), loadActiveOrders()]);
     } catch (error) {
-        alert(error.message || "No se pudo marcar la mesa como limpia.");
+        alert(error.message || "No se pudo actualizar el estado de la mesa.");
     }
 }
 
@@ -2503,6 +2657,10 @@ if (sendOrderButton) {
         sendOrder
     );
 
+}
+
+if (printComandaButton) {
+    printComandaButton.addEventListener("click", printComanda);
 }
 
 
@@ -2592,3 +2750,4 @@ setInterval(
     updateWaiterTimers,
     1000
 );
+document.getElementById("logoutWaiter")?.addEventListener("click",()=>{localStorage.removeItem("token");localStorage.removeItem("user");window.location.replace("/login");});

@@ -134,6 +134,45 @@ Nueva Mesa
 
                     </div>
 
+                    <div class="table-operation-settings">
+
+                        <h3>Reglas de atención de esta mesa</h3>
+
+                        <div class="grid">
+
+                            <div class="form-group">
+                                <label>
+                                    Forma de pago
+                                </label>
+
+                                <select id="prepayment_required">
+                                    <option value="false">Pago normal (puede consumir primero)</option>
+                                    <option value="true">Pago anticipado (primero pasa por caja)</option>
+                                </select>
+                                <small>
+                                    Actívalo para mesas como Jardín o eventos donde el cliente debe pagar antes de que cocina prepare el pedido.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    Prioridad de la comanda
+                                </label>
+
+                                <select id="comanda_print_priority">
+                                    <option value="1">🔴 Primera — prioridad alta</option>
+                                    <option value="2" selected>🟡 Normal</option>
+                                    <option value="3">⚪ Última — prioridad baja</option>
+                                </select>
+                                <small>
+                                    Define el orden en que el sistema presenta las comandas para impresión y atención.
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
                     <div class="form-group">
 
                         <label>

@@ -120,6 +120,22 @@ function renderTables(data) {
 
                 </div>
 
+                <div class="table-info">
+
+                    <strong>Pago</strong>
+
+                    <span>${table.prepayment_required ? "💳 Anticipado" : "🧾 Normal"}</span>
+
+                </div>
+
+                <div class="table-info">
+
+                    <strong>Comanda</strong>
+
+                    <span>${table.comanda_print_priority === 1 ? "🔴 Primera" : table.comanda_print_priority === 3 ? "⚪ Última" : "🟡 Normal"}</span>
+
+                </div>
+
             </div>
 
             <div class="table-footer">

@@ -58,7 +58,9 @@ class TableService:
 
             zone=data.zone,
 
-            active=data.active
+            active=data.active,
+            prepayment_required=data.prepayment_required,
+            comanda_print_priority=data.comanda_print_priority
 
         )
 
@@ -101,6 +103,14 @@ class TableService:
         if data.active is not None:
 
             table.active = data.active
+
+        if data.prepayment_required is not None:
+
+            table.prepayment_required = data.prepayment_required
+
+        if data.comanda_print_priority is not None:
+
+            table.comanda_print_priority = data.comanda_print_priority
 
         return self.repository.update(table)
 

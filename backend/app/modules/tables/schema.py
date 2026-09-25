@@ -20,6 +20,10 @@ class TableBase(BaseModel):
 
     active: bool = True
 
+    prepayment_required: bool = False
+
+    comanda_print_priority: int = Field(default=2, ge=1, le=3)
+
 
 # ==========================================
 # CREAR
@@ -44,6 +48,10 @@ class TableUpdate(BaseModel):
     zone: Optional[str] = None
 
     active: Optional[bool] = None
+
+    prepayment_required: Optional[bool] = None
+
+    comanda_print_priority: Optional[int] = Field(default=None, ge=1, le=3)
 
 
 # ==========================================

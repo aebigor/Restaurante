@@ -73,6 +73,39 @@ function registerRow(register, index, closed = false) {
     `;
 }
 
+function formatElapsed(value) {
+    if (!value) return "00:00";
+    const text = String(value);
+    const d = new Date(text.endsWith("Z") || text.includes("+") ? text : `${text}Z`);
+    if (Number.isNaN(d.getTime())) return "00:00";
+    const seconds = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function renderPendingPrepayments(rows) {
+    const list = document.getElementById("pendingPrepaymentList");
+    const badge = document.getElementById("pendingPrepaymentBadge");
+    if (!list || !badge) return;
+    badge.textContent = `${rows.length} pendientes`;
+    if (!rows.length) {
+        list.innerHTML = `<div class="empty-registers"><strong>No hay mesas esperando pago</strong><span>Cuando un mesero registre una mesa de pago anticipado aparecerá aquí.</span></div>`;
+        return;
+    }
+    list.innerHTML = rows.map(row => `
+        <article class="pending-payment-row">
+            <div class="pending-payment-main"><div class="pending-table-number">${row.table_number}</div><div><strong>${escapeAdmin(row.table_name || `Mesa ${row.table_number}`)}</strong><span>${escapeAdmin(row.zone || "Salón")}</span></div></div>
+            <div class="pending-payment-time">⏱ <b data-admin-pending-timer="${row.created_at}">${formatElapsed(row.created_at)}</b></div>
+            <div class="pending-payment-total">${money(row.balance)}</div>
+            <span class="pending-payment-badge">💳 PENDIENTE</span>
+        </article>`).join("");
+}
+
+function updateAdminPendingTimers() {
+    document.querySelectorAll("[data-admin-pending-timer]").forEach(el => el.textContent = formatElapsed(el.dataset.adminPendingTimer));
+}
+
 async function loadAdminDashboard() {
     const response = await fetch("/api/cashier/admin-summary", {
         headers: { Authorization: `Bearer ${adminToken}` }
@@ -88,8 +121,9 @@ async function loadAdminDashboard() {
     document.getElementById("salesToday").textContent = money(data.sales_today);
     document.getElementById("earningsTotal").textContent = money(data.sales_today);
     document.getElementById("ordersToday").textContent = data.orders_today || 0;
-    document.getElementById("paidSessionsToday").textContent = data.paid_sessions_today || 0;
+    document.getElementById("salesCountToday").textContent = data.payments_today || 0;
     document.getElementById("openRegisters").textContent = data.open_registers || 0;
+
 
     document.getElementById("cashToday").textContent = money(data.cash_today);
     document.getElementById("cardToday").textContent = money(data.card_today);
@@ -106,6 +140,8 @@ async function loadAdminDashboard() {
     } else {
         activeList.innerHTML = data.registers.map((r, i) => registerRow(r, i)).join("");
     }
+
+    renderPendingPrepayments(data.pending_prepayments || []);
 
     const closedList = document.getElementById("closedRegisterList");
     document.getElementById("closedRegistersBadge").textContent = `${data.closed_registers_today || 0} cerradas`;
@@ -124,4 +160,5 @@ loadAdminDashboard().catch(error => {
 
 setInterval(() => {
     loadAdminDashboard().catch(console.error);
-}, 15000);
+}, 3000);
+setInterval(updateAdminPendingTimers, 1000);

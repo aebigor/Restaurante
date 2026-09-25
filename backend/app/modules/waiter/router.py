@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -287,12 +288,23 @@ def waiter_tables(
         )
 
         pending_delivery = 0
+        pending_payment_since = None
         if session:
             pending_delivery = db.query(Order).filter(
                 Order.session_id == session.id,
                 Order.status != "CANCELLED",
                 Order.served_at.is_(None)
             ).count()
+            pending_payment_since = (
+                db.query(Order.created_at)
+                .filter(
+                    Order.session_id == session.id,
+                    Order.status == "PENDING_PAYMENT"
+                )
+                .order_by(Order.created_at.asc())
+                .limit(1)
+                .scalar()
+            )
 
         result.append({
 
@@ -305,6 +317,10 @@ def waiter_tables(
             "capacity": table.capacity,
 
             "zone": table.zone,
+
+            "prepayment_required": bool(table.prepayment_required),
+
+            "comanda_print_priority": table.comanda_print_priority or 2,
 
             "status": (
                 session.status
@@ -335,6 +351,8 @@ def waiter_tables(
                 else None
             ),
             "pending_delivery": pending_delivery,
+            "payment_pending": bool(pending_payment_since),
+            "payment_pending_since": pending_payment_since,
             "can_mark_clean": bool(session and session.status == "PAID" and pending_delivery == 0),
             "last_served_at": (
                 db.query(Order.served_at)
@@ -473,7 +491,8 @@ def create_waiter_order(
                 table_id=table.id,
                 waiter_id=current_user.id,
                 people=data.people,
-                status="OPEN"
+                status="OPEN",
+                opened_at=datetime.now(timezone.utc)
             )
 
             db.add(session)
@@ -538,6 +557,11 @@ def create_waiter_order(
         order.status = "OPEN"
         order.served_at = None
         order.closed_at = None
+
+    if prepayment_required:
+        order.status = "PENDING_PAYMENT"
+        if not order.confirmation_code:
+            order.confirmation_code = _new_comanda_confirmation_code(db)
 
     # ======================================================
     # 7. PREPARAR ESTACIONES
@@ -610,7 +634,7 @@ def create_waiter_order(
         db.add(item)
         db.flush()
 
-        if station_key not in batches:
+        if station_key not in batches and not prepayment_required:
             batch = (
                 db.query(OrderBatch)
                 .filter(
@@ -648,11 +672,12 @@ def create_waiter_order(
             batches[station_key] = batch
             station_names[station_key] = source.station.name if source.station else "Cocina"
 
-        db.add(KitchenQueue(
-            station_id=station_id,
-            order_item_id=item.id,
-            status="WAITING"
-        ))
+        if not prepayment_required:
+            db.add(KitchenQueue(
+                station_id=station_id,
+                order_item_id=item.id,
+                status="WAITING"
+            ))
 
     # ======================================================
     # 9. GUARDAR TODO
@@ -667,9 +692,9 @@ def create_waiter_order(
 
     return {
         "message": (
-            "Pedido agregado correctamente a la comanda."
-            if order.created_at
-            else "Pedido enviado correctamente."
+            "Comanda creada. Esta mesa requiere pago anticipado; lleva la comanda a Caja para autorizar la preparación."
+            if prepayment_required
+            else "Pedido agregado correctamente a la comanda."
         ),
 
         "order_id": str(order.id),
@@ -689,8 +714,28 @@ def create_waiter_order(
             for batch in batches.values()
         ],
 
-        "status": order.status
+        "status": order.status,
+
+        "prepayment_required": prepayment_required,
+
+        "payment_pending": prepayment_required,
+
+        # Solo se entrega al mesero para imprimirlo en la comanda.
+        "confirmation_code": order.confirmation_code if prepayment_required else None
     }
+
+def _new_comanda_confirmation_code(db: Session) -> str:
+    """Genera un código numérico de 6 dígitos para una comanda pendiente."""
+    for _ in range(20):
+        code = f"{secrets.randbelow(1_000_000):06d}"
+        exists = db.query(Order.id).filter(
+            Order.confirmation_code == code,
+            Order.status == "PENDING_PAYMENT"
+        ).first()
+        if not exists:
+            return code
+    raise HTTPException(500, "No fue posible generar el código de la comanda.")
+
 
 # ==========================================================
 # PEDIDOS ACTIVOS
@@ -737,7 +782,8 @@ def active_waiter_orders(
                     "OPEN",
                     "PREPARING",
                     "READY",
-                    "SERVED"
+                    "SERVED",
+                    "PENDING_PAYMENT"
                 ]
             )
         )
@@ -885,6 +931,14 @@ def active_waiter_orders(
 
             "table_name": table.name,
 
+            "prepayment_required": bool(table.prepayment_required),
+
+            "comanda_print_priority": table.comanda_print_priority or 2,
+
+            "payment_pending": order.status == "PENDING_PAYMENT",
+
+            "confirmation_code": order.confirmation_code if order.status == "PENDING_PAYMENT" else None,
+
             "status": order_status,
 
             "created_at": order.created_at,
@@ -999,9 +1053,10 @@ def mark_table_clean(
     # otro mesero durante el servicio.
     session = (
         db.query(RestaurantSession)
+        .options(joinedload(RestaurantSession.table))
         .filter(
             RestaurantSession.id == session_id,
-            RestaurantSession.status == "PAID"
+            RestaurantSession.status.in_(["OPEN", "PAID"])
         )
         .first()
     )
@@ -1009,7 +1064,34 @@ def mark_table_clean(
     if not session:
         raise HTTPException(
             status_code=404,
-            detail="La mesa no está pendiente de limpieza o el pago aún no fue autorizado por Caja."
+            detail="La mesa no está activa o el pago aún no fue autorizado por Caja."
+        )
+
+    prepayment_required = bool(
+        session.table and session.table.prepayment_required
+    )
+
+    # En pago anticipado Caja registra el pago, pero la sesión continúa
+    # en OPEN para que cocina y mesero puedan completar la atención.
+    # Por eso aquí verificamos que exista un pago y que no queden
+    # comandas esperando pago antes de permitir la liberación.
+    if prepayment_required and session.status == "OPEN":
+        has_payment = db.query(CashPayment.id).filter(
+            CashPayment.session_id == session.id
+        ).first() is not None
+        pending_payment = db.query(Order.id).filter(
+            Order.session_id == session.id,
+            Order.status == "PENDING_PAYMENT"
+        ).first() is not None
+        if not has_payment or pending_payment:
+            raise HTTPException(
+                status_code=400,
+                detail="Caja todavía no ha confirmado el pago anticipado de esta mesa."
+            )
+    elif not prepayment_required and session.status != "PAID":
+        raise HTTPException(
+            status_code=404,
+            detail="Las mesas normales deben ser autorizadas por Caja antes de marcarse como limpias."
         )
 
     orders = db.query(Order).filter(Order.session_id == session.id).all()
@@ -1024,14 +1106,26 @@ def mark_table_clean(
             detail="No puedes marcar la mesa como limpia hasta entregar todos los pedidos."
         )
 
-    session.status = "CLEAN"
+    # Las mesas de pago anticipado se liberan directamente desde el mesero
+    # una vez que Caja autorizó el pago y todos los pedidos fueron entregados.
+    # Las mesas normales conservan el flujo anterior: CLEAN -> liberación por Caja.
+    if prepayment_required:
+        session.status = "CLOSED"
+        message = "Mesa de pago anticipado liberada correctamente. Ya está disponible."
+        response_status = "CLOSED"
+    else:
+        session.status = "CLEAN"
+        message = "Mesa marcada como limpia. Caja debe liberarla."
+        response_status = "CLEAN"
+
     db.commit()
+    db.refresh(session)
 
     return {
-        "message": "Mesa marcada como limpia. Caja debe liberarla.",
+        "message": message,
         "session_id": str(session.id),
         "table_id": session.table_id,
-        "status": "CLEAN"
+        "status": response_status
     }
 
 

@@ -34,3 +34,26 @@ class StationService:
             active=True,
         )
         return self.repository.create(station)
+
+
+    def update(self, station_id, data):
+        station = self.db.query(Station).filter(Station.id == station_id, Station.active == True).first()
+        if not station:
+            raise HTTPException(status_code=404, detail="Estación no encontrada.")
+        duplicate = self.db.query(Station).filter(
+            Station.name == data.name.strip(), Station.id != station_id
+        ).first()
+        if duplicate:
+            raise HTTPException(status_code=400, detail="Ya existe otra estación con ese nombre.")
+        for key, value in data.model_dump().items():
+            setattr(station, key, value)
+        self.db.commit(); self.db.refresh(station)
+        return station
+
+    def delete(self, station_id):
+        station = self.db.query(Station).filter(Station.id == station_id, Station.active == True).first()
+        if not station:
+            raise HTTPException(status_code=404, detail="Estación no encontrada.")
+        station.active = False
+        self.db.commit()
+        return {"ok": True}

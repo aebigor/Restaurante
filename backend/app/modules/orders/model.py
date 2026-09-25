@@ -51,6 +51,14 @@ class Order(Base):
         default="OPEN"
     )
 
+    # Código de seguridad de la comanda para mesas con pago anticipado.
+    # Caja debe introducirlo para autorizar el paso de la comida a cocina.
+    confirmation_code: Mapped[str | None] = mapped_column(
+        String(6),
+        nullable=True,
+        index=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()

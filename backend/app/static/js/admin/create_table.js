@@ -42,7 +42,11 @@ async function createTable(event) {
 
         zone: document.getElementById("zone").value,
 
-        active: document.getElementById("active").checked
+        active: document.getElementById("active").checked,
+
+        prepayment_required: document.getElementById("prepayment_required").value === "true",
+
+        comanda_print_priority: Number(document.getElementById("comanda_print_priority").value)
 
     };
 

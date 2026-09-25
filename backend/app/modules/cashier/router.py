@@ -26,7 +26,10 @@ from app.modules.orders.model import Order
 from app.modules.order_items.model import OrderItem
 from app.modules.order_batches.service import OrderBatchService
 from app.modules.kitchen_queue.model import KitchenQueue
+from app.modules.kitchen_tickets.model import KitchenTicket
+from app.modules.order_batches.model import OrderBatch
 from app.modules.dishes.model import Dish
+from app.modules.products.model import Product
 
 from .model import (
     CashRegister,
@@ -36,7 +39,8 @@ from .model import (
 from .schemas import (
     CashRegisterOpen,
     CashRegisterClose,
-    CashPaymentCreate
+    CashPaymentCreate,
+    PrepaymentCodeVerify
 )
 from app.modules.delivery.schemas import PaymentClose
 
@@ -417,10 +421,24 @@ def cashier_summary(
                 .order_by(CashPayment.paid_at.desc())
                 .limit(1)
                 .scalar()
+            ),
+            "prepayment_required": bool(table.prepayment_required),
+            "payment_pending": bool(table.prepayment_required and balance > 0 and db.query(Order).filter(
+                Order.session_id == session.id,
+                Order.status == "PENDING_PAYMENT"
+            ).first()),
+            "payment_pending_since": (
+                db.query(Order.created_at)
+                .filter(Order.session_id == session.id, Order.status == "PENDING_PAYMENT")
+                .order_by(Order.created_at.asc())
+                .limit(1)
+                .scalar()
             )
 
         })
 
+
+    tables.sort(key=lambda row: (not row.get("payment_pending", False), row.get("table_number", 0)))
 
     return {
 
@@ -597,6 +615,47 @@ def admin_cash_summary(
             "difference": register.difference,
         }
 
+    pending_prepayment_rows = (
+        db.query(RestaurantSession, Table)
+        .join(Table, Table.id == RestaurantSession.table_id)
+        .filter(
+            RestaurantSession.status == "OPEN",
+            Table.prepayment_required.is_(True)
+        )
+        .order_by(Table.number.asc())
+        .all()
+    )
+
+    pending_prepayments = []
+    for session, table in pending_prepayment_rows:
+        pending_order = (
+            db.query(Order)
+            .filter(
+                Order.session_id == session.id,
+                Order.status == "PENDING_PAYMENT"
+            )
+            .order_by(Order.created_at.asc())
+            .first()
+        )
+        if not pending_order:
+            continue
+        total = calculate_session_total(db, session.id)
+        paid = sum(
+            (Decimal(str(p.amount or 0)) for p in db.query(CashPayment).filter(CashPayment.session_id == session.id).all()),
+            Decimal("0")
+        )
+        pending_prepayments.append({
+            "session_id": str(session.id),
+            "table_id": table.id,
+            "table_number": table.number,
+            "table_name": table.name,
+            "zone": table.zone,
+            "total": total,
+            "balance": max(Decimal("0"), total - paid),
+            "created_at": pending_order.created_at,
+            "waiter_id": str(session.waiter_id) if session.waiter_id else None,
+        })
+
     return {
         "date": today.isoformat(),
         "sales_today": sales_today,
@@ -610,6 +669,8 @@ def admin_cash_summary(
         "closed_registers_today": len(closed_registers),
         "registers": [serialize_register(r, "OPEN") for r in open_registers],
         "closed_registers": [serialize_register(r, "CLOSED") for r in closed_registers],
+        "pending_prepayments": pending_prepayments,
+        "pending_prepayment_count": len(pending_prepayments),
     }
 
 
@@ -848,7 +909,11 @@ def session_account(
                 table.name,
 
             "zone":
-                table.zone
+                table.zone,
+
+            "prepayment_required": bool(table.prepayment_required),
+
+            "comanda_print_priority": table.comanda_print_priority or 2
 
         },
 
@@ -892,6 +957,172 @@ def session_account(
 
         ]
 
+    }
+
+
+@router.post("/payments/prepayment/verify")
+def verify_prepayment_code(
+    data: PrepaymentCodeVerify,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """Comprueba que el código impreso pertenece a la comanda pendiente de esa mesa."""
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede validar comandas.")
+
+    code = str(data.confirmation_code).strip()
+    order = (
+        db.query(Order)
+        .filter(
+            Order.session_id == data.session_id,
+            Order.confirmation_code == code,
+            Order.status == "PENDING_PAYMENT"
+        )
+        .order_by(Order.created_at.asc())
+        .first()
+    )
+    if not order:
+        raise HTTPException(404, "Código de comanda inválido o ya utilizado.")
+
+    session = (
+        db.query(RestaurantSession)
+        .options(joinedload(RestaurantSession.table))
+        .filter(RestaurantSession.id == data.session_id, RestaurantSession.status == "OPEN")
+        .first()
+    )
+    if not session or not session.table or not session.table.prepayment_required:
+        raise HTTPException(400, "La mesa no está configurada para pago anticipado.")
+
+    total = calculate_session_total(db, session.id)
+    paid = sum(
+        (Decimal(str(p.amount or 0)) for p in db.query(CashPayment).filter(CashPayment.session_id == session.id).all()),
+        Decimal("0")
+    )
+    balance = max(Decimal("0"), total - paid)
+
+    return {
+        "valid": True,
+        "session_id": str(session.id),
+        "order_id": str(order.id),
+        "table_number": session.table.number,
+        "table_name": session.table.name,
+        "balance": balance,
+        "message": "Comanda validada. Puedes registrar el pago para enviarla a cocina."
+    }
+
+
+# ==========================================================
+# COBRO ANTICIPADO DE MESAS CONFIGURADAS
+# ==========================================================
+
+@router.post("/payments/prepayment")
+def prepay_session(
+    data: CashPaymentCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """Cobra una mesa de pago anticipado y luego libera sus items a cocina."""
+    if not current_user.role or current_user.role.name != "Caja":
+        raise HTTPException(403, "Solo Caja puede registrar el pago anticipado.")
+
+    register = get_open_register(db, current_user.id)
+    if not register:
+        raise HTTPException(400, "Primero debes abrir la caja.")
+
+    session = (
+        db.query(RestaurantSession)
+        .options(joinedload(RestaurantSession.table))
+        .filter(RestaurantSession.id == data.session_id, RestaurantSession.status == "OPEN")
+        .first()
+    )
+    if not session:
+        raise HTTPException(404, "La mesa no tiene una cuenta abierta.")
+    if not session.table.prepayment_required:
+        raise HTTPException(400, "Esta mesa no está configurada para pago anticipado.")
+
+    code = str(data.confirmation_code or "").strip()
+    if not code:
+        raise HTTPException(400, "Debes introducir el código impreso en la comanda.")
+
+    pending_order = (
+        db.query(Order)
+        .filter(
+            Order.session_id == session.id,
+            Order.confirmation_code == code,
+            Order.status == "PENDING_PAYMENT"
+        )
+        .order_by(Order.created_at.asc())
+        .first()
+    )
+    if not pending_order:
+        raise HTTPException(400, "El código de la comanda no es válido o ya fue utilizado.")
+
+    total = calculate_session_total(db, session.id)
+    previous_payments = db.query(CashPayment).filter(CashPayment.session_id == session.id).all()
+    already_paid = sum((Decimal(str(p.amount or 0)) for p in previous_payments), Decimal("0"))
+    balance = max(Decimal("0"), total - already_paid)
+    if balance <= 0:
+        raise HTTPException(400, "Esta mesa ya tiene el total pagado.")
+
+    method = data.method.upper().strip()
+    if method not in {"CASH", "CARD", "TRANSFER"}:
+        raise HTTPException(400, "Método de pago inválido. Usa CASH, CARD o TRANSFER.")
+
+    received = Decimal(str(data.received_amount))
+    change = Decimal("0")
+    if method == "CASH":
+        if received < balance:
+            raise HTTPException(400, "El efectivo recibido es menor al total.")
+        change = received - balance
+    else:
+        received = balance
+
+    payment = CashPayment(
+        cash_register_id=register.id, session_id=session.id, cashier_id=current_user.id,
+        method=method, amount=balance, received_amount=received, change_amount=change,
+        reference=data.reference
+    )
+    db.add(payment)
+    db.flush()
+
+    items = (
+        db.query(OrderItem)
+        .options(joinedload(OrderItem.dish).joinedload(Dish.station), joinedload(OrderItem.product).joinedload(Product.station))
+        .join(Order, Order.id == OrderItem.order_id)
+        .filter(Order.session_id == session.id, Order.status != "CANCELLED", OrderItem.status == "PENDING")
+        .all()
+    )
+
+    for item in items:
+        if db.query(KitchenQueue).filter(KitchenQueue.order_item_id == item.id).first():
+            continue
+        source = item.dish or item.product
+        if not source or not source.station_id:
+            continue
+        batch = db.query(OrderBatch).filter(OrderBatch.order_id == item.order_id, OrderBatch.station_id == source.station_id).first()
+        if batch is None:
+            batch = OrderBatch(order_id=item.order_id, station_id=source.station_id, status="PENDING")
+            db.add(batch)
+            db.flush()
+            db.add(KitchenTicket(batch_id=batch.id, station_id=source.station_id, status="WAITING"))
+        else:
+            batch.status = "PENDING"
+            ticket = db.query(KitchenTicket).filter(KitchenTicket.batch_id == batch.id).first()
+            if ticket:
+                ticket.status = "WAITING"
+            else:
+                db.add(KitchenTicket(batch_id=batch.id, station_id=source.station_id, status="WAITING"))
+        db.add(KitchenQueue(station_id=source.station_id, order_item_id=item.id, status="WAITING"))
+
+    for order in db.query(Order).filter(Order.session_id == session.id, Order.status == "PENDING_PAYMENT").all():
+        order.status = "OPEN"
+
+    db.commit()
+    db.refresh(payment)
+    return {
+        "message": "Pago anticipado registrado. La comanda fue enviada a cocina.",
+        "payment_id": str(payment.id), "session_id": str(session.id), "table_id": session.table_id,
+        "total": balance, "method": method, "received_amount": received, "change_amount": change, "status": "OPEN"
     }
 
 

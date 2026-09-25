@@ -66,7 +66,7 @@
                     <div>
                         <span>CUENTAS</span>
                         <h2>Mesas pendientes de pago</h2>
-                        <p>Selecciona una mesa para revisar y cobrar su cuenta.</p>
+                        <p>Las mesas marcadas como <strong>pago anticipado</strong> aparecen primero y permanecen en espera hasta que Caja las cobre.</p>
                     </div>
                     <button id="refreshCashier" class="btn-refresh" type="button">↻ Actualizar</button>
                 </div>
@@ -85,6 +85,15 @@
                 <div id="paymentBox" class="payment-box" hidden>
                     <h3>Cobrar cuenta</h3>
                     <div class="payment-total"><span>Total a pagar</span><strong id="paymentTotal">$0</strong></div>
+                    <div id="prepaymentCodeBox" class="prepayment-code-box" hidden>
+                        <strong>🔐 Código de la comanda</strong>
+                        <p>Escribe el código que trae el cliente en la comanda para autorizar que el pedido pase a cocina.</p>
+                        <div class="code-verify-row">
+                            <input id="prepaymentCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="off">
+                            <button id="verifyPrepaymentCode" class="btn-primary" type="button">Validar código</button>
+                        </div>
+                        <small id="prepaymentCodeStatus"></small>
+                    </div>
                     <div class="payment-form">
                         <label>Método de pago
                             <select id="paymentMethod">
@@ -125,5 +134,5 @@
 </div>
 
 <script src="/static/js/cashier/layout.js"></script>
-<script src="/static/js/admin/cashier.js?v=20260908"></script>
+<script src="/static/js/admin/cashier.js?v=20260924"></script>
 {% endblock %}
