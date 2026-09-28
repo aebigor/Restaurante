@@ -29,3 +29,5 @@ from app.modules.cashier.model import CashRegister, CashPayment, CashRegisterMov
 from app.modules.delivery.model import CourierLocation, DeliveryMessage
 
 from app.modules.chatbot.model import SupportRequest
+
+from app.modules.attendance.model import AttendanceProfile, AttendanceSchedule, AttendanceDevice, AttendanceRecord

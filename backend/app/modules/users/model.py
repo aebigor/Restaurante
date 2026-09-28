@@ -122,3 +122,12 @@ class User(Base):
     role = relationship(
         Role
     )
+
+    # Perfil de asistencia: QR, PIN y horarios del empleado.
+    # Se referencia por nombre para evitar importacion circular.
+    attendance_profile = relationship(
+        "AttendanceProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )

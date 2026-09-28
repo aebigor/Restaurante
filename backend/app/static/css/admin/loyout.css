@@ -1,81 +1,18 @@
 /* ==============================
-   LAYOUT GENERAL
+   LAYOUT GENERAL ADMINISTRATIVO
+   Sidebar fijo + contenido independiente
 ============================== */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-
-    background:#f4f6fb;
-
-    overflow-x:hidden;
-
-    font-family:Inter,Arial,sans-serif;
-
-}
-
-.admin-layout{
-
-    display:flex;
-
-    min-height:100vh;
-
-}
-
-/* ==============================
-   CONTENIDO
-============================== */
-
-.admin-content{
-
-    flex:1;
-
-    margin-left:280px;
-
-    transition:.30s;
-
-    min-height:100vh;
-
-    display:flex;
-
-    flex-direction:column;
-
-}
-
-/* sidebar cerrado */
-
-.sidebar.closed + .admin-content{
-
-    margin-left:90px;
-
-}
-
-/* ==============================
-   PAGINA
-============================== */
-
-.page-content{
-
-    padding:30px;
-
-    flex:1;
-
-}
-
-/* ==============================
-   RESPONSIVE
-============================== */
-
-@media(max-width:900px){
-
-    .admin-content{
-
-        margin-left:90px;
-
-    }
-
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;}
+body{background:#f4f6fb;overflow-x:hidden;font-family:Inter,Arial,sans-serif;}
+.layout{width:100%;min-height:100vh;}
+.layout > .contenido{width:calc(100% - 270px);min-width:0;min-height:100vh;margin-left:270px;display:flex;flex-direction:column;box-sizing:border-box;transition:width .35s ease,margin-left .35s ease;}
+.layout > .sidebar.closed + .contenido{width:calc(100% - 85px);margin-left:85px;}
+.layout > .contenido > .topbar{width:100%;flex:0 0 auto;}
+.layout > .contenido > main,.layout > .contenido > .panel,.layout > .contenido > .admin-main,.layout > .contenido > .admin-orders-page{min-width:0;max-width:100%;}
+.page-content{padding:30px;flex:1;min-width:0;}
+.admin-layout{display:flex;min-height:100vh;width:100%;}
+.admin-content{flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column;margin-left:270px;width:calc(100% - 270px);transition:.30s;}
+.admin-layout .sidebar.closed + .admin-content{margin-left:85px;width:calc(100% - 85px);}
+@media(max-width:900px){.layout > .contenido,.layout > .sidebar.closed + .contenido{width:calc(100% - 85px);margin-left:85px;}.admin-content,.admin-layout .sidebar.closed + .admin-content{width:calc(100% - 85px);margin-left:85px;}}
+@media(max-width:600px){.layout > .contenido,.layout > .sidebar.closed + .contenido,.admin-content,.admin-layout .sidebar.closed + .admin-content{width:calc(100% - 70px);margin-left:70px;}.page-content{padding:18px;}}

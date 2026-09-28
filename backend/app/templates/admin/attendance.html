@@ -1,0 +1,24 @@
+{% extends "layouts/base.html" %}
+{% block title %}Asistencia | El Imperio del Barril{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/attendance.css">
+{% endblock %}
+{% block content %}
+<div class="layout admin-page-shell">
+    {% include "admin/components/sidebar.html" %}
+    <div class="contenido">
+        {% include "admin/components/topbar.html" %}
+        <main class="attendance-page">
+            <header class="page-hero"><div><span class="eyebrow">CONTROL DE JORNADA</span><h1>Asistencia</h1><p>Consulta quién llegó, quién está trabajando, quién llegó tarde y quién salió antes o hizo horas extra.</p></div><div class="hero-actions"><a class="ghost-btn" href="/asistencia" target="_blank">🖥 Abrir terminal</a><a class="primary-btn" href="/admin/users">👥 Administrar personal</a></div></header>
+            <section class="attendance-stats" id="attendanceStats"><article><span>Presentes</span><strong id="presentCount">0</strong></article><article><span>Trabajando</span><strong id="workingCount">0</strong></article><article><span>Tardanzas</span><strong id="lateCount">0</strong></article><article><span>Horas extra</span><strong id="overtimeCount">0</strong></article></section>
+            <section class="table-card"><div class="section-head"><div><span id="todayDate">HOY</span><h2>Registro del día</h2></div><button class="ghost-btn" id="refreshAttendance">↻ Actualizar</button></div><div id="attendanceTable" class="attendance-table"></div></section>
+            <section class="table-card"><div class="section-head"><div><span>TERMINALES</span><h2>Dispositivos autorizados</h2></div><button class="ghost-btn" id="refreshDevices">↻ Actualizar</button></div><p class="muted">Abre <b>/asistencia</b> en la tablet o computador que quedará físicamente en el restaurante. Aparecerá aquí para autorizarlo.</p><div id="devicesTable" class="devices-table"></div></section>
+            <section class="table-card"><div class="section-head"><div><span>INCIDENCIAS</span><h2>Reponer horas / ajustes</h2></div></div><form id="adjustmentForm" class="adjustment-form"><select id="adjustUser" required><option value="">Empleado</option></select><input id="adjustDate" type="date" required><input id="adjustMinutes" type="number" min="-1440" max="1440" placeholder="Minutos (+/-)" required><input id="adjustReason" maxlength="500" placeholder="Motivo: reposición, permiso, corrección..." required><button class="primary-btn">Registrar ajuste</button></form></section>
+        </main>
+    </div>
+</div>
+<div class="modal-backdrop" id="deviceModal"><div class="modal-card"><button class="modal-close" data-close="deviceModal">×</button><span class="eyebrow">AUTORIZAR TERMINAL</span><h2>Dispositivo encontrado</h2><p class="muted">Esta autorización se hace desde el panel del administrador. Solo las terminales aprobadas podrán registrar entradas y salidas.</p><label>Nombre del dispositivo<input id="deviceName" placeholder="Ej. Tablet recepción"></label><div class="form-actions"><button class="ghost-btn" data-close="deviceModal">Cancelar</button><button class="primary-btn" id="approveDevice">Autorizar dispositivo</button></div></div></div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/admin/attendance.js"></script>{% endblock %}

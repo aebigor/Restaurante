@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+{% block title %}Usuarios y personal | El Imperio del Barril{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/attendance.css">
+{% endblock %}
+{% block content %}
+<div class="layout admin-page-shell">
+    {% include "admin/components/sidebar.html" %}
+    <div class="contenido">
+        {% include "admin/components/topbar.html" %}
+        <main class="attendance-page">
+            <header class="page-hero">
+                <div><span class="eyebrow">PERSONAL DEL ESTABLECIMIENTO</span><h1>Usuarios y asistencia</h1><p>Crea empleados, asigna su rol, activa su ficha de asistencia y configura sus horarios.</p></div>
+                <div class="hero-actions"><a class="ghost-btn" href="/admin/attendance">🕐 Ver asistencia</a><button class="primary-btn" id="newUserBtn">＋ Nuevo usuario</button></div>
+            </header>
+            <section class="info-banner"><strong>🔐 QR + código personal</strong><span>Cada empleado puede tener una tarjeta con QR. El QR identifica al empleado y el código de acceso confirma que es él quien está fichando.</span></section>
+            <section class="table-card"><div class="section-head"><div><span>PERSONAL</span><h2>Usuarios registrados</h2></div><span class="count-pill" id="usersCount">0</span></div><div id="usersTable" class="users-table"></div></section>
+        </main>
+    </div>
+</div>
+<div class="modal-backdrop" id="userModal"><div class="modal-card"><button class="modal-close" data-close="userModal">×</button><span class="eyebrow">NUEVO EMPLEADO</span><h2 id="userModalTitle">Crear usuario</h2><form id="userForm"><input type="hidden" id="userId"><label>Nombre completo<input id="fullName" required maxlength="150"></label><label>Correo<input id="email" type="email" required></label><label>Contraseña de acceso al ERP<input id="password" type="password" minlength="6" required></label><label>Rol<select id="roleId" required></select></label><label class="check-row"><input id="attendanceEnabled" type="checkbox" checked> Habilitar asistencia para este usuario</label><label>Código de asistencia (PIN)<input id="attendancePin" inputmode="numeric" minlength="4" maxlength="12" placeholder="Ej. 4827"><small>Si lo dejas vacío al crear, el sistema genera uno.</small></label><div class="form-actions"><button type="button" class="ghost-btn" data-close="userModal">Cancelar</button><button class="primary-btn" type="submit">Guardar usuario</button></div></form></div></div>
+<div class="modal-backdrop" id="scheduleModal"><div class="modal-card wide"><button class="modal-close" data-close="scheduleModal">×</button><span class="eyebrow">HORARIO DE TRABAJO</span><h2 id="scheduleTitle">Horario</h2><p class="muted">Configura la hora esperada de entrada y salida. El sistema calculará tardanzas, salidas tempranas y horas extra.</p><div id="scheduleGrid" class="schedule-grid"></div><div class="form-actions"><button class="ghost-btn" data-close="scheduleModal">Cancelar</button><button class="primary-btn" id="saveSchedule">Guardar horario</button></div></div></div>
+<div class="modal-backdrop" id="qrModal"><div class="modal-card qr-card"><button class="modal-close" data-close="qrModal">×</button><span class="eyebrow">TARJETA DE ASISTENCIA</span><h2 id="qrName">Empleado</h2><div class="qr-frame"><img id="qrImage" alt="QR de asistencia"></div><p id="qrPinText" class="pin-display"></p><p class="muted">Imprime esta tarjeta y entrégasela al empleado. El código de acceso no se muestra después de cerrar esta ventana.</p><div class="form-actions"><button class="ghost-btn" data-close="qrModal">Cerrar</button><button class="primary-btn" id="printQr">🖨 Imprimir tarjeta</button></div></div></div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/admin/users_attendance.js"></script>{% endblock %}

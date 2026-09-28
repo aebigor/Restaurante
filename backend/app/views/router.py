@@ -146,6 +146,37 @@ async def dashboard(
 
 
 # ======================================================
+# USUARIOS Y ASISTENCIA
+# ======================================================
+
+@router.get("/admin/users")
+async def admin_users(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/settings/users.html",
+        context={}
+    )
+
+
+@router.get("/admin/attendance")
+async def admin_attendance(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/attendance.html",
+        context={}
+    )
+
+
+@router.get("/asistencia")
+async def attendance_kiosk(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="attendance/kiosk.html",
+        context={}
+    )
+
+
+# ======================================================
 # MESAS
 # ======================================================
 
