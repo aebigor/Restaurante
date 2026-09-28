@@ -33,14 +33,16 @@ from app.modules.products.model import Product
 
 from .model import (
     CashRegister,
-    CashPayment
+    CashPayment,
+    CashRegisterMovement
 )
 
 from .schemas import (
     CashRegisterOpen,
     CashRegisterClose,
     CashPaymentCreate,
-    PrepaymentCodeVerify
+    PrepaymentCodeVerify,
+    CashRegisterWithdrawalCreate
 )
 from app.modules.delivery.schemas import PaymentClose
 
@@ -319,12 +321,23 @@ def cashier_summary(
             transfer_total += amount
 
 
+    withdrawal_total = sum(
+        (
+            Decimal(str(m.amount or 0))
+            for m in db.query(CashRegisterMovement)
+            .filter(
+                CashRegisterMovement.cash_register_id == register.id,
+                CashRegisterMovement.movement_type == "WITHDRAWAL"
+            )
+            .all()
+        ),
+        Decimal("0")
+    )
+
     expected_cash = (
-        Decimal(
-            str(register.opening_amount or 0)
-        )
-        +
-        cash_total
+        Decimal(str(register.opening_amount or 0))
+        + cash_total
+        - withdrawal_total
     )
 
 
@@ -453,6 +466,12 @@ def cashier_summary(
 
             "cash_sales":
                 cash_total,
+
+            "withdrawals":
+                withdrawal_total,
+
+            "cash_available":
+                expected_cash,
 
             "card_sales":
                 card_total,
@@ -594,6 +613,32 @@ def admin_cash_summary(
 
     def serialize_register(register, status):
         cash, card, transfer, total, payment_count = register_totals(register)
+        withdrawal_rows = (
+            db.query(CashRegisterMovement)
+            .filter(
+                CashRegisterMovement.cash_register_id == register.id,
+                CashRegisterMovement.movement_type == "WITHDRAWAL"
+            )
+            .order_by(CashRegisterMovement.created_at.desc())
+            .all()
+        )
+        withdrawal_total = sum(
+            (Decimal(str(m.amount or 0)) for m in withdrawal_rows),
+            Decimal("0")
+        )
+        movement_rows = [
+            {
+                "id": str(m.id),
+                "type": m.movement_type,
+                "amount": m.amount,
+                "recipient_name": m.recipient_name,
+                "recipient_document": m.recipient_document,
+                "reason": m.reason,
+                "created_at": m.created_at,
+                "cashier_name": m.cashier.full_name if m.cashier else "Sin usuario",
+            }
+            for m in withdrawal_rows
+        ]
         return {
             "id": str(register.id),
             "status": status,
@@ -606,6 +651,10 @@ def admin_cash_summary(
             "closed_at": register.closed_at,
             "opening_amount": register.opening_amount,
             "cash_sales": cash,
+            "withdrawals": withdrawal_total,
+            "cash_available": Decimal(str(register.opening_amount or 0)) + cash - withdrawal_total,
+            "withdrawal_count": len(withdrawal_rows),
+            "movements": movement_rows,
             "card_sales": card,
             "transfer_sales": transfer,
             "total_sales": total,
@@ -656,6 +705,27 @@ def admin_cash_summary(
             "waiter_id": str(session.waiter_id) if session.waiter_id else None,
         })
 
+    movement_rows_today = (
+        db.query(CashRegisterMovement)
+        .filter(func.date(CashRegisterMovement.created_at) == today)
+        .order_by(CashRegisterMovement.created_at.desc())
+        .all()
+    )
+    movements_today = [
+        {
+            "id": str(m.id),
+            "register_id": str(m.cash_register_id),
+            "type": m.movement_type,
+            "amount": m.amount,
+            "recipient_name": m.recipient_name,
+            "recipient_document": m.recipient_document,
+            "reason": m.reason,
+            "created_at": m.created_at,
+            "cashier_name": m.cashier.full_name if m.cashier else "Sin usuario",
+        }
+        for m in movement_rows_today
+    ]
+
     return {
         "date": today.isoformat(),
         "sales_today": sales_today,
@@ -671,6 +741,11 @@ def admin_cash_summary(
         "closed_registers": [serialize_register(r, "CLOSED") for r in closed_registers],
         "pending_prepayments": pending_prepayments,
         "pending_prepayment_count": len(pending_prepayments),
+        "movements_today": movements_today,
+        "withdrawals_today": sum(
+            (Decimal(str(m.amount or 0)) for m in movement_rows_today if m.movement_type == "WITHDRAWAL"),
+            Decimal("0")
+        ),
     }
 
 
@@ -1421,6 +1496,67 @@ def release_table_from_cashier(
 
 
 # ==========================================================
+# RETIRO DE DINERO
+# ==========================================================
+
+@router.post("/register/withdrawal")
+def register_withdrawal(
+    data: CashRegisterWithdrawalCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    register = get_open_register(db, current_user.id)
+    if not register:
+        raise HTTPException(status_code=400, detail="No hay una caja abierta.")
+
+    amount = Decimal(str(data.amount))
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="El valor del retiro debe ser mayor que cero.")
+
+    cash_sales = sum(
+        (Decimal(str(payment.amount or 0)) for payment in db.query(CashPayment).filter(
+            CashPayment.cash_register_id == register.id,
+            CashPayment.method == "CASH"
+        ).all()),
+        Decimal("0")
+    )
+    withdrawals = sum(
+        (Decimal(str(m.amount or 0)) for m in db.query(CashRegisterMovement).filter(
+            CashRegisterMovement.cash_register_id == register.id,
+            CashRegisterMovement.movement_type == "WITHDRAWAL"
+        ).all()),
+        Decimal("0")
+    )
+    available = Decimal(str(register.opening_amount or 0)) + cash_sales - withdrawals
+    if amount > available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El retiro supera el efectivo disponible en caja. Disponible: {available:.2f}."
+        )
+
+    movement = CashRegisterMovement(
+        cash_register_id=register.id,
+        cashier_id=current_user.id,
+        movement_type="WITHDRAWAL",
+        amount=amount,
+        recipient_name=data.recipient_name.strip(),
+        recipient_document=data.recipient_document.strip(),
+        reason=data.reason.strip() if data.reason else "Retiro de efectivo"
+    )
+    db.add(movement)
+    db.commit()
+    db.refresh(movement)
+
+    return {
+        "message": "Retiro registrado correctamente.",
+        "movement_id": str(movement.id),
+        "amount": movement.amount,
+        "cash_available": available - amount,
+        "created_at": movement.created_at,
+    }
+
+
+# ==========================================================
 # CERRAR CAJA
 # ==========================================================
 
@@ -1511,12 +1647,18 @@ def close_register(
     )
 
 
+    withdrawal_total = sum(
+        (Decimal(str(m.amount or 0)) for m in db.query(CashRegisterMovement).filter(
+            CashRegisterMovement.cash_register_id == register.id,
+            CashRegisterMovement.movement_type == "WITHDRAWAL"
+        ).all()),
+        Decimal("0")
+    )
+
     expected_cash = (
-        Decimal(
-            str(register.opening_amount or 0)
-        )
-        +
-        cash_sales
+        Decimal(str(register.opening_amount or 0))
+        + cash_sales
+        - withdrawal_total
     )
 
 
@@ -1569,6 +1711,9 @@ def close_register(
 
         "expected_cash":
             expected_cash,
+
+        "withdrawals":
+            withdrawal_total,
 
         "closing_amount":
             closing_amount,

@@ -60,6 +60,18 @@ async function loadCashControl(){
     closedList.innerHTML = data.closed_registers?.length
         ? data.closed_registers.map(renderClosed).join("")
         : `<div class="control-empty"><strong>No hay cajas cerradas hoy.</strong><br>El arqueo aparecerá aquí cuando termine un turno.</div>`;
+
+    const movementList = document.getElementById("controlMovementList");
+    const movements = data.movements_today || [];
+    movementList.innerHTML = movements.length
+        ? movements.map(m => `
+            <div class="control-movement">
+                <div><span class="movement-type">${escapeHtml(m.type === "WITHDRAWAL" ? "RETIRO" : m.type)}</span><strong>${money(m.amount)}</strong><span>${dateTime(m.created_at)}</span></div>
+                <div><span>RECIBE</span><strong>${escapeHtml(m.recipient_name)}</strong><span>CC: ${escapeHtml(m.recipient_document)}</span></div>
+                <div><span>CAJERO</span><strong>${escapeHtml(m.cashier_name)}</strong><span>Motivo: ${escapeHtml(m.reason || "—")}</span></div>
+                <div><span>CAJA</span><strong>${escapeHtml(m.register_id.slice(0,8).toUpperCase())}</strong><span>Movimiento auditado</span></div>
+            </div>`).join("")
+        : `<div class="control-empty"><strong>No hay retiros registrados hoy.</strong><br>Los retiros de efectivo aparecerán aquí inmediatamente.</div>`;
 }
 
 document.getElementById("refreshAdminCash")?.addEventListener("click", loadCashControl);

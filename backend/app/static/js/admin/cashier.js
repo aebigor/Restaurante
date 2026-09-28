@@ -336,6 +336,11 @@ function renderRegister(
             register.expected_cash
         );
 
+    const withdrawalsValue = document.getElementById("withdrawalsValue");
+    if (withdrawalsValue) {
+        withdrawalsValue.textContent = money(register.withdrawals || 0);
+    }
+
 }
 
 
@@ -1072,6 +1077,82 @@ async function releaseTable(sessionId) {
     }
 }
 
+
+// ==========================================================
+// RETIRO DE DINERO
+// ==========================================================
+
+const withdrawalModal = document.getElementById("withdrawalModal");
+const withdrawalAvailable = document.getElementById("withdrawalAvailable");
+const withdrawalAmount = document.getElementById("withdrawalAmount");
+const withdrawalRecipientName = document.getElementById("withdrawalRecipientName");
+const withdrawalRecipientDocument = document.getElementById("withdrawalRecipientDocument");
+const withdrawalReason = document.getElementById("withdrawalReason");
+const withdrawalError = document.getElementById("withdrawalError");
+
+function openWithdrawalModal() {
+    const available = Number(cashierData?.register?.expected_cash || 0);
+    withdrawalAvailable.textContent = money(available);
+    withdrawalAmount.value = "";
+    withdrawalRecipientName.value = "";
+    withdrawalRecipientDocument.value = "";
+    withdrawalReason.value = "Retiro de efectivo";
+    withdrawalError.hidden = true;
+    withdrawalError.textContent = "";
+    withdrawalModal.hidden = false;
+    setTimeout(() => withdrawalAmount?.focus(), 50);
+}
+
+function closeWithdrawalModal() {
+    withdrawalModal.hidden = true;
+}
+
+async function confirmWithdrawal() {
+    const amount = Number(withdrawalAmount.value || 0);
+    const recipientName = withdrawalRecipientName.value.trim();
+    const recipientDocument = withdrawalRecipientDocument.value.trim();
+    const reason = withdrawalReason.value.trim();
+    const available = Number(cashierData?.register?.expected_cash || 0);
+
+    if (amount <= 0) return showWithdrawalError("Ingresa un valor de retiro mayor que cero.");
+    if (amount > available) return showWithdrawalError(`No puedes retirar ${money(amount)}. El efectivo disponible es ${money(available)}.`);
+    if (recipientName.length < 2) return showWithdrawalError("Ingresa el nombre completo de quien recibe el dinero.");
+    if (recipientDocument.length < 4) return showWithdrawalError("Ingresa la cédula o documento de quien recibe el dinero.");
+
+    const button = document.getElementById("confirmWithdrawal");
+    button.disabled = true;
+    try {
+        const result = await api(`${API}/register/withdrawal`, {
+            method: "POST",
+            body: JSON.stringify({
+                amount,
+                recipient_name: recipientName,
+                recipient_document: recipientDocument,
+                reason: reason || "Retiro de efectivo"
+            })
+        });
+        closeWithdrawalModal();
+        alert(`Retiro registrado correctamente.\n\nRetirado: ${money(result.amount)}\nEfectivo restante esperado: ${money(result.cash_available)}`);
+        await loadCashier();
+    } catch (error) {
+        showWithdrawalError(error.message || "No se pudo registrar el retiro.");
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function showWithdrawalError(message) {
+    withdrawalError.textContent = message;
+    withdrawalError.hidden = false;
+}
+
+document.getElementById("withdrawRegisterButton")?.addEventListener("click", openWithdrawalModal);
+document.getElementById("closeWithdrawalModal")?.addEventListener("click", closeWithdrawalModal);
+document.getElementById("cancelWithdrawal")?.addEventListener("click", closeWithdrawalModal);
+document.getElementById("confirmWithdrawal")?.addEventListener("click", confirmWithdrawal);
+withdrawalModal?.addEventListener("click", event => {
+    if (event.target === withdrawalModal) closeWithdrawalModal();
+});
 
 // ==========================================================
 // CERRAR CAJA

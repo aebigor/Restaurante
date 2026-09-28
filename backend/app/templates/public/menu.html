@@ -23,8 +23,12 @@ Menú · Mesa {{ table_number }}
 
         <div>
 
+            <span class="brand-mark">
+                El Imperio del Barril
+            </span>
+
             <span class="eyebrow">
-                MENÚ DIGITAL
+                CARTA DIGITAL · MENÚ DEL DÍA
             </span>
 
             <h1>
@@ -55,6 +59,19 @@ Menú · Mesa {{ table_number }}
     ></div>
 
 
+    <nav class="category-nav" aria-label="Categorías de la carta">
+        {% for category in categories %}
+            {% set items = dishes | selectattr('category_id', 'equalto', category.id) | list %}
+            {% if items %}
+                <a class="category-link" href="#categoria-{{ category.id }}">
+                    <span>{{ category.icon }}</span>
+                    <span>{{ category.name }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+
     {% for category in categories %}
 
         {% set items = dishes | selectattr(
@@ -66,7 +83,7 @@ Menú · Mesa {{ table_number }}
 
         {% if items %}
 
-            <section class="menu-section">
+            <section class="menu-section" id="categoria-{{ category.id }}">
 
                 <div class="section-title">
 
@@ -202,6 +219,11 @@ Menú · Mesa {{ table_number }}
         {% endif %}
 
     {% endfor %}
+
+    <footer class="menu-footer">
+        <strong>El Imperio del Barril</strong>
+        <span>Gracias por visitarnos · Mesa {{ table_number }}</span>
+    </footer>
 
 </div>
 

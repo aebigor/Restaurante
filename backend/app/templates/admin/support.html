@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+{% block title %}Soporte de clientes | CRIPTONIX{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+{% endblock %}
+{% block content %}
+<div class="layout admin-dashboard-layout">
+    {% include "admin/components/sidebar.html" %}
+    <div class="contenido">
+        {% include "admin/components/topbar.html" %}
+        <main class="admin-main support-admin-page">
+            <header class="admin-welcome">
+                <div>
+                    <span class="admin-kicker">ATENCIÓN AL CLIENTE</span>
+                    <h1>Soporte de clientes</h1>
+                    <p>Solicitudes creadas desde el asistente del Imperio.</p>
+                </div>
+                <button class="btn-primary" id="supportRefresh" type="button">↻ Actualizar</button>
+            </header>
+            <section class="support-admin-grid" id="supportAdminGrid"><div class="support-loading">Cargando solicitudes…</div></section>
+        </main>
+    </div>
+</div>
+<script src="/static/js/admin/support.js"></script>
+{% endblock %}

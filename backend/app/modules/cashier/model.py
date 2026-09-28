@@ -159,3 +159,49 @@ class CashPayment(Base):
     cashier = relationship(
         "User"
     )
+
+# ==========================================================
+# MOVIMIENTOS DE EFECTIVO DE LA CAJA
+# ==========================================================
+
+class CashRegisterMovement(Base):
+    __tablename__ = "cash_register_movements"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+
+    cash_register_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cash_registers.id"), nullable=False, index=True
+    )
+
+    cashier_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
+
+    movement_type: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="WITHDRAWAL"
+    )
+
+    amount: Mapped[float] = mapped_column(
+        Numeric(12, 2), nullable=False
+    )
+
+    recipient_name: Mapped[str] = mapped_column(
+        String(150), nullable=False
+    )
+
+    recipient_document: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )
+
+    reason: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    cash_register = relationship("CashRegister")
+    cashier = relationship("User")

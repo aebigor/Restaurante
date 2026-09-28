@@ -322,7 +322,7 @@ function showMealTimeNotification(table, minutes) {
 
 function checkMealTimeNotifications() {
     tablesData.forEach(table => {
-        if (!table.prepayment_required || !table.session_opened_at) return;
+        if (!table.session_opened_at) return;
         if (table.status === "FREE" || table.status === "CLOSED") return;
 
         const elapsed = elapsedSince(table.session_opened_at);
@@ -565,7 +565,7 @@ function renderTables() {
                                         </strong>
                                     </div>
                                 ` : ""}
-                                ${table.prepayment_required && table.session_opened_at ? `
+                                ${table.session_opened_at ? `
                                     <div class="meal-time-warning"
                                          data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
                                          hidden>
@@ -580,7 +580,7 @@ function renderTables() {
                                             ${formatDuration(elapsedSince(table.session_opened_at))}
                                         </strong>
                                     </div>
-                                    ${table.prepayment_required ? `
+                                    ${table.session_opened_at ? `
                                         <div class="meal-time-warning"
                                              data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
                                              hidden>
@@ -594,7 +594,7 @@ function renderTables() {
                 <div class="table-card-footer">
                     <span>👥 ${table.capacity || 0} personas</span>
                     ${
-                        paidTable
+                        (paidTable || (table.prepayment_required && table.can_mark_clean))
                             ? table.can_mark_clean
                                 ? table.prepayment_required
                                     ? `

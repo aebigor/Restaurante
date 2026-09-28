@@ -85,3 +85,13 @@ class CashPaymentResponse(BaseModel):
     class Config:
 
         from_attributes = True
+
+# ==========================================================
+# RETIRO DE DINERO
+# ==========================================================
+
+class CashRegisterWithdrawalCreate(BaseModel):
+    amount: Decimal = Field(gt=0)
+    recipient_name: str = Field(min_length=2, max_length=150)
+    recipient_document: str = Field(min_length=4, max_length=50)
+    reason: str | None = Field(default=None, max_length=255)

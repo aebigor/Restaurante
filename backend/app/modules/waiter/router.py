@@ -24,6 +24,24 @@ from app.modules.cashier.model import CashPayment
 from .schemas import WaiterOrderCreate
 
 
+def elapsed_seconds(value):
+    """Calcula segundos transcurridos aceptando datetimes naive o aware.
+
+    La tabla sessions de instalaciones antiguas puede tener opened_at como
+    timestamp sin zona horaria, aunque el modelo actual declare timezone=True.
+    En ese caso los valores fueron guardados como UTC y se interpretan como UTC.
+    """
+    if not value:
+        return 0
+
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    else:
+        value = value.astimezone(timezone.utc)
+
+    return max(0, int((datetime.now(timezone.utc) - value).total_seconds()))
+
+
 router = APIRouter(
     prefix="/api/waiter",
     tags=["Waiter"]
@@ -353,7 +371,28 @@ def waiter_tables(
             "pending_delivery": pending_delivery,
             "payment_pending": bool(pending_payment_since),
             "payment_pending_since": pending_payment_since,
-            "can_mark_clean": bool(session and session.status == "PAID" and pending_delivery == 0),
+            "meal_elapsed_seconds": (
+                elapsed_seconds(session.opened_at)
+                if session and session.opened_at
+                else 0
+            ),
+            "can_mark_clean": bool(
+                session
+                and pending_delivery == 0
+                and session.opened_at
+                and elapsed_seconds(session.opened_at) >= 1800
+                and (
+                    session.status == "PAID"
+                    or (
+                        bool(table.prepayment_required)
+                        and db.query(CashPayment.id).filter(CashPayment.session_id == session.id).first() is not None
+                        and not db.query(Order.id).filter(
+                            Order.session_id == session.id,
+                            Order.status == "PENDING_PAYMENT"
+                        ).first()
+                    )
+                )
+            ),
             "last_served_at": (
                 db.query(Order.served_at)
                 .filter(

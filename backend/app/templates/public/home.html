@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/public/home.css">
+<link rel="stylesheet" href="/static/css/public/chatbot.css">
 {% endblock %}
 
 {% block content %}
@@ -388,8 +389,52 @@
     <div class="cart-footer"><div><span>Total</span><strong id="cartTotal">$0</strong></div><button class="checkout-btn" type="button" id="checkoutBtn">CONTINUAR PEDIDO</button></div>
 </aside>
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="imperio-chat" id="imperioChat">
+    <button class="chat-launcher" id="chatLauncher" type="button" aria-label="Abrir asistente del Imperio" aria-expanded="false">
+        <span class="chat-launcher-icon">💬</span>
+        <span class="chat-launcher-pulse"></span>
+        <span class="chat-launcher-label">¿Necesitas ayuda?</span>
+    </button>
+
+    <section class="chat-panel" id="chatPanel" aria-hidden="true">
+        <header class="chat-header">
+            <div class="chat-brand">
+                <div class="chat-avatar">🔥</div>
+                <div>
+                    <strong>Asistente del Imperio</strong>
+                    <span><i></i> En línea · Te ayudo a elegir</span>
+                </div>
+            </div>
+            <button class="chat-close" id="chatClose" type="button" aria-label="Cerrar chat">×</button>
+        </header>
+
+        <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+        <div class="chat-typing" id="chatTyping" hidden><span></span><span></span><span></span> Escribiendo…</div>
+        <div class="chat-suggestions" id="chatSuggestions"></div>
+
+        <form class="chat-input-row" id="chatForm">
+            <input id="chatInput" type="text" maxlength="500" autocomplete="off" placeholder="Cuéntame qué te provoca…">
+            <button type="submit" aria-label="Enviar mensaje">➤</button>
+        </form>
+        <div class="chat-footer-note">Puedes pedir una recomendación o solicitar atención humana.</div>
+    </section>
+</div>
+
+<div class="support-modal" id="supportModal" hidden>
+    <div class="support-backdrop" data-close-support></div>
+    <div class="support-card" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+        <button class="support-close" type="button" data-close-support>×</button>
+        <span class="support-eyebrow">ATENCIÓN DEL IMPERIO</span>
+        <h2 id="supportTitle">Hablar con una persona</h2>
+        <p>Cuéntanos qué necesitas y dejaremos la solicitud registrada para nuestro equipo.</p>
+        <textarea id="supportMessage" maxlength="500" placeholder="Ej: Tengo una duda con mi pedido…"></textarea>
+        <button class="support-submit" id="supportSubmit" type="button">SOLICITAR ATENCIÓN</button>
+        <small id="supportStatus"></small>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="/static/js/public/home.js"></script>
+<script src="/static/js/public/chatbot.js"></script>
 {% endblock %}

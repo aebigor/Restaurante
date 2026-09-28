@@ -115,6 +115,15 @@ async def customer_register(request: Request):
     )
 
 
+
+@router.get("/admin/support")
+async def admin_support(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/support.html",
+        context={}
+    )
+
 # ======================================================
 # DASHBOARD
 # ======================================================

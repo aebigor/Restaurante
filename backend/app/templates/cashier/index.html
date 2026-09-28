@@ -122,14 +122,58 @@
                     </div>
                 </div>
                 <div class="close-grid">
-                    <div><span>EFECTIVO ESPERADO</span><strong id="expectedCash">$0</strong></div>
+                    <div><span>EFECTIVO DISPONIBLE</span><strong id="expectedCash">$0</strong></div>
                     <label>Efectivo contado
                         <input id="closingAmount" type="number" min="0" step="100">
                     </label>
-                    <button id="closeRegisterButton" class="btn-close-register" type="button">🔒 Cerrar caja</button>
+                    <div class="cash-register-actions">
+                        <button id="withdrawRegisterButton" class="btn-withdraw-register" type="button">💸 Retiro de dinero</button>
+                        <button id="closeRegisterButton" class="btn-close-register" type="button">🔒 Cerrar caja</button>
+                    </div>
+                </div>
+                <div class="cash-withdrawal-summary">
+                    <span>Retiros acumulados del turno</span>
+                    <strong id="withdrawalsValue">$0</strong>
+                    <small>Los retiros no cierran la caja; quedan registrados para el arqueo administrativo.</small>
                 </div>
             </section>
         </main>
+    </div>
+</div>
+
+<div id="withdrawalModal" class="withdrawal-modal" hidden>
+    <div class="withdrawal-dialog" role="dialog" aria-modal="true" aria-labelledby="withdrawalTitle">
+        <div class="withdrawal-dialog-head">
+            <div>
+                <span>CONTROL DE EFECTIVO</span>
+                <h2 id="withdrawalTitle">Retiro de dinero</h2>
+                <p>Registra quién recibe el efectivo y deja el movimiento asociado a esta caja.</p>
+            </div>
+            <button id="closeWithdrawalModal" class="withdrawal-close" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <div class="withdrawal-available">
+            <span>Efectivo disponible para retirar</span>
+            <strong id="withdrawalAvailable">$0</strong>
+        </div>
+        <div class="withdrawal-form">
+            <label>Valor a retirar
+                <input id="withdrawalAmount" type="number" min="100" step="100" placeholder="100000">
+            </label>
+            <label>Nombre de quien retira
+                <input id="withdrawalRecipientName" type="text" maxlength="150" placeholder="Nombre completo">
+            </label>
+            <label>Cédula / documento
+                <input id="withdrawalRecipientDocument" type="text" maxlength="50" inputmode="numeric" placeholder="Número de documento">
+            </label>
+            <label>Motivo
+                <input id="withdrawalReason" type="text" maxlength="255" placeholder="Retiro de efectivo de medio día">
+            </label>
+        </div>
+        <div id="withdrawalError" class="withdrawal-error" hidden></div>
+        <div class="withdrawal-actions">
+            <button id="cancelWithdrawal" type="button" class="btn-cancel-withdrawal">Cancelar</button>
+            <button id="confirmWithdrawal" type="button" class="btn-confirm-withdrawal">💸 Registrar retiro</button>
+        </div>
     </div>
 </div>
 
