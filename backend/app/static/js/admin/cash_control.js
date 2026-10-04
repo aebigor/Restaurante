@@ -39,6 +39,14 @@ function renderClosed(register, index) {
                 <div class="${diffClass}"><span>Diferencia</span><strong>${diffText}</strong></div>
             </div>
             <small class="control-closed-time">${register.payment_count || 0} cobros · cierre ${dateTime(register.closed_at)}</small>
+            <div class="control-closed-footer">
+                <div class="control-edit-status">${register.closing_amount_edit_count > 0
+                    ? `✓ Corrección administrativa usada${register.closing_amount_edited_at ? ` · ${dateTime(register.closing_amount_edited_at)}` : ""}${register.closing_amount_edited_by ? ` · ${escapeHtml(register.closing_amount_edited_by)}` : ""}${register.closing_amount_edit_reason ? `<br><span>Motivo: ${escapeHtml(register.closing_amount_edit_reason)}</span>` : ""}`
+                    : "✓ Sin correcciones administrativas"}</div>
+                ${register.closing_amount_edit_allowed
+                    ? `<button class="control-edit-button" type="button" data-edit-register="${escapeHtml(register.id)}" data-current-closing="${Number(register.closing_amount || 0)}">✏️ Corregir efectivo contado</button>`
+                    : ""}
+            </div>
         </div>`;
 }
 
@@ -73,6 +81,77 @@ async function loadCashControl(){
             </div>`).join("")
         : `<div class="control-empty"><strong>No hay retiros registrados hoy.</strong><br>Los retiros de efectivo aparecerán aquí inmediatamente.</div>`;
 }
+
+const editModal = document.getElementById("editClosingModal");
+const editForm = document.getElementById("editClosingForm");
+const editRegisterId = document.getElementById("editRegisterId");
+const editClosingAmount = document.getElementById("editClosingAmount");
+const editReason = document.getElementById("editClosingReason");
+const editConfirm = document.getElementById("editClosingConfirm");
+
+function closeEditModal(){
+    if (!editModal) return;
+    editModal.hidden = true;
+    editForm?.reset();
+    if (editConfirm) editConfirm.checked = false;
+}
+
+document.addEventListener("click", event => {
+    const button = event.target.closest("[data-edit-register]");
+    if (!button) return;
+    editRegisterId.value = button.dataset.editRegister;
+    editClosingAmount.value = Number(button.dataset.currentClosing || 0);
+    editReason.value = "";
+    editConfirm.checked = false;
+    editModal.hidden = false;
+    editClosingAmount.focus();
+});
+
+document.getElementById("closeEditClosingModal")?.addEventListener("click", closeEditModal);
+document.getElementById("cancelEditClosing")?.addEventListener("click", closeEditModal);
+editModal?.addEventListener("click", event => {
+    if (event.target === editModal) closeEditModal();
+});
+
+editForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!editConfirm.checked) {
+        alert("Debes confirmar que entiendes que esta corrección solo puede hacerse una vez y únicamente hoy.");
+        return;
+    }
+    const registerId = editRegisterId.value;
+    const amount = Number(editClosingAmount.value);
+    const reason = editReason.value.trim();
+    if (!Number.isFinite(amount) || amount < 0) {
+        alert("Ingresa un monto válido.");
+        return;
+    }
+    if (reason.length < 5) {
+        alert("Escribe un motivo de al menos 5 caracteres para dejar trazabilidad.");
+        return;
+    }
+    const button = editForm.querySelector("button[type=submit]");
+    button.disabled = true;
+    try {
+        const response = await fetch(`/api/cashier/admin/register/${encodeURIComponent(registerId)}/closing-amount`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({closing_amount: amount, reason})
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.detail || "No se pudo corregir el arqueo.");
+        closeEditModal();
+        await loadCashControl();
+        alert("Corrección guardada. Esta caja ya no podrá volver a editarse.");
+    } catch (error) {
+        alert(error.message || "No se pudo corregir el arqueo.");
+    } finally {
+        button.disabled = false;
+    }
+});
 
 document.getElementById("refreshAdminCash")?.addEventListener("click", loadCashControl);
 loadCashControl().catch(err=>{console.error(err);document.getElementById("controlRegisterList").textContent="No fue posible consultar las cajas.";document.getElementById("controlClosedRegisterList").textContent="No fue posible consultar los cierres.";});

@@ -198,14 +198,14 @@ function parseBackendDate(value) {
 
     if (!value) return null;
 
-    const text = String(value);
+    const text = String(value).trim();
 
-    return new Date(
-        text.endsWith("Z") ||
-        text.includes("+")
-            ? text
-            : `${text}Z`
-    );
+    // FastAPI puede devolver timestamps con Z, con offset (-05:00/+00:00)
+    // o timestamps sin zona. Los últimos se consideran UTC porque así se
+    // almacenan los timestamps del backend.
+    const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text);
+
+    return new Date(hasTimezone ? text : `${text}Z`);
 }
 
 
@@ -232,6 +232,35 @@ function elapsedSince(value) {
             ) / 1000
         )
     );
+}
+
+
+function getLiveElapsedSeconds(table, type) {
+    const key = type === "meal" ? "meal" : "session";
+    const backendSeconds = Number(
+        key === "meal"
+            ? table.meal_elapsed_seconds
+            : table.session_elapsed_seconds
+    );
+    const base = Number.isFinite(backendSeconds) && backendSeconds >= 0
+        ? backendSeconds
+        : elapsedSince(
+            key === "meal" ? table.meal_started_at : table.session_opened_at
+        );
+
+    // El backend entrega el valor real calculado con su reloj. Desde ese
+    // punto el navegador solo suma los segundos transcurridos localmente.
+    const syncedAt = Number(table.__timingSyncedAt || Date.now());
+    return Math.max(0, Math.floor(base + (Date.now() - syncedAt) / 1000));
+}
+
+function liveElapsedFromElement(element) {
+    const base = Number(element.dataset.timerBaseSeconds);
+    const syncedAt = Number(element.dataset.timerSyncedAt);
+    if (Number.isFinite(base) && Number.isFinite(syncedAt)) {
+        return Math.max(0, Math.floor(base + (Date.now() - syncedAt) / 1000));
+    }
+    return elapsedSince(element.dataset.timerStart);
 }
 
 
@@ -292,10 +321,21 @@ function formatTime(value) {
 
 
 const mealNotificationState = new Map();
+const DEFAULT_MEAL_TIME_LIMIT_SECONDS = 5;
 
-function showMealTimeNotification(table, minutes) {
+function formatMealElapsedAlert(seconds) {
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    if (total < 60) return `${total} ${total === 1 ? "segundo" : "segundos"}`;
+    const minutes = Math.floor(total / 60);
+    if (minutes < 60) return `${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return `${hours} h ${rest} min`;
+}
+
+function showMealTimeNotification(table, elapsed) {
     const tableName = table.name || `Mesa ${table.number}`;
-    const message = `⚠️ ${tableName} lleva ${minutes} minutos. Revisa si el cliente necesita atención.`;
+    const message = `⚠️ ${tableName} lleva ${formatMealElapsedAlert(elapsed)} comiendo. Revisa si el cliente necesita atención.`;
 
     let container = document.getElementById("waiterMealNotifications");
     if (!container) {
@@ -322,30 +362,37 @@ function showMealTimeNotification(table, minutes) {
 
 function checkMealTimeNotifications() {
     tablesData.forEach(table => {
-        if (!table.session_opened_at) return;
-        if (table.status === "FREE" || table.status === "CLOSED") return;
+        // La alerta se basa en el tiempo REAL comiendo, no en el tiempo
+        // desde que se abrió la mesa. Funciona igual para mesas normales
+        // y mesas de pago anticipado.
+        if (!table.meal_started_at) return;
+        if (["FREE", "CLOSED", "CLEAN", "free", "closed", "clean"].includes(table.status)) return;
 
-        const elapsed = elapsedSince(table.session_opened_at);
-        const milestone = Math.floor(elapsed / 1800);
-        if (milestone < 1) return;
+        const limit = Math.max(1, Number(table.meal_time_limit_seconds || DEFAULT_MEAL_TIME_LIMIT_SECONDS));
+        const elapsed = getLiveElapsedSeconds(table, "meal");
+        if (elapsed < limit) return;
 
         const key = `${table.id}:${table.session_id || "session"}`;
-        const previous = mealNotificationState.get(key) || 0;
-        if (milestone > previous) {
-            mealNotificationState.set(key, milestone);
-            showMealTimeNotification(table, milestone * 30);
-        }
+        if (mealNotificationState.get(key)) return;
+
+        mealNotificationState.set(key, true);
+        showMealTimeNotification(table, elapsed);
     });
 }
 
 function updateMealTimeWarnings() {
     document.querySelectorAll("[data-meal-warning-start]").forEach(element => {
         const start = element.dataset.mealWarningStart;
-        const elapsed = elapsedSince(start);
-        const reached = elapsed >= 1800;
+        if (!start) {
+            element.hidden = true;
+            return;
+        }
+        const limit = Math.max(1, Number(element.dataset.mealTimeLimit || DEFAULT_MEAL_TIME_LIMIT_SECONDS));
+        const elapsed = liveElapsedFromElement(element);
+        const reached = elapsed >= limit;
         element.hidden = !reached;
         if (reached) {
-            element.innerHTML = "⚠️ Esta mesa lleva <strong>30 minutos o más comiendo.</strong><span>Revisa la mesa y verifica si el cliente necesita atención.</span>";
+            element.innerHTML = `⚠️ <strong>Tiempo de comida cumplido.</strong><span>Lleva ${escapeHtml(formatDuration(elapsed))} comiendo. Revisa la mesa; si los clientes se retiraron, continúa con el proceso de limpieza.</span>`;
         }
     });
 }
@@ -369,7 +416,7 @@ function updateWaiterTimers() {
 
                 element.textContent =
                     formatDuration(
-                        elapsedSince(value)
+                        liveElapsedFromElement(element)
                     );
 
             }
@@ -446,9 +493,10 @@ async function loadTables() {
             );
 
         tablesData =
-            Array.isArray(data)
-                ? data
-                : data.tables || [];
+            (Array.isArray(data) ? data : data.tables || []).map(table => ({
+                ...table,
+                __timingSyncedAt: Date.now()
+            }));
 
         renderTables();
 
@@ -551,43 +599,52 @@ function renderTables() {
                                     <div>⏱ Tiempo en espera <b data-timer-start="${escapeHtml(table.payment_pending_since || table.session_opened_at)}">${formatDuration(elapsedSince(table.payment_pending_since || table.session_opened_at))}</b></div>
                                 </div>
                             `
-                            : paidTable || cleanTable
+                            : (paidTable || cleanTable || occupiedTable) && table.session_opened_at
                             ? `
-                                <div class="table-paid-notice">
-                                    <strong>${cleanTable ? "✓ Mesa marcada como limpia" : "✓ Pago autorizado por caja"}</strong>
-                                    <span>${cleanTable ? "Caja debe realizar la liberación." : "Entrega todos los pedidos y marca la mesa como limpia."}</span>
-                                </div>
-                                ${table.last_served_at ? `
-                                    <div class="table-live-time">
-                                        <span>🍽 Último pedido entregado</span>
-                                        <strong data-timer-start="${escapeHtml(table.last_served_at)}">
-                                            ${formatDuration(elapsedSince(table.last_served_at))}
-                                        </strong>
+                                ${paidTable || cleanTable ? `
+                                    <div class="table-paid-notice">
+                                        <strong>${cleanTable ? "✓ Mesa marcada como limpia" : "✓ Pago autorizado por caja"}</strong>
+                                        <span>${cleanTable ? "Caja debe realizar la liberación." : "Entrega todos los pedidos y marca la mesa como limpia."}</span>
                                     </div>
                                 ` : ""}
-                                ${table.session_opened_at ? `
+                                <div class="table-live-time">
+                                    <span>⏱ Tiempo en mesa</span>
+                                    <strong
+                                        data-timer-start="${escapeHtml(table.session_opened_at || "")}"
+                                        data-timer-base-seconds="${escapeHtml(table.session_elapsed_seconds ?? 0)}"
+                                        data-timer-synced-at="${Date.now()}"
+                                    >
+                                        ${formatDuration(table.session_elapsed_seconds ?? 0)}
+                                    </strong>
+                                </div>
+                                ${table.meal_started_at ? `
+                                    <div class="table-live-time meal-live-time">
+                                        <span>🍽️ Tiempo comiendo</span>
+                                        <strong
+                                            data-timer-start="${escapeHtml(table.meal_started_at || "")}"
+                                            data-timer-base-seconds="${escapeHtml(table.meal_elapsed_seconds ?? 0)}"
+                                            data-timer-synced-at="${Date.now()}"
+                                        >
+                                            ${formatDuration(table.meal_elapsed_seconds ?? 0)}
+                                        </strong>
+                                    </div>
+                                ` : `
+                                    <div class="table-live-time meal-live-time pending-meal-time">
+                                        <span>🍽️ Tiempo comiendo</span>
+                                        <strong>Esperando entrega</strong>
+                                    </div>
+                                `}
+                                ${table.meal_started_at ? `
                                     <div class="meal-time-warning"
-                                         data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
+                                         data-meal-warning-start="${escapeHtml(table.meal_started_at)}"
+                                         data-timer-base-seconds="${escapeHtml(table.meal_elapsed_seconds ?? 0)}"
+                                         data-timer-synced-at="${Date.now()}"
+                                         data-meal-time-limit="${escapeHtml(table.meal_time_limit_seconds || DEFAULT_MEAL_TIME_LIMIT_SECONDS)}"
                                          hidden>
                                     </div>
                                 ` : ""}
                             `
-                            : occupiedTable && table.session_opened_at
-                                ? `
-                                    <div class="table-live-time">
-                                        <span>⏱ Tiempo en mesa</span>
-                                        <strong data-timer-start="${escapeHtml(table.session_opened_at)}">
-                                            ${formatDuration(elapsedSince(table.session_opened_at))}
-                                        </strong>
-                                    </div>
-                                    ${table.session_opened_at ? `
-                                        <div class="meal-time-warning"
-                                             data-meal-warning-start="${escapeHtml(table.session_opened_at)}"
-                                             hidden>
-                                        </div>
-                                    ` : ""}
-                                `
-                                : ""
+                            : ""
                     }
                 </div>
 
@@ -2103,7 +2160,7 @@ function renderActiveOrders(
                                             order.id
                                         )}')"
                                     >
-                                        🖨 Imprimir comanda
+                                        🖨 Reimprimir comanda / código
                                     </button>
 
                                     <span class="served-note">
@@ -2114,6 +2171,14 @@ function renderActiveOrders(
                                 `
 
                                 : `
+
+                                    <button
+                                        type="button"
+                                        class="order-action secondary-action"
+                                        onclick="printOrder('${escapeHtml(order.id)}')"
+                                    >
+                                        🖨 Reimprimir comanda / código
+                                    </button>
 
                                     <span class="kitchen-note">
 
@@ -2477,6 +2542,13 @@ async function printOrder(
                     <p style="font-weight:800;text-align:center;border:2px solid #111;padding:8px;margin:12px 0;">
                         💳 PAGO ANTICIPADO — PASAR POR CAJA
                     </p>
+                    ${order.confirmation_code ? `
+                        <div style="text-align:center;border:2px dashed #111;padding:10px;margin:12px 0;">
+                            <div style="font-size:11px;font-weight:700;">CÓDIGO DE COMANDA DEL CLIENTE</div>
+                            <div style="font-size:30px;font-weight:900;letter-spacing:5px;margin:6px 0;">${escapeHtml(order.confirmation_code)}</div>
+                            <div style="font-size:10px;">Presenta este código en Caja</div>
+                        </div>
+                    ` : ""}
                 ` : ""}
 
                 <table>

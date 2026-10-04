@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from decimal import Decimal
 
@@ -40,6 +40,7 @@ from .model import (
 from .schemas import (
     CashRegisterOpen,
     CashRegisterClose,
+    CashRegisterClosingEdit,
     CashPaymentCreate,
     PrepaymentCodeVerify,
     CashRegisterWithdrawalCreate
@@ -51,6 +52,15 @@ router = APIRouter(
     prefix="/api/cashier",
     tags=["Cashier"]
 )
+
+
+def _bogota_today():
+    """Fecha calendario oficial de Colombia (UTC-5, sin horario de verano).
+
+    Un desplazamiento fijo evita depender de tzdata en Windows.
+    """
+    bogota_tz = timezone(timedelta(hours=-5), name="America/Bogota")
+    return datetime.now(bogota_tz).date()
 
 
 def _online_order_payload(db: Session, order: Order):
@@ -515,7 +525,7 @@ def admin_cash_summary(
 
     from datetime import date
 
-    today = date.today()
+    today = _bogota_today()
 
     # ------------------------------------------------------
     # VENTAS DEL DÍA
@@ -571,7 +581,10 @@ def admin_cash_summary(
     # ------------------------------------------------------
     open_registers = (
         db.query(CashRegister)
-        .options(joinedload(CashRegister.opened_by_user))
+        .options(
+            joinedload(CashRegister.opened_by_user),
+            joinedload(CashRegister.closing_amount_edited_by_user),
+        )
         .filter(CashRegister.status == "OPEN")
         .order_by(CashRegister.opened_at.asc())
         .all()
@@ -582,7 +595,10 @@ def admin_cash_summary(
     # ------------------------------------------------------
     closed_registers = (
         db.query(CashRegister)
-        .options(joinedload(CashRegister.opened_by_user))
+        .options(
+            joinedload(CashRegister.opened_by_user),
+            joinedload(CashRegister.closing_amount_edited_by_user),
+        )
         .filter(
             CashRegister.status == "CLOSED",
             func.date(CashRegister.closed_at) == today
@@ -662,6 +678,20 @@ def admin_cash_summary(
             "expected_cash": register.expected_cash,
             "closing_amount": register.closing_amount,
             "difference": register.difference,
+            "closing_amount_edit_count": register.closing_amount_edit_count or 0,
+            "closing_amount_edited_at": register.closing_amount_edited_at,
+            "closing_amount_edited_by": (
+                register.closing_amount_edited_by_user.full_name
+                if register.closing_amount_edited_by_user
+                else None
+            ),
+            "closing_amount_edit_reason": register.closing_amount_edit_reason,
+            "closing_amount_edit_allowed": bool(
+                status == "CLOSED"
+                and register.closed_at
+                and register.closed_at.astimezone(timezone(timedelta(hours=-5), name="America/Bogota")).date() == _bogota_today()
+                and (register.closing_amount_edit_count or 0) == 0
+            ),
         }
 
     pending_prepayment_rows = (
@@ -1553,6 +1583,70 @@ def register_withdrawal(
         "amount": movement.amount,
         "cash_available": available - amount,
         "created_at": movement.created_at,
+    }
+
+
+# ==========================================================
+# CORREGIR EFECTIVO CONTADO - SOLO ADMIN / UNA VEZ / MISMO DÍA
+# ==========================================================
+
+@router.patch("/admin/register/{register_id}/closing-amount")
+def edit_closed_register_closing_amount(
+    register_id: UUID,
+    data: CashRegisterClosingEdit,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    if not current_user.role or current_user.role.name != "Administrador":
+        raise HTTPException(403, "Solo el administrador puede corregir un arqueo cerrado.")
+
+    register = (
+        db.query(CashRegister)
+        .filter(CashRegister.id == register_id)
+        .first()
+    )
+    if not register:
+        raise HTTPException(404, "Caja no encontrada.")
+
+    if register.status != "CLOSED":
+        raise HTTPException(409, "Solo se puede corregir una caja que ya esté cerrada.")
+
+    if not register.closed_at:
+        raise HTTPException(409, "La caja no tiene fecha de cierre registrada.")
+
+    closed_local_date = register.closed_at.astimezone(
+        timezone(timedelta(hours=-5), name="America/Bogota")
+    ).date()
+    if closed_local_date != _bogota_today():
+        raise HTTPException(409, "La corrección solo está disponible durante el mismo día del cierre.")
+
+    if (register.closing_amount_edit_count or 0) >= 1:
+        raise HTTPException(409, "Esta caja ya tuvo su única corrección administrativa. No se puede volver a editar.")
+
+    if register.expected_cash is None:
+        raise HTTPException(409, "La caja no tiene efectivo esperado calculado.")
+
+    new_amount = Decimal(str(data.closing_amount))
+    new_difference = new_amount - Decimal(str(register.expected_cash))
+
+    register.closing_amount = new_amount
+    register.difference = new_difference
+    register.closing_amount_edit_count = 1
+    register.closing_amount_edited_at = datetime.now(timezone.utc)
+    register.closing_amount_edited_by = current_user.id
+    register.closing_amount_edit_reason = data.reason.strip()
+
+    db.commit()
+    db.refresh(register)
+
+    return {
+        "message": "El efectivo contado fue corregido una sola vez y el arqueo quedó actualizado.",
+        "register_id": str(register.id),
+        "closing_amount": register.closing_amount,
+        "expected_cash": register.expected_cash,
+        "difference": register.difference,
+        "edited_at": register.closing_amount_edited_at,
+        "edited_by": current_user.full_name,
     }
 
 

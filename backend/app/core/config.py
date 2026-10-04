@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = "gemini-3.8-flash"
 
+    # Tiempo de comida antes de permitir marcar la mesa para limpieza.
+    # Se cambia desde backend/.env y se expresa en segundos.
+    MEAL_TIME_LIMIT_SECONDS: int = 1800
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True

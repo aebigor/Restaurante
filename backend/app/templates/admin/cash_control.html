@@ -54,6 +54,34 @@
         </main>
     </div>
 </div>
+
+<div class="cash-edit-modal" id="editClosingModal" hidden>
+    <div class="cash-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="editClosingTitle">
+        <button class="cash-edit-close" id="closeEditClosingModal" type="button" aria-label="Cerrar">×</button>
+        <span class="cash-edit-kicker">CORRECCIÓN ADMINISTRATIVA</span>
+        <h2 id="editClosingTitle">Corregir efectivo contado</h2>
+        <p class="cash-edit-warning"><strong>⚠️ Atención:</strong> esta corrección cambia únicamente el monto de <b>Efectivo contado</b>. El efectivo esperado no se modifica y la diferencia se recalcula automáticamente.</p>
+        <div class="cash-edit-rule">
+            <b>Regla de seguridad</b>
+            <span>Solo se puede hacer <strong>una vez</strong>, únicamente el mismo día en que se cerró la caja. Después de guardar, ni siquiera el administrador podrá volver a modificar ese cierre.</span>
+        </div>
+        <form id="editClosingForm">
+            <input type="hidden" id="editRegisterId">
+            <label>Efectivo contado correcto
+                <input id="editClosingAmount" type="number" min="0" step="100" required>
+            </label>
+            <label>Motivo de la corrección
+                <textarea id="editClosingReason" minlength="5" maxlength="255" required placeholder="Ej. Se recontó el efectivo y se detectó un error de digitación."></textarea>
+            </label>
+            <label class="cash-edit-check"><input id="editClosingConfirm" type="checkbox"> <span>Confirmo que el monto fue revisado y entiendo que esta será la única corrección permitida para este cierre.</span></label>
+            <div class="cash-edit-actions">
+                <button id="cancelEditClosing" type="button" class="cash-edit-cancel">Cancelar</button>
+                <button type="submit" class="cash-edit-save">Guardar corrección única</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="/static/js/admin/sidebar.js"></script>
-<script src="/static/js/admin/cash_control.js?v=20260908"></script>
+<script src="/static/js/admin/cash_control.js?v=20261004"></script>
 {% endblock %}

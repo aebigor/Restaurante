@@ -23,9 +23,11 @@ DATABASE_URL = (
     f"{settings.DATABASE_NAME}"
 )
 
+# No imprimir cada consulta SQL en la terminal.
+# Los errores reales de SQLAlchemy/FastAPI siguen apareciendo.
 engine = create_engine(
     DATABASE_URL,
-    echo=settings.DEBUG
+    echo=False
 )
 
 SessionLocal = sessionmaker(

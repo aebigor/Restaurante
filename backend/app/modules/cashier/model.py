@@ -7,6 +7,7 @@ from sqlalchemy import (
     Numeric,
     DateTime,
     ForeignKey,
+    Integer,
     func
 )
 
@@ -79,8 +80,40 @@ class CashRegister(Base):
         nullable=True
     )
 
+    # Corrección administrativa del efectivo contado.
+    # El servidor permite como máximo UNA corrección y solamente
+    # durante el mismo día calendario del cierre.
+    closing_amount_edit_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    closing_amount_edited_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    closing_amount_edited_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True
+    )
+
+    closing_amount_edit_reason: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
+
     opened_by_user = relationship(
-        "User"
+        "User",
+        foreign_keys=[opened_by]
+    )
+
+    closing_amount_edited_by_user = relationship(
+        "User",
+        foreign_keys=[closing_amount_edited_by]
     )
 
 

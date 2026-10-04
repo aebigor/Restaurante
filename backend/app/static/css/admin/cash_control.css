@@ -44,3 +44,33 @@
 .control-movement .movement-type { color:#9b6500; font-weight:900; font-size:11px; letter-spacing:.08em; }
 @media(max-width:900px){ .control-movement { grid-template-columns:1fr 1fr; } }
 @media(max-width:600px){ .control-movement { grid-template-columns:1fr; } }
+
+
+.control-closed-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid #eee;}
+.control-edit-status{font-size:11px;color:#777;font-weight:700;}
+.control-edit-button{border:1px solid #b80000;background:#fff;border-radius:9px;padding:9px 12px;color:#b80000;font-weight:800;cursor:pointer;}
+.control-edit-button:hover{background:#fff5f5;}
+.control-edit-button:disabled{opacity:.6;cursor:not-allowed;}
+.cash-edit-modal{position:fixed;inset:0;background:rgba(15,15,15,.58);display:grid;place-items:center;padding:20px;z-index:9999;}
+.cash-edit-modal[hidden]{display:none;}
+.cash-edit-dialog{position:relative;width:min(560px,100%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 25px 80px rgba(0,0,0,.28);border-top:5px solid #b80000;}
+.cash-edit-close{position:absolute;right:16px;top:12px;border:0;background:transparent;font-size:27px;color:#777;cursor:pointer;}
+.cash-edit-kicker{display:block;color:#b80000;font-size:11px;font-weight:900;letter-spacing:.08em;margin-bottom:5px;}
+.cash-edit-dialog h2{margin:0 0 10px;color:#171717;}
+.cash-edit-warning{margin:0 0 14px;background:#fff7e6;border:1px solid #f0d49a;border-radius:12px;padding:13px;color:#5c450e;font-size:13px;line-height:1.45;}
+.cash-edit-rule{display:flex;flex-direction:column;gap:5px;background:#f7f7f7;border-radius:12px;padding:13px;margin-bottom:17px;font-size:12px;color:#555;line-height:1.45;}
+.cash-edit-rule b{color:#222;}
+.cash-edit-dialog label{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;font-size:12px;font-weight:800;color:#444;}
+.cash-edit-dialog input[type=number],.cash-edit-dialog textarea{width:100%;box-sizing:border-box;border:1px solid #d9d9d9;border-radius:10px;padding:11px;font:inherit;font-weight:500;outline:none;}
+.cash-edit-dialog input[type=number]:focus,.cash-edit-dialog textarea:focus{border-color:#b80000;box-shadow:0 0 0 3px rgba(184,0,0,.08);}
+.cash-edit-dialog textarea{min-height:85px;resize:vertical;}
+.cash-edit-check{flex-direction:row!important;align-items:flex-start;gap:8px!important;font-weight:600!important;line-height:1.4;}
+.cash-edit-check input{margin-top:3px;accent-color:#b80000;}
+.cash-edit-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+.cash-edit-actions button{border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;}
+.cash-edit-cancel{border:1px solid #ddd;background:#fff;color:#555;}
+.cash-edit-save{border:1px solid #b80000;background:#b80000;color:#fff;}
+.cash-edit-save:disabled{opacity:.6;cursor:not-allowed;}
+@media(max-width:600px){.control-closed-footer{align-items:stretch;flex-direction:column}.cash-edit-dialog{padding:22px}.cash-edit-actions{flex-direction:column}.cash-edit-actions button{width:100%;}}
+
+.control-edit-status span{display:inline-block;margin-top:4px;color:#999;font-weight:600;}

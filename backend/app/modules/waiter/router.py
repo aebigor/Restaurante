@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.core.dependencies import get_current_user
 
 from app.modules.sessions.model import Session as RestaurantSession
@@ -22,6 +23,9 @@ from app.modules.tables.model import Table
 from app.modules.cashier.model import CashPayment
 
 from .schemas import WaiterOrderCreate
+
+
+MEAL_TIME_LIMIT_SECONDS = max(1, int(settings.MEAL_TIME_LIMIT_SECONDS))
 
 
 def elapsed_seconds(value):
@@ -324,6 +328,40 @@ def waiter_tables(
                 .scalar()
             )
 
+        last_served_at = (
+            db.query(Order.served_at)
+            .filter(
+                Order.session_id == session.id,
+                Order.served_at.isnot(None),
+                Order.status != "CANCELLED"
+            )
+            .order_by(Order.served_at.desc())
+            .limit(1)
+            .scalar()
+            if session
+            else None
+        )
+
+        # El tiempo de comida de la mesa comienza con la PRIMERA comanda
+        # completamente entregada. Esto evita reiniciar el cronómetro cada
+        # vez que el cliente hace un nuevo pedido durante la misma sesión.
+        meal_started_at = (
+            db.query(Order.served_at)
+            .filter(
+                Order.session_id == session.id,
+                Order.served_at.isnot(None),
+                Order.status != "CANCELLED"
+            )
+            .order_by(Order.served_at.asc())
+            .limit(1)
+            .scalar()
+            if session
+            else None
+        )
+
+        session_elapsed = elapsed_seconds(session.opened_at) if session else 0
+        meal_elapsed = elapsed_seconds(meal_started_at) if meal_started_at else 0
+
         result.append({
 
             "id": table.id,
@@ -359,6 +397,7 @@ def waiter_tables(
                 if session
                 else None
             ),
+            "session_elapsed_seconds": session_elapsed,
             "paid_at": (
                 db.query(CashPayment.paid_at)
                 .filter(CashPayment.session_id == session.id)
@@ -371,16 +410,17 @@ def waiter_tables(
             "pending_delivery": pending_delivery,
             "payment_pending": bool(pending_payment_since),
             "payment_pending_since": pending_payment_since,
-            "meal_elapsed_seconds": (
-                elapsed_seconds(session.opened_at)
-                if session and session.opened_at
-                else 0
+            "meal_started_at": meal_started_at,
+            "meal_elapsed_seconds": meal_elapsed,
+            "meal_time_limit_seconds": MEAL_TIME_LIMIT_SECONDS,
+            "meal_time_reached": bool(
+                meal_started_at and meal_elapsed >= MEAL_TIME_LIMIT_SECONDS
             ),
             "can_mark_clean": bool(
                 session
                 and pending_delivery == 0
-                and session.opened_at
-                and elapsed_seconds(session.opened_at) >= 1800
+                and meal_started_at
+                and meal_elapsed >= MEAL_TIME_LIMIT_SECONDS
                 and (
                     session.status == "PAID"
                     or (
@@ -393,19 +433,7 @@ def waiter_tables(
                     )
                 )
             ),
-            "last_served_at": (
-                db.query(Order.served_at)
-                .filter(
-                    Order.session_id == session.id,
-                    Order.served_at.isnot(None),
-                    Order.status != "CANCELLED"
-                )
-                .order_by(Order.served_at.desc())
-                .limit(1)
-                .scalar()
-                if session
-                else None
-            )
+            "last_served_at": last_served_at
         })
 
     return result
@@ -538,6 +566,14 @@ def create_waiter_order(
             db.flush()
 
     # ======================================================
+    # 5. DETERMINAR SI LA MESA REQUIERE PAGO ANTICIPADO
+    #
+    # Se calcula después de resolver la sesión. Antes esta variable
+    # se utilizaba sin haber sido definida, provocando NameError/500.
+    prepayment_required = bool(
+        session.table and session.table.prepayment_required
+    )
+
     # 5. BUSCAR LA COMANDA EXISTENTE
     # ======================================================
     #
@@ -976,7 +1012,7 @@ def active_waiter_orders(
 
             "payment_pending": order.status == "PENDING_PAYMENT",
 
-            "confirmation_code": order.confirmation_code if order.status == "PENDING_PAYMENT" else None,
+            "confirmation_code": order.confirmation_code if table.prepayment_required else None,
 
             "status": order_status,
 

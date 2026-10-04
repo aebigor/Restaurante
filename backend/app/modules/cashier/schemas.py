@@ -34,6 +34,24 @@ class CashRegisterClose(BaseModel):
 # COBRO
 # ==========================================================
 
+
+
+# ==========================================================
+# CORRECCIÓN ADMINISTRATIVA DEL ARQUEO
+# ==========================================================
+
+class CashRegisterClosingEdit(BaseModel):
+
+    closing_amount: Decimal = Field(
+        ge=0
+    )
+
+    reason: str = Field(
+        min_length=5,
+        max_length=255
+    )
+
+
 class CashPaymentCreate(BaseModel):
 
     session_id: UUID

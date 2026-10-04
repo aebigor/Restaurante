@@ -2133,6 +2133,16 @@ body.modal-open {
 
 
 /* Aviso exclusivo para mesas configuradas con pago anticipado. */
+/* Cronómetro de permanencia y de comida de la mesa. */
+.meal-live-time {
+    border-left: 3px solid rgba(245, 158, 11, 0.55);
+}
+
+.pending-meal-time strong {
+    font-size: 11px;
+    opacity: 0.72;
+}
+
 .meal-time-warning {
     margin-top: 10px;
     padding: 10px 12px;
