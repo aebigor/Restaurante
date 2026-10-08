@@ -1169,24 +1169,11 @@ def mark_table_clean(
             detail="Las mesas normales deben ser autorizadas por Caja antes de marcarse como limpias."
         )
 
-    orders = db.query(Order).filter(Order.session_id == session.id).all()
-    pending_orders = [
-        order for order in orders
-        if order.status != "CANCELLED" and not order.served_at
-    ]
-
-    if pending_orders:
-        raise HTTPException(
-            status_code=400,
-            detail="No puedes marcar la mesa como limpia hasta entregar todos los pedidos."
-        )
-
-    # NUNCA liberar la mesa desde el mesero, ni siquiera cuando el pago
-    # anticipado ya fue registrado. El mesero solamente confirma que todos
-    # los pedidos fueron entregados y marca la mesa como LIMPIA.
-    # Después de esto, Caja es quien hace la liberación definitiva (CLOSED).
+    # El mesero puede marcar la mesa como limpia sin bloquear el cierre
+    # si olvidó registrar la entrega de una comanda. Caja es la autoridad
+    # final: cuando libera una mesa ya pagada, cierra sesión y comandas.
     session.status = "CLEAN"
-    message = "Mesa marcada como limpia. Caja debe liberarla."
+    message = "Mesa marcada como limpia. Caja puede liberarla."
     response_status = "CLEAN"
 
     db.commit()

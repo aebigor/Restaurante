@@ -124,19 +124,6 @@ async def admin_support(request: Request):
         context={}
     )
 
-
-# ======================================================
-# INVENTARIO
-# ======================================================
-
-@router.get("/admin/inventory")
-async def admin_inventory(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/inventory.html",
-        context={}
-    )
-
 # ======================================================
 # DASHBOARD
 # ======================================================
@@ -332,6 +319,16 @@ async def products_edit(
 # ======================================================
 # COCINA / ESTACIONES
 # ======================================================
+
+@router.get("/admin/inventory")
+async def admin_inventory(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/inventory.html",
+        context={}
+    )
+
 
 @router.get("/admin/kitchen")
 async def kitchen_dashboard(request: Request):

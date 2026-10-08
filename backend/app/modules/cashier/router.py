@@ -1640,11 +1640,15 @@ def release_table_from_cashier(
             detail="Solo Caja puede liberar una mesa."
         )
 
+    # Si Caja ya recibió el pago, se considera que el cliente terminó
+    # su consumo. La liberación desde Caja NO debe depender de que el
+    # mesero haya marcado cada comanda como entregada: el pago es el
+    # cierre operativo definitivo de la mesa.
     session = (
         db.query(RestaurantSession)
         .filter(
             RestaurantSession.id == session_id,
-            RestaurantSession.status == "CLEAN"
+            RestaurantSession.status.in_(["PAID", "CLEAN"])
         )
         .first()
     )
@@ -1652,7 +1656,7 @@ def release_table_from_cashier(
     if not session:
         raise HTTPException(
             status_code=409,
-            detail="La mesa debe estar pagada y marcada como limpia por el mesero antes de liberarla."
+            detail="La mesa debe estar pagada antes de poder liberarla desde Caja."
         )
 
     now = datetime.now(timezone.utc)

@@ -6,6 +6,53 @@ let historyItems = [];
 let selectedStation = null;
 let currentScreenCode = null;
 
+// ==========================================================
+// SONIDO DE ALERTA
+// ==========================================================
+
+let alertAudioContext = null;
+let kitchenKnownQueueIds = new Set();
+let kitchenQueueSnapshotReady = false;
+
+function ensureAlertAudio() {
+    try {
+        if (!alertAudioContext) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            alertAudioContext = new AudioCtx();
+        }
+        if (alertAudioContext.state === "suspended") {
+            alertAudioContext.resume().catch(() => {});
+        }
+        return alertAudioContext;
+    } catch (error) {
+        console.warn("No fue posible inicializar el sonido de cocina:", error);
+        return null;
+    }
+}
+
+function playKitchenAlert() {
+    const ctx = ensureAlertAudio();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    [0, 0.16].forEach((offset, index) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = index === 0 ? 880 : 1175;
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.13);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.14);
+    });
+}
+
+document.addEventListener("pointerdown", ensureAlertAudio, { once: true });
+
 
 // ==========================================================
 // FECHAS
@@ -559,8 +606,33 @@ async function loadBoard() {
         .textContent =
         "Cola automática · orden de llegada";
 
-    items =
-        data.items || [];
+    const nextItems = data.items || [];
+
+    // No sonar al abrir la pantalla: solo avisamos cuando llega algo nuevo
+    // después de que la estación ya quedó cargada.
+    if (!kitchenQueueSnapshotReady) {
+        kitchenKnownQueueIds = new Set(
+            nextItems
+                .filter(item => item.status === "WAITING")
+                .map(item => String(item.id))
+        );
+        kitchenQueueSnapshotReady = true;
+    } else {
+        const newWaiting = nextItems.filter(item =>
+            item.status === "WAITING" &&
+            !kitchenKnownQueueIds.has(String(item.id))
+        );
+        if (newWaiting.length) {
+            playKitchenAlert();
+        }
+        kitchenKnownQueueIds = new Set(
+            nextItems
+                .filter(item => item.status === "WAITING")
+                .map(item => String(item.id))
+        );
+    }
+
+    items = nextItems;
 
     const queueCount =
         document.getElementById(

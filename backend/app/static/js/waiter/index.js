@@ -16,6 +16,60 @@ let selectedTable = null;
 let selectedCategory = "all";
 let cart = [];
 
+// ==========================================================
+// SONIDO DE ALERTA PARA MESERO
+// ==========================================================
+
+let waiterAudioContext = null;
+let waiterCallsSnapshotReady = false;
+let waiterKnownCallIds = new Set();
+let waiterOrdersSnapshotReady = false;
+let waiterKnownOrderStates = new Map();
+
+function ensureWaiterAlertAudio() {
+    try {
+        if (!waiterAudioContext) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            waiterAudioContext = new AudioCtx();
+        }
+        if (waiterAudioContext.state === "suspended") {
+            waiterAudioContext.resume().catch(() => {});
+        }
+        return waiterAudioContext;
+    } catch (error) {
+        console.warn("No fue posible inicializar el sonido del mesero:", error);
+        return null;
+    }
+}
+
+function playWaiterAlert(type = "order") {
+    const ctx = ensureWaiterAlertAudio();
+    if (!ctx) return;
+
+    const frequencies = type === "call"
+        ? [988, 1319, 988]
+        : [784, 988, 1175];
+    const now = ctx.currentTime;
+
+    frequencies.forEach((frequency, index) => {
+        const offset = index * 0.15;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.16, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.13);
+    });
+}
+
+document.addEventListener("pointerdown", ensureWaiterAlertAudio, { once: true });
+
 
 // ==========================================================
 // ELEMENTOS
@@ -656,7 +710,7 @@ function renderTables() {
                                 ? table.prepayment_required
                                     ? `
                                         <button type="button" class="clean-table-button prepayment-release-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', true)">
-                                            🧹 Confirmar entrega y marcar mesa limpia
+                                            🧹 Marcar mesa como limpia
                                         </button>
                                     `
                                     : `
@@ -1560,6 +1614,23 @@ async function loadCalls() {
                 ? data
                 : data.calls || [];
 
+        const currentCallIds = new Set(
+            calls.map(call => String(call.id))
+        );
+
+        if (!waiterCallsSnapshotReady) {
+            waiterKnownCallIds = currentCallIds;
+            waiterCallsSnapshotReady = true;
+        } else {
+            const hasNewCall = [...currentCallIds].some(
+                id => !waiterKnownCallIds.has(id)
+            );
+            if (hasNewCall) {
+                playWaiterAlert("call");
+            }
+            waiterKnownCallIds = currentCallIds;
+        }
+
         renderCalls(calls);
 
     } catch (error) {
@@ -1707,11 +1778,39 @@ async function loadActiveOrders() {
                 `${API_BASE}/waiter/orders/active`
             );
 
-        renderActiveOrders(
-            Array.isArray(orders)
-                ? orders
-                : []
-        );
+        const activeOrders = Array.isArray(orders) ? orders : [];
+        const nextOrderStates = new Map();
+        let shouldAlert = false;
+
+        for (const order of activeOrders) {
+            const orderId = String(order.id);
+            const readyCount = (order.items || []).filter(
+                item => item.status === "READY"
+            ).length;
+            const state = `${order.status}|${readyCount}`;
+            nextOrderStates.set(orderId, state);
+
+            if (waiterOrdersSnapshotReady) {
+                const previous = waiterKnownOrderStates.get(orderId);
+                if (!previous) {
+                    shouldAlert = true;
+                } else {
+                    const previousReady = Number(previous.split("|")[1] || 0);
+                    if (readyCount > previousReady) {
+                        shouldAlert = true;
+                    }
+                }
+            }
+        }
+
+        if (waiterOrdersSnapshotReady && shouldAlert) {
+            playWaiterAlert("order");
+        }
+
+        waiterKnownOrderStates = nextOrderStates;
+        waiterOrdersSnapshotReady = true;
+
+        renderActiveOrders(activeOrders);
 
     } catch (error) {
 
@@ -2638,8 +2737,8 @@ async function markTableClean(sessionId, isPrepayment = false) {
     if (!sessionId) return;
 
     const message = isPrepayment
-        ? "¿Confirmas que el pedido ya fue ENTREGADO por completo y que la mesa está limpia?\\n\\nLa mesa NO quedará libre todavía. Quedará en LIMPIA y Caja deberá liberarla."
-        : "¿Confirmas que el pedido ya fue ENTREGADO por completo y que la mesa ya está limpia?\\n\\nLa mesa quedará en LIMPIA y Caja será quien la libere.";
+        ? "¿Confirmas que los clientes ya se retiraron y que la mesa está completamente limpia?\\n\\nLa mesa de pago anticipado quedará LIBRE inmediatamente."
+        : "¿Confirmas que la mesa ya está completamente limpia?\\n\\nEl pago ya fue autorizado por Caja. La mesa quedará en estado LIMPIA y Caja será quien la libere.";
 
     const confirmed = confirm(message);
     if (!confirmed) return;
@@ -2650,9 +2749,7 @@ async function markTableClean(sessionId, isPrepayment = false) {
             { method: "PATCH" }
         );
 
-        alert(response.message || (
-            "Mesa marcada como limpia. Caja debe liberarla."
-        ));
+        alert(response.message || "Mesa marcada como limpia. Caja puede liberarla.");
 
         await Promise.all([loadTables(), loadActiveOrders()]);
     } catch (error) {

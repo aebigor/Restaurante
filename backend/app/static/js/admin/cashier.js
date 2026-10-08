@@ -443,12 +443,11 @@ function renderTables(
                         Ver cuenta
                     </button>
 
-                    ${table.status === "CLEAN" ? `
+                    ${["CLEAN", "PAID"].includes(table.status) ? `
                         <button type="button" class="cash-release-button" onclick="event.stopPropagation(); releaseTable('${table.session_id}')">
                             🔓 Liberar mesa
                         </button>
-                    ` : table.status === "PAID" ? `
-                        <span class="cash-wait-clean">⏳ Esperando que el mesero marque limpia</span>
+                        ${table.status === "PAID" ? '<span class="cash-wait-clean">✓ Pagada · Caja puede cerrar la mesa</span>' : ''}
                     ` : ""}
 
                 </article>
@@ -1098,7 +1097,7 @@ setInterval(updateCashTimers, 1000);
 async function releaseTable(sessionId) {
     if (!sessionId) return;
 
-    if (!confirm("¿Confirmas que la mesa está limpia y deseas liberarla?")) return;
+    if (!confirm("¿Confirmas que el cliente ya pagó y deseas liberar la mesa?\n\nAl liberar desde Caja, la mesa y sus comandas se cerrarán aunque el mesero haya olvidado marcar la entrega.")) return;
 
     try {
         await api(`${API}/sessions/${encodeURIComponent(sessionId)}/release`, { method: "PATCH" });
