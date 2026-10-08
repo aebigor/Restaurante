@@ -11,13 +11,9 @@ from .service import send_push
 _last_new_scan = None
 _seen_waiter_calls = set()
 _seen_ready_items = set()
-_seen_inventory_alerts = set()
 
 def _waiter_subs(db):
     return db.query(PushSubscription).join(User, PushSubscription.user_id == User.id).filter(User.role.has(name='Mesero')).all()
-
-def _management_subs(db):
-    return db.query(PushSubscription).join(User, PushSubscription.user_id == User.id).filter(User.role.has(name__in=['Administrador','Caja'])).all()
 
 def scan():
     global _last_new_scan
@@ -71,22 +67,9 @@ def scan():
                 send_push(sub,{"title":"🍽️ Pedido listo","body":f"{name} está listo para entregar.","url":"/waiter","tag":f"ready-{q.id}"})
             _seen_ready_items.add(key)
 
-        # Inventario bajo/sin stock -> una notificación para Administración y Caja.
-        from app.modules.inventory.model import InventoryItem
-        low_items = db.query(InventoryItem).filter(InventoryItem.active.is_(True), InventoryItem.min_quantity > 0, InventoryItem.quantity <= InventoryItem.min_quantity).all()
-        management_subs = _management_subs(db)
-        for item in low_items:
-            key = str(item.id)
-            if key in _seen_inventory_alerts: continue
-            status = "SIN STOCK" if float(item.quantity or 0) <= 0 else "POR AGOTARSE"
-            for sub in management_subs:
-                send_push(sub, {"title":"📦 Alerta de inventario", "body":f"{item.name}: {status}. Quedan {item.quantity:g} {item.unit}.", "url":"/admin/inventory", "tag":f"inventory-{item.id}"})
-            _seen_inventory_alerts.add(key)
-
         # Limpieza de memoria de eventos antiguos.
         if len(_seen_waiter_calls)>500: _seen_waiter_calls.clear()
         if len(_seen_ready_items)>500: _seen_ready_items.clear()
-        if len(_seen_inventory_alerts)>500: _seen_inventory_alerts.clear()
         db.commit(); _last_new_scan=now
     finally:
         db.close()

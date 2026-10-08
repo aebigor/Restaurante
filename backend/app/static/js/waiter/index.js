@@ -624,8 +624,12 @@ function renderTables() {
         const occupiedTable = isTableOccupied(table);
         const paidTable = isTablePaid(table);
         const cleanTable = isTableClean(table);
-        const statusClass = cleanTable ? "clean" : paidTable ? "paid" : occupiedTable ? "occupied" : "free";
-        const statusText = cleanTable ? "Limpia · espera Caja" : paidTable ? "Pagada" : occupiedTable ? "Ocupada" : "Libre";
+        // Si ya no quedan pedidos por entregar y existe una entrega registrada,
+        // la mesa está COMIENDO aunque la comanda ya no tenga botón de entrega.
+        const mealStartedAt = table.meal_started_at || table.last_served_at || null;
+        const isEatingTable = Boolean(occupiedTable && !cleanTable && mealStartedAt && Number(table.pending_delivery || 0) === 0);
+        const statusClass = cleanTable ? "clean" : paidTable ? "paid" : isEatingTable ? "eating" : occupiedTable ? "occupied" : "free";
+        const statusText = cleanTable ? "Limpia · espera Caja" : paidTable ? "Pagada" : isEatingTable ? "Comiendo" : occupiedTable ? "Ocupada" : "Libre";
         const tableName = table.name || `Mesa ${table.number}`;
         const selectedClass = selectedTable && String(selectedTable.id) === String(table.id) ? "selected" : "";
 
@@ -671,11 +675,11 @@ function renderTables() {
                                         ${formatDuration(table.session_elapsed_seconds ?? 0)}
                                     </strong>
                                 </div>
-                                ${table.meal_started_at ? `
+                                ${mealStartedAt ? `
                                     <div class="table-live-time meal-live-time">
-                                        <span>🍽️ Tiempo comiendo</span>
+                                        <span>🍽️ ${isEatingTable ? "Comiendo" : "Tiempo comiendo"}</span>
                                         <strong
-                                            data-timer-start="${escapeHtml(table.meal_started_at || "")}"
+                                            data-timer-start="${escapeHtml(mealStartedAt)}"
                                             data-timer-base-seconds="${escapeHtml(table.meal_elapsed_seconds ?? 0)}"
                                             data-timer-synced-at="${Date.now()}"
                                         >
@@ -685,12 +689,12 @@ function renderTables() {
                                 ` : `
                                     <div class="table-live-time meal-live-time pending-meal-time">
                                         <span>🍽️ Tiempo comiendo</span>
-                                        <strong>Esperando entrega</strong>
+                                        <strong>Esperando primera entrega</strong>
                                     </div>
                                 `}
-                                ${table.meal_started_at ? `
+                                ${mealStartedAt ? `
                                     <div class="meal-time-warning"
-                                         data-meal-warning-start="${escapeHtml(table.meal_started_at)}"
+                                         data-meal-warning-start="${escapeHtml(mealStartedAt)}"
                                          data-timer-base-seconds="${escapeHtml(table.meal_elapsed_seconds ?? 0)}"
                                          data-timer-synced-at="${Date.now()}"
                                          data-meal-time-limit="${escapeHtml(table.meal_time_limit_seconds || DEFAULT_MEAL_TIME_LIMIT_SECONDS)}"
@@ -705,27 +709,23 @@ function renderTables() {
                 <div class="table-card-footer">
                     <span>👥 ${table.capacity || 0} personas</span>
                     ${
-                        (paidTable || (table.prepayment_required && table.can_mark_clean))
-                            ? table.can_mark_clean
-                                ? table.prepayment_required
-                                    ? `
-                                        <button type="button" class="clean-table-button prepayment-release-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', true)">
-                                            🧹 Marcar mesa como limpia
-                                        </button>
-                                    `
-                                    : `
-                                        <button type="button" class="clean-table-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', false)">
-                                            🧹 Marcar mesa limpia
-                                        </button>
-                                    `
-                                : `<span class="waiting-cash-release">🍽️ Pendiente: ${table.pending_delivery || 0} pedido(s) por entregar</span>`
-                            : cleanTable
-                                ? `<span class="waiting-cash-release">🔒 Esperando liberación de Caja</span>`
-                            : `
-                                <button type="button" class="table-open-button">
-                                    ${occupiedTable ? "+ Nuevo pedido" : "Tomar pedido"} →
-                                </button>
-                            `
+                        cleanTable
+                            ? `<span class="waiting-cash-release">🔒 Mesa limpia · esperando liberación de Caja</span>`
+                            : table.can_mark_clean
+                                ? `
+                                    <button type="button" class="clean-table-button ${table.prepayment_required ? "prepayment-release-button" : ""}" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', ${table.prepayment_required ? "true" : "false"})">
+                                        🧹 Marcar mesa como limpia
+                                    </button>
+                                `
+                                : (
+                                    occupiedTable && table.pending_delivery > 0
+                                        ? `<span class="waiting-cash-release">🍽️ Pendiente: ${table.pending_delivery} pedido(s) por entregar</span>`
+                                        : `
+                                            <button type="button" class="table-open-button">
+                                                ${occupiedTable ? "+ Nuevo pedido" : "Tomar pedido"} →
+                                            </button>
+                                        `
+                                )
                     }
                 </div>
             </article>
@@ -2738,7 +2738,7 @@ async function markTableClean(sessionId, isPrepayment = false) {
 
     const message = isPrepayment
         ? "¿Confirmas que los clientes ya se retiraron y que la mesa está completamente limpia?\\n\\nLa mesa de pago anticipado quedará LIBRE inmediatamente."
-        : "¿Confirmas que la mesa ya está completamente limpia?\\n\\nEl pago ya fue autorizado por Caja. La mesa quedará en estado LIMPIA y Caja será quien la libere.";
+        : "¿Confirmas que la mesa ya está completamente limpia?\\n\\nDespués de marcarla limpia, la mesa quedará en estado LIMPIA y Caja será quien la libere cuando corresponda.";
 
     const confirmed = confirm(message);
     if (!confirmed) return;

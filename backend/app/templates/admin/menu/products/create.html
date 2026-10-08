@@ -190,6 +190,22 @@ Nuevo Producto
 
                         </div>
 
+                        <div class="campo">
+
+                            <label>
+
+                                Inventario Inicial
+
+                            </label>
+
+                            <input
+                                id="stock"
+                                type="number"
+                                value="0"
+                                min="0"
+                            >
+
+                        </div>
 
                         <div class="campo">
 
@@ -224,25 +240,6 @@ Nuevo Producto
                         </div>
 
                     </div>
-
-                    <!-- ========================= -->
-                    <!-- CONTROL DE INVENTARIO -->
-                    <!-- ========================= -->
-
-                    <section class="inventory-association">
-                        <div class="inventory-association-header">
-                            <div>
-                                <h3>📦 Descuento automático de inventario</h3>
-                                <p>Asocia los insumos que se descuentan cada vez que se vende este producto.</p>
-                            </div>
-                            <button type="button" class="btn-secondary" id="addInventoryIngredient">+ Agregar insumo</button>
-                        </div>
-                        <div id="inventoryRecipeRows" class="inventory-recipe-rows"></div>
-                        <div class="inventory-help">
-                            <strong>Ejemplo:</strong> si este producto usa 1 queso y 2 panes, configura esos insumos aquí.
-                            La existencia y la alerta se toman directamente del inventario.
-                        </div>
-                    </section>
 
                     <!-- ========================= -->
                     <!-- DESCRIPCIÓN -->

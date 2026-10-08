@@ -283,6 +283,12 @@ def finish(
     if queue.status == "READY":
         return _serialize(queue)
 
+    # Cocina no necesita "Tomar pedido": al pulsar LISTO,
+    # si nunca se inició manualmente, usamos la llegada como inicio
+    # para conservar los tiempos sin introducir un paso adicional.
+    if queue.started_at is None:
+        queue.started_at = queue.created_at or datetime.utcnow()
+
     queue.status = "READY"
     queue.finished_at = datetime.utcnow()
 

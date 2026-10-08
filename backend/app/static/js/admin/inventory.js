@@ -1,7 +1,7 @@
 (() => {
   const $ = id => document.getElementById(id);
   let items = [];
-  const fields = ["name","sku","barcode","category","item_type","brand","presentation","unit","quantity","min_quantity","max_quantity","reorder_quantity","unit_cost","storage","location","purchase_date","opened_date","expiry_date","storage_temperature","supplier","allergen","notes"];
+  const fields = ["name","sku","barcode","category","item_type","brand","presentation","unit","quantity","min_quantity","max_quantity","reorder_quantity","unit_cost","storage","location","lot","purchase_date","opened_date","expiry_date","storage_temperature","supplier","allergen","notes"];
   const money = n => new Intl.NumberFormat("es-CO", {style:"currency", currency:"COP", maximumFractionDigits:0}).format(Number(n || 0));
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const dateTime = v => v ? new Date(v).toLocaleString("es-CO", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "—";
@@ -39,7 +39,7 @@
   function render() {
     const q = $("search").value.toLowerCase().trim();
     const filter = $("filter").value;
-    const shown = items.filter(i => (!filter || i.status === filter) && [i.name,i.sku,i.barcode,i.category,i.supplier,i.location].join(" ").toLowerCase().includes(q));
+    const shown = items.filter(i => (!filter || i.status === filter) && [i.name,i.sku,i.barcode,i.category,i.supplier,i.lot,i.location].join(" ").toLowerCase().includes(q));
     $("itemsBody").innerHTML = shown.length ? shown.map(i => `
       <tr>
         <td><b>${esc(i.name)}</b><br><small>${esc(i.brand || "Sin marca")} · ${esc(i.presentation || "")} · ${money(i.unit_cost)} / ${esc(i.unit)}</small></td>
@@ -47,7 +47,7 @@
         <td><b>${i.quantity} ${esc(i.unit)}</b></td>
         <td>${i.min_quantity} / ${i.max_quantity || "—"}</td>
         <td>${esc(i.storage || "—")}<br><small>${esc(i.location || "Sin ubicación")}</small></td>
-        <td>${esc(i.expiry_date || "Sin vencimiento")}</td>
+        <td>${esc(i.lot || "Sin lote")}<br><small>${esc(i.expiry_date || "Sin vencimiento")}</small></td>
         <td><span class="state ${stateClass(i.status)}">${esc(i.status)}</span><small class="recommendation">${esc(i.recommendation)}</small></td>
         <td><div class="action-row"><button class="mini-btn" data-edit="${i.id}">Editar</button><button class="mini-btn" data-move="${i.id}">Movimiento</button><button class="mini-btn" data-history="${i.id}">Historial</button><button class="mini-btn danger" data-del="${i.id}">Archivar</button></div></td>
       </tr>`).join("") : `<tr><td colspan="8">No hay productos que coincidan.</td></tr>`;

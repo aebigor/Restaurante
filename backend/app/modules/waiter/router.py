@@ -21,8 +21,6 @@ from app.modules.dishes.model import Dish
 from app.modules.products.model import Product
 from app.modules.tables.model import Table
 from app.modules.cashier.model import CashPayment
-from app.modules.inventory.service import consume_for_sale
-from app.modules.products.inventory_recipe_service import get_recipe
 
 from .schemas import WaiterOrderCreate
 
@@ -186,7 +184,10 @@ def active_menu(
             joinedload(Product.category),
             joinedload(Product.station)
         )
-        .filter(Product.active.is_(True))
+        .filter(
+            Product.active.is_(True),
+            Product.stock > 0
+        )
         .order_by(Product.name.asc())
         .all()
     )
@@ -215,11 +216,6 @@ def active_menu(
     for product in products:
         category = product.category
         station = product.station
-        recipe = get_recipe(db, product.id)
-        product_available = product.active and (
-            all(float(r.inventory_item.quantity or 0) >= float(r.quantity_per_sale or 0) for r in recipe)
-            if recipe else product.stock > 0
-        )
         product_data.append({
             "id": str(product.id),
             "name": product.name,
@@ -231,13 +227,11 @@ def active_menu(
             "portion": None,
             "image": None,
             "preparation_time": product.preparation_time,
-            "available": product_available,
+            "available": product.active and product.stock > 0,
             "active": product.active,
             "display_order": 999999,
             "is_product": True,
-            "stock": product.stock,
-            "inventory_controlled": bool(recipe),
-            "inventory_alert": next((r.inventory_item.quantity <= r.inventory_item.min_quantity for r in recipe if r.inventory_item.min_quantity and r.inventory_item.quantity <= r.inventory_item.min_quantity), False)
+            "stock": product.stock
         })
 
     categories = list(
@@ -348,9 +342,13 @@ def waiter_tables(
             else None
         )
 
-        # El tiempo de comida de la mesa comienza con la PRIMERA comanda
-        # completamente entregada. Esto evita reiniciar el cronómetro cada
-        # vez que el cliente hace un nuevo pedido durante la misma sesión.
+        # El tiempo de comida comienza con la PRIMERA entrega real de la
+        # sesión y NUNCA vuelve a cero por nuevas comandas.
+        #
+        # Importante: una comanda que ya fue entregada puede quedar en estado
+        # SERVED y seguir existiendo en la sesión abierta mientras el cliente
+        # continúa comiendo. Por eso NO debemos usar el estado de la sesión ni
+        # esperar a que la mesa sea limpiada para calcular este tiempo.
         meal_started_at = (
             db.query(Order.served_at)
             .filter(
@@ -364,6 +362,13 @@ def waiter_tables(
             if session
             else None
         )
+
+        # Respaldo: si por datos antiguos una respuesta no encuentra el primer
+        # registro, la última entrega conocida sigue indicando que el cliente
+        # ya está comiendo. Esto evita mostrar falsamente "Esperando entrega"
+        # después de que el mesero confirmó la entrega total.
+        if not meal_started_at and last_served_at:
+            meal_started_at = last_served_at
 
         session_elapsed = elapsed_seconds(session.opened_at) if session else 0
         meal_elapsed = elapsed_seconds(meal_started_at) if meal_started_at else 0
@@ -422,16 +427,22 @@ def waiter_tables(
             "meal_time_reached": bool(
                 meal_started_at and meal_elapsed >= MEAL_TIME_LIMIT_SECONDS
             ),
+            # La limpieza se habilita 30 minutos después de que comenzó
+            # el tiempo de comida y solamente cuando ya no quedan pedidos
+            # por entregar. Para mesas normales NO se exige pago previo:
+            # el mesero limpia primero y Caja libera después. En mesas de
+            # pago anticipado sí se conserva la validación del pago.
             "can_mark_clean": bool(
                 session
                 and pending_delivery == 0
                 and meal_started_at
                 and meal_elapsed >= MEAL_TIME_LIMIT_SECONDS
                 and (
-                    session.status == "PAID"
+                    not bool(table.prepayment_required)
                     or (
-                        bool(table.prepayment_required)
-                        and db.query(CashPayment.id).filter(CashPayment.session_id == session.id).first() is not None
+                        db.query(CashPayment.id)
+                        .filter(CashPayment.session_id == session.id)
+                        .first() is not None
                         and not db.query(Order.id).filter(
                             Order.session_id == session.id,
                             Order.status == "PENDING_PAYMENT"
@@ -689,10 +700,11 @@ def create_waiter_order(
             )
             if not source:
                 raise HTTPException(404, "El producto no existe o está inactivo.")
+            if source.stock < requested.quantity:
+                raise HTTPException(409, f"Stock insuficiente para '{source.name}'. Disponible: {source.stock}.")
             product_id = source.id
             dish_id = None
-            # El inventario real vive en la receta asociada al producto.
-            # No se modifica products.stock para evitar duplicar existencias.
+            source.stock -= requested.quantity
 
         if not source.station_id:
             raise HTTPException(400, f"'{source.name}' no tiene estación asignada.")
@@ -713,15 +725,6 @@ def create_waiter_order(
 
         db.add(item)
         db.flush()
-
-        # Inventario automático para productos/platos que tengan
-        # una coincidencia inequívoca en el inventario (por código o nombre).
-        consume_for_sale(
-            db,
-            source,
-            requested.quantity,
-            order_id=order.id,
-        )
 
         if station_key not in batches and not prepayment_required:
             batch = (
@@ -1199,15 +1202,48 @@ def mark_table_clean(
                 status_code=400,
                 detail="Caja todavía no ha confirmado el pago anticipado de esta mesa."
             )
-    elif not prepayment_required and session.status != "PAID":
-        raise HTTPException(
-            status_code=404,
-            detail="Las mesas normales deben ser autorizadas por Caja antes de marcarse como limpias."
-        )
+    # Para una mesa normal, el mesero puede marcarla como limpia después
+    # de 30 minutos comiendo y cuando todos los pedidos ya fueron entregados.
+    # El pago NO bloquea la limpieza: Caja sigue siendo quien libera la mesa.
+    if not prepayment_required:
+        pending_delivery = db.query(Order.id).filter(
+            Order.session_id == session.id,
+            Order.status != "CANCELLED",
+            Order.served_at.is_(None)
+        ).first()
+        if pending_delivery:
+            raise HTTPException(
+                status_code=400,
+                detail="Todavía hay pedidos por entregar. La mesa no puede marcarse como limpia."
+            )
 
-    # El mesero puede marcar la mesa como limpia sin bloquear el cierre
-    # si olvidó registrar la entrega de una comanda. Caja es la autoridad
-    # final: cuando libera una mesa ya pagada, cierra sesión y comandas.
+        first_served_at = (
+            db.query(Order.served_at)
+            .filter(
+                Order.session_id == session.id,
+                Order.served_at.isnot(None),
+                Order.status != "CANCELLED"
+            )
+            .order_by(Order.served_at.asc())
+            .limit(1)
+            .scalar()
+        )
+        if not first_served_at:
+            raise HTTPException(
+                status_code=400,
+                detail="La mesa todavía no tiene una entrega registrada."
+            )
+
+        meal_elapsed = elapsed_seconds(first_served_at)
+        if meal_elapsed < MEAL_TIME_LIMIT_SECONDS:
+            remaining = MEAL_TIME_LIMIT_SECONDS - meal_elapsed
+            raise HTTPException(
+                status_code=400,
+                detail=f"La limpieza se habilita después de 30 minutos de comida. Faltan aproximadamente {remaining // 60} min y {remaining % 60} s."
+            )
+
+    # El mesero marca la mesa como limpia, pero NUNCA la libera.
+    # Caja continúa siendo la autoridad final.
     session.status = "CLEAN"
     message = "Mesa marcada como limpia. Caja puede liberarla."
     response_status = "CLEAN"

@@ -58,7 +58,7 @@ def station_queue(station_id: str, db: Session = Depends(get_db)):
 
     rows = (db.query(KitchenQueue)
             .filter(KitchenQueue.station_id == station.id,
-                    KitchenQueue.status.in_(["WAITING", "PREPARING", "READY"]))
+                    KitchenQueue.status.in_(["WAITING", "PREPARING"]))
             .options(joinedload(KitchenQueue.order_item).joinedload(OrderItem.dish),
                      joinedload(KitchenQueue.order_item).joinedload(OrderItem.product))
             .order_by(KitchenQueue.created_at.asc()).all())
@@ -118,7 +118,7 @@ def screen_queue(code: str, db: Session = Depends(get_db)):
     screen = db.query(Screen).filter(Screen.code == code, Screen.active == True).first()
     if not screen: raise HTTPException(404, "Pantalla no encontrada")
     screen.last_seen_at = datetime.utcnow()
-    rows = db.query(KitchenQueue).filter(KitchenQueue.station_id == screen.station_id, KitchenQueue.status.in_(["WAITING", "PREPARING", "READY"])).options(joinedload(KitchenQueue.order_item).joinedload(OrderItem.dish), joinedload(KitchenQueue.order_item).joinedload(OrderItem.product)).order_by(KitchenQueue.created_at.asc()).all()
+    rows = db.query(KitchenQueue).filter(KitchenQueue.station_id == screen.station_id, KitchenQueue.status.in_(["WAITING", "PREPARING"])).options(joinedload(KitchenQueue.order_item).joinedload(OrderItem.dish), joinedload(KitchenQueue.order_item).joinedload(OrderItem.product)).order_by(KitchenQueue.created_at.asc()).all()
     db.commit()
     result=[]
     from app.modules.orders.model import Order

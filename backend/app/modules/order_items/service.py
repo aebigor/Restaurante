@@ -6,7 +6,6 @@ from app.modules.products.model import Product
 from app.modules.dishes.model import Dish
 from app.modules.order_batches.service import OrderBatchService
 from app.modules.kitchen_queue.model import KitchenQueue
-from app.modules.inventory.service import consume_for_sale
 
 repository = OrderItemRepository()
 batch_service = OrderBatchService()
@@ -26,14 +25,6 @@ class OrderItemService:
         price = source.price
         batch = batch_service.get_or_create(db, data.order_id, station_id)
         item = OrderItem(order_id=data.order_id, product_id=data.product_id, dish_id=data.dish_id, quantity=data.quantity, unit_price=price, total=price * data.quantity, notes=data.notes)
-        # Validar/descontar inventario antes del commit del OrderItem.
-        # Así una falta de existencias cancela toda la operación.
-        consume_for_sale(
-            db,
-            source,
-            data.quantity,
-            order_id=data.order_id,
-        )
         repository.create(db, item)
         queue = KitchenQueue(station_id=station_id, order_item_id=item.id)
         db.add(queue); db.commit(); db.refresh(item)

@@ -36,6 +36,7 @@ class ItemIn(BaseModel):
     unit_cost: float = Field(default=0, ge=0)
     storage: str | None = None
     location: str | None = None
+    lot: str | None = None
     purchase_date: date | None = None
     opened_date: date | None = None
     expiry_date: date | None = None
@@ -68,9 +69,9 @@ def item_status(item: InventoryItem):
 
 def recommendation(item: InventoryItem, status: str):
     if status == "VENCIDO":
-        return "Retirar de servicio y revisar cadena de frío."
+        return "Retirar de servicio y revisar lote/cadena de frío."
     if status == "REVISAR VENCIMIENTO":
-        return "Revisar fecha y cadena de frío; priorizar consumo si corresponde."
+        return "Revisar fecha, lote y cadena de frío; priorizar consumo si corresponde."
     if status == "SIN STOCK":
         return "Reponer antes del próximo servicio."
     if status == "POR AGOTARSE":
@@ -98,6 +99,7 @@ def serialize_item(item: InventoryItem):
         "unit_cost": float(item.unit_cost or 0),
         "storage": item.storage,
         "location": item.location,
+        "lot": item.lot,
         "purchase_date": item.purchase_date.isoformat() if item.purchase_date else None,
         "opened_date": item.opened_date.isoformat() if item.opened_date else None,
         "expiry_date": item.expiry_date.isoformat() if item.expiry_date else None,
@@ -160,7 +162,7 @@ def report(db: Session = Depends(get_db), user=Depends(get_current_user)):
     headers = [
         "Producto", "SKU", "Código de barras", "Categoría", "Tipo", "Marca", "Presentación", "Unidad",
         "Existencia", "Stock mínimo", "Stock máximo", "Cantidad a reponer", "Costo unitario", "Valor existencia",
-        "Almacenamiento", "Ubicación", "Compra", "Apertura", "Vencimiento", "Temperatura",
+        "Almacenamiento", "Ubicación", "Lote", "Compra", "Apertura", "Vencimiento", "Temperatura",
         "Proveedor", "Alérgenos", "Estado", "Recomendación", "Notas",
     ]
     ws.append(headers)
@@ -169,17 +171,17 @@ def report(db: Session = Depends(get_db), user=Depends(get_current_user)):
         ws.append([
             item.name, item.sku, item.barcode, item.category, item.item_type, item.brand, item.presentation, item.unit,
             p["quantity"], p["min_quantity"], p["max_quantity"], p["reorder_quantity"], p["unit_cost"], p["value"],
-            item.storage, item.location, item.purchase_date, item.opened_date, item.expiry_date,
+            item.storage, item.location, item.lot, item.purchase_date, item.opened_date, item.expiry_date,
             item.storage_temperature, item.supplier, item.allergen, p["status"], p["recommendation"], item.notes,
         ])
     style_sheet(ws, "202A44")
 
     alerts = wb.create_sheet("Alertas")
-    alerts.append(["Producto", "Existencia", "Mínimo", "Almacenamiento", "Ubicación", "Vencimiento", "Estado", "Recomendación"])
+    alerts.append(["Producto", "Existencia", "Mínimo", "Almacenamiento", "Ubicación", "Lote", "Vencimiento", "Estado", "Recomendación"])
     for item in items:
         p = serialize_item(item)
         if p["status"] != "OK":
-            alerts.append([item.name, p["quantity"], p["min_quantity"], item.storage, item.location, item.expiry_date, p["status"], p["recommendation"]])
+            alerts.append([item.name, p["quantity"], p["min_quantity"], item.storage, item.location, item.lot, item.expiry_date, p["status"], p["recommendation"]])
     style_sheet(alerts, "9B1C1C")
 
     movements = wb.create_sheet("Movimientos")

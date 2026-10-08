@@ -567,21 +567,9 @@ async function loadBoard() {
         await fetch(queueUrl);
 
     if (!response.ok) {
-        // Si la TV ya está en /kitchen/station/<id>, NO debemos volver
-        // a mostrar las tarjetas de selección por un error temporal del API.
-        // La estación elegida sigue siendo la autoridad de esta pantalla.
-        if (currentStationId) {
-            const root = document.getElementById("queue");
-            document.getElementById("stationSelector")?.classList.add("hidden");
-            document.getElementById("kitchenBoard")?.classList.remove("hidden");
-            document.getElementById("changeStationBtn")?.classList.remove("hidden");
-            if (root) {
-                root.innerHTML = `<div class="empty-panel queue-empty"><div class="empty-icon">⚠</div><strong>No se pudo actualizar esta estación</strong><span>La TV conserva la estación seleccionada. Reintentando automáticamente...</span></div>`;
-            }
-            return;
-        }
 
         showSelector();
+
         return;
     }
 
@@ -694,10 +682,10 @@ function render() {
         const totalTime = waiting ? waitingTime : (item.finished_at ? elapsedBetween(item.created_at, item.finished_at) : waitingTime + preparationTime);
         const stateClass = overdue ? "overdue" : (ready ? "ready" : String(item.status).toLowerCase());
         return `<article class="ticket ${stateClass}" data-item-id="${escapeHtml(item.id)}">
-            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(item.order_id.slice(0, 8).toUpperCase()) : "—"} · MESA ${escapeHtml(item.table || "—")}</small><small>${waiting ? "NUEVA" : ready ? "LISTO · ESPERA MESERO" : overdue ? "⚠ ATRASADO" : "PREPARANDO"}</small></div>
+            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(item.order_id.slice(0, 8).toUpperCase()) : "—"} · MESA ${escapeHtml(item.table || "—")}</small><small>${overdue ? "⚠ ATRASADO" : "EN COCINA"}</small></div>
             <h2>${escapeHtml(item.quantity)} × ${escapeHtml(item.name)}</h2>
             ${waiting ? `<div class="time-main-label">ESPERA EN COCINA</div><div class="timer" data-mode="waiting" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime)}</div>${prepLimit ? `<div class="target-time">⏱ Tiempo objetivo: <b>${prepLimit} min</b></div>` : ""}` : ready ? `<div class="ready-banner">✓ LISTO — esperando que el mesero marque <b>ENTREGADO</b></div><div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong>${fmt(preparationTime)}</strong></div><div><span>TOTAL</span><strong>${fmt(totalTime)}</strong></div></div>` : `<div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong class="preparation-timer" data-started="${escapeHtml(item.started_at)}">${fmt(prepSeconds)}</strong></div><div><span>TOTAL</span><strong class="total-timer" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime + prepSeconds)}</strong></div></div><div class="prep-target ${overdue ? "late" : ""}">${overdue ? `⚠ ATRASADO <b>${fmt(overdueSeconds)}</b> · objetivo ${prepLimit} min` : `⏱ Objetivo ${prepLimit ? prepLimit + " min" : "sin límite"}`}</div>`}
-            ${waiting ? `<button onclick="changeStatus('${escapeHtml(item.id)}','WAITING')">Tomar pedido</button>` : preparing ? `<button onclick="changeStatus('${escapeHtml(item.id)}','PREPARING')">Marcar listo</button>` : `<button class="station-locked" type="button" disabled>🔒 Esperando entrega del mesero</button>`}
+            <button onclick="changeStatus('${escapeHtml(item.id)}','READY')">✓ LISTO PARA EL MESERO</button>
         </article>`;
     }).join("");
 }
@@ -718,6 +706,38 @@ function tickTimers() {
 }
 
 // ==========================================================
+// ==========================================================
+// MARCAR LISTO PARA EL MESERO
+// ==========================================================
+
+async function changeStatus(queueId, status) {
+    if (status !== "READY") return;
+
+    try {
+        const response = await fetch(
+            `/api/kitchen-queue/${encodeURIComponent(queueId)}/finish`,
+            { method: "PATCH" }
+        );
+
+        if (!response.ok) {
+            let message = "No se pudo marcar la comanda como lista.";
+            try {
+                const data = await response.json();
+                message = data.detail || message;
+            } catch (_) {}
+            throw new Error(message);
+        }
+
+        await loadBoard();
+    } catch (error) {
+        console.error(error);
+        alert(error.message || "No se pudo marcar la comanda como lista.");
+    }
+}
+
+
+// ==========================================================
+
 // CAMBIAR ESTACIÓN
 // ==========================================================
 
@@ -728,10 +748,6 @@ document
         () => {
 
             currentScreenCode = null;
-            currentStationId = null;
-            localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem("kitchen_selected_station_name");
-            localStorage.removeItem("kitchen_selected_screen_code");
 
             showSelector();
         }
@@ -823,11 +839,6 @@ async function boot() {
 
     if (stationFromUrl) {
         currentStationId = stationFromUrl;
-        // Una URL de estación es una pantalla ya configurada.
-        // Nunca debe mostrar las tarjetas de selección.
-        document.getElementById("stationSelector")?.classList.add("hidden");
-        document.getElementById("kitchenBoard")?.classList.remove("hidden");
-        document.getElementById("changeStationBtn")?.classList.remove("hidden");
         await loadBoard();
 
         heartbeat();

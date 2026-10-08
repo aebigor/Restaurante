@@ -30,7 +30,6 @@ from app.modules.kitchen_tickets.model import KitchenTicket
 from app.modules.order_batches.model import OrderBatch
 from app.modules.dishes.model import Dish
 from app.modules.products.model import Product
-from app.modules.inventory.service import consume_for_sale
 
 from .model import (
     CashRegister,
@@ -155,14 +154,6 @@ def confirm_online_order(
         if not exists:
             db.add(KitchenQueue(station_id=dish.station_id, order_item_id=item.id, status="WAITING", created_at=datetime.utcnow()))
         item.status = "PENDING"
-        source = item.dish or item.product
-        if source:
-            consume_for_sale(
-                db,
-                source,
-                item.quantity,
-                order_id=order.id,
-            )
 
     order.status = "OPEN"
     order.cashier_confirmed_at = datetime.now(timezone.utc)
