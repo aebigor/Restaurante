@@ -61,6 +61,7 @@
 .closed-register-grid .difference-ok strong{color:#2d8a5b;}
 .closed-register-grid .difference-positive strong{color:#2d8a5b;}
 .closed-register-grid .difference-negative strong{color:#b80000;}
+.closed-register-grid .withdrawal-cell{background:#fffaf0;border-color:#ead9ae}.closed-register-grid .withdrawal-cell strong{color:#9b6500}
 .closed-register-footer{display:flex;justify-content:space-between;gap:10px;margin-top:13px;color:#888;font-size:11px;}
 .empty-registers{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:145px;color:#888;font-size:13px;border:1px dashed #ddd;border-radius:12px;padding:20px;}
 .empty-registers strong{color:#333;margin-bottom:5px;}

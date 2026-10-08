@@ -481,11 +481,14 @@ async function loadOnlineOrders() {
             } else if (order.status === "READY" && delivery) {
                 actions = `<span class="online-waiting-courier">🚚 Esperando que un domiciliario tome el pedido</span>`;
             } else if (order.status === "DELIVERED_PENDING_PAYMENT") {
-                actions = `<button class="btn-pay" type="button" onclick="closeOnlinePayment('${order.id}')">💵 Registrar pago y cerrar</button>`;
+                const proofHtml = (order.payment_proofs || []).map(p => `<a class="cash-proof-thumb ${p.status === 'APPROVED' ? 'approved' : p.status === 'REJECTED' ? 'rejected' : ''}" href="${escapeHtml(p.file_url)}" target="_blank" rel="noopener"><img src="${escapeHtml(p.file_url)}" alt="Comprobante"><span>${escapeHtml(p.payment_method || 'TRANSFER')} · ${escapeHtml(p.status)}</span></a>`).join("");
+                const hasPending = (order.payment_proofs || []).some(p => p.status === 'PENDING');
+                const proofActions = (order.payment_proofs || []).filter(p => p.status === 'PENDING').map(p => `<span class="proof-review-actions"><button type="button" class="proof-approve" onclick="reviewDeliveryProof('${p.id}','APPROVED')">✓ Aprobar</button><button type="button" class="proof-reject" onclick="reviewDeliveryProof('${p.id}','REJECTED')">Rechazar</button></span>`).join("");
+                actions = `<div class="delivery-close-actions"><span>🛵 ${escapeHtml(order.courier_name || 'Domiciliario')} · entrega validada</span><div class="cash-delivery-payment-methods"><button type="button" onclick="setDeliveryPayment('${order.id}','CASH')">💵 Efectivo</button><button type="button" onclick="setDeliveryPayment('${order.id}','TRANSFER_NEQUI')">Nequi</button><button type="button" onclick="setDeliveryPayment('${order.id}','TRANSFER_BANCOLOMBIA')">Bancolombia</button><button type="button" onclick="setDeliveryPayment('${order.id}','TRANSFER_LLAVES')">Llaves</button><button type="button" onclick="setDeliveryPayment('${order.id}','CARD')">💳 Tarjeta</button></div>${proofHtml ? `<div class="cash-proofs">${proofHtml}</div>` : '<small class="proof-missing">Sin comprobante transferido todavía.</small>'}${hasPending ? `<div>${proofActions}</div>` : ''}<button class="btn-pay" type="button" onclick="closeOnlinePayment('${order.id}')">✅ Registrar pago y cerrar venta</button><button class="btn-chat-delivery" type="button" onclick="openDeliveryChat('${order.id}','${escapeHtml(order.courier_name || 'Domiciliario')}')">💬 Abrir chat con domiciliario</button></div>`;
             } else if (order.status === "OUT_FOR_DELIVERY") {
-                actions = `<span>🛵 ${escapeHtml(order.courier_name || 'Domiciliario')} · entrega en curso</span>`;
+                actions = `<span>🛵 ${escapeHtml(order.courier_name || 'Domiciliario')} · entrega en curso</span><button class="btn-chat-delivery" type="button" onclick="openDeliveryChat('${order.id}','${escapeHtml(order.courier_name || 'Domiciliario')}')">💬 Chat</button>`;
             }
-            return `<article class="online-order-card"><div class="online-order-head"><div><span>PEDIDO #${escapeHtml(order.short_id)}</span><h3>${escapeHtml(order.customer.name)}</h3><small>${delivery ? "Domicilio" : "Recoger"} · ${new Date(order.created_at).toLocaleString("es-CO")}</small></div><strong>${money(order.total)}</strong></div><div class="online-order-items">${items}</div>${delivery ? `<div class="online-delivery"><b>Dirección:</b> ${escapeHtml(order.delivery_address || "-")}<br><b>Teléfono:</b> ${escapeHtml(order.delivery_phone || "-")}</div>` : ""}${order.notes ? `<div class="online-delivery"><b>Nota:</b> ${escapeHtml(order.notes)}</div>` : ""}<div class="online-order-footer"><span class="status-pill">${escapeHtml(order.status)}</span>${actions}</div></article>`;
+            return `<article class="online-order-card"><div class="online-order-head"><div><span>PEDIDO #${escapeHtml(order.short_id)}</span><h3>${escapeHtml(order.customer.name)}</h3><small>${delivery ? "Domicilio" : "Recoger"} · ${new Date(order.created_at).toLocaleString("es-CO")}</small></div><strong>${money(order.total)}</strong></div><div class="online-order-items">${items}</div>${delivery ? `<div class="online-delivery"><b>Dirección:</b> ${escapeHtml(order.delivery_address || "-")}<br><b>Teléfono:</b> ${escapeHtml(order.delivery_phone || "-")}<br><b>Domiciliario:</b> ${escapeHtml(order.courier_name || "Sin asignar")}</div>` : ""}${order.notes ? `<div class="online-delivery"><b>Nota:</b> ${escapeHtml(order.notes)}</div>` : ""}<div class="online-order-footer"><span class="status-pill">${escapeHtml(order.status)}</span>${actions}</div></article>`;
         }).join("");
     } catch (error) {
         console.error(error);
@@ -502,23 +505,55 @@ async function dispatchOnlineOrder(orderId) {
     try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/dispatch`, {method:"PATCH"}); await loadOnlineOrders(); } catch(error){ alert(error.message); }
 }
 
-async function closeOnlinePayment(orderId) {
-    const method = prompt("Método de pago: CASH (efectivo), TRANSFER (Nequi/transferencia) o CARD", "CASH");
-    if (!method) return;
-    const normalized = method.trim().toUpperCase();
-    if (!["CASH","TRANSFER","CARD"].includes(normalized)) { alert("Método inválido."); return; }
-    try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/close-payment`, {method:"PATCH", body:JSON.stringify({payment_method:normalized})}); await loadOnlineOrders(); } catch(error){ alert(error.message); }
+async function setDeliveryPayment(orderId, method) {
+    try {
+        const response = await api(`/api/delivery/orders/${encodeURIComponent(orderId)}/payment-method`, {method:"PATCH", body:JSON.stringify({payment_method:method})});
+        await loadOnlineOrders();
+        await openDeliveryChat(orderId, "Domiciliario", false);
+    } catch(error) { alert(error.message); }
 }
 
-async function deliverOnlineOrder(orderId) {
-    alert("La entrega la confirma el domiciliario con el código del cliente. Luego Caja registra el pago y cierra el pedido.");
+async function closeOnlinePayment(orderId) {
+    const current = (await api(`${API}/online-orders`)).find(x => x.id === orderId);
+    const suggested = current?.payment_method || "CASH";
+    const method = prompt("Método: CASH, CARD, TRANSFER_NEQUI, TRANSFER_BANCOLOMBIA o TRANSFER_LLAVES", suggested);
+    if (!method) return;
+    const normalized = method.trim().toUpperCase().replace(/\s+/g,"_");
+    const aliases = {NEQUI:"TRANSFER_NEQUI",BANCOLOMBIA:"TRANSFER_BANCOLOMBIA",LLAVES:"TRANSFER_LLAVES",LLAVE:"TRANSFER_LLAVES",TRANSFER:"TRANSFER"};
+    const finalMethod = aliases[normalized] || normalized;
+    if (!["CASH","TRANSFER","CARD","TRANSFER_NEQUI","TRANSFER_BANCOLOMBIA","TRANSFER_LLAVES"].includes(finalMethod)) { alert("Método inválido."); return; }
+    try { await api(`${API}/online-orders/${encodeURIComponent(orderId)}/close-payment`, {method:"PATCH", body:JSON.stringify({payment_method:finalMethod})}); await loadOnlineOrders(); }
+    catch(error){ alert(error.message); }
+}
+
+async function reviewDeliveryProof(proofId, status) {
+    const note = status === 'REJECTED' ? (prompt('Motivo del rechazo (opcional):') || '') : '';
+    try { await api(`/api/delivery/payment-proofs/${encodeURIComponent(proofId)}/review`, {method:'PATCH', body:JSON.stringify({status, note})}); await loadOnlineOrders(); } catch(error){ alert(error.message); }
+}
+
+let deliveryChatOrderId = null;
+async function openDeliveryChat(orderId, courierName, refresh=true) {
+    deliveryChatOrderId = orderId;
+    const panel = document.getElementById('deliveryChatPanel');
+    if(panel){ panel.hidden=false; const who=document.getElementById('deliveryChatTitle'); if(who)who.textContent=`Soporte · ${courierName||'Domiciliario'} · Pedido #${String(orderId).slice(0,8).toUpperCase()}`; }
+    await loadDeliveryChat();
+    if(refresh) document.getElementById('deliveryChatPanel')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function loadDeliveryChat(){
+    if(!deliveryChatOrderId) return;
+    const box=document.getElementById('deliveryChatMessages'); if(!box)return;
+    try{const rows=await api(`/api/delivery/messages?order_id=${encodeURIComponent(deliveryChatOrderId)}`);box.innerHTML=rows.length?rows.map(m=>`<div class="cash-chat-message"><b>${escapeHtml(m.sender)}</b><small>${new Date(m.created_at).toLocaleString('es-CO')}</small><p>${escapeHtml(m.message)}</p></div>`).join(''):'<p>No hay mensajes todavía.</p>';box.scrollTop=box.scrollHeight;}catch(e){box.textContent=e.message;}
 }
 
 async function loadCourierLocations(){
     const box=document.getElementById('courierLocations'); if(!box) return;
-    try{const rows=await api('/api/delivery/locations'); box.innerHTML=rows.length?rows.map(x=>`<article class="courier-location-card"><b>🚚 ${escapeHtml(x.name)}</b><span>${x.order_id?'Pedido activo #'+x.order_id.slice(0,8).toUpperCase():'Sin pedido activo'}</span><small>${x.latitude!=null?`📍 ${Number(x.latitude).toFixed(6)}, ${Number(x.longitude).toFixed(6)}`:'Sin ubicación reportada'}${x.recorded_at?' · '+new Date(x.recorded_at).toLocaleTimeString('es-CO'):''}</small></article>`).join(''):'No hay domiciliarios registrados.'}catch(e){box.textContent=e.message}}
+    try{const rows=await api('/api/delivery/locations'); box.innerHTML=rows.length?rows.map(x=>`<article class="courier-location-card ${x.online?'is-online':'is-offline'}"><div><b>🚚 ${escapeHtml(x.name)}</b><span class="courier-presence">${x.online?'🟢 EN LÍNEA':'⚪ SIN CONEXIÓN'}</span></div><span>${x.order_id?`Pedido activo #${x.order_short_id||x.order_id.slice(0,8).toUpperCase()}`:'Sin pedido activo'}</span>${x.destination?`<small>📍 ${escapeHtml(x.destination)}</small>`:''}<small>${x.latitude!=null?`GPS ${Number(x.latitude).toFixed(6)}, ${Number(x.longitude).toFixed(6)}`:'Sin ubicación reportada'}${x.recorded_at?' · '+new Date(x.recorded_at).toLocaleTimeString('es-CO'):''}</small></article>`).join(''):'No hay domiciliarios registrados.'}catch(e){box.textContent=e.message}}
 
-
+document.getElementById('deliveryChatForm')?.addEventListener('submit', async e=>{
+    e.preventDefault(); const input=document.getElementById('deliveryChatInput'); const value=input?.value.trim(); if(!value||!deliveryChatOrderId)return;
+    try{await api('/api/delivery/messages',{method:'POST',body:JSON.stringify({order_id:deliveryChatOrderId,message:value})});input.value='';await loadDeliveryChat();}catch(err){alert(err.message)}
+});
+document.getElementById('deliveryChatClose')?.addEventListener('click',()=>{deliveryChatOrderId=null;const p=document.getElementById('deliveryChatPanel');if(p)p.hidden=true;});
 
 // ==========================================================
 // ABRIR CAJA
@@ -1270,3 +1305,4 @@ setInterval(
     loadCashier,
     30000
 );
+setInterval(loadDeliveryChat, 5000);

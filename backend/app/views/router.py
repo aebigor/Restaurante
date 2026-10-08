@@ -149,6 +149,16 @@ async def dashboard(
 # USUARIOS Y ASISTENCIA
 # ======================================================
 
+@router.get("/admin/orders")
+async def admin_orders_page(request: Request):
+    """Vista administrativa para seguimiento de pedidos y domiciliarios."""
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/orders.html",
+        context={}
+    )
+
+
 @router.get("/admin/users")
 async def admin_users(request: Request):
     return templates.TemplateResponse(

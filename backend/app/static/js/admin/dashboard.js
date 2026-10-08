@@ -61,12 +61,13 @@ function registerRow(register, index, closed = false) {
                 <div><span>Efectivo</span><strong>${money(register.cash_sales)}</strong></div>
                 <div><span>Tarjeta</span><strong>${money(register.card_sales)}</strong></div>
                 <div><span>Transferencias</span><strong>${money(register.transfer_sales)}</strong></div>
+                <div class="withdrawal-cell"><span>Retirado hoy</span><strong>${money(register.withdrawals)}</strong></div>
                 <div><span>Efectivo esperado</span><strong>${money(register.expected_cash)}</strong></div>
                 <div><span>Efectivo contado</span><strong>${money(register.closing_amount)}</strong></div>
                 <div class="${differenceClass}"><span>Diferencia</span><strong>${differenceText}</strong></div>
             </div>
             <div class="closed-register-footer">
-                <span>🧾 ${register.payment_count || 0} cobros</span>
+                <span>🧾 ${register.payment_count || 0} cobros · 💸 ${register.withdrawal_count || 0} retiros</span>
                 <span>Cierre: ${formatDateTime(register.closed_at)}</span>
             </div>
         </div>

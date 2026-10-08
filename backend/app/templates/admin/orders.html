@@ -20,6 +20,17 @@
     <button id="refreshOrders" class="btn-refresh">↻ Actualizar</button>
   </div>
 
+  <section class="courier-monitor">
+    <div class="courier-monitor-head">
+      <div><span class="eyebrow">FLOTA EN TIEMPO REAL</span><h2>Domiciliarios contratados</h2><p>Mientras tengan el panel abierto, su estado y ubicación se actualizan automáticamente.</p></div>
+      <span id="courierMonitorState" class="courier-monitor-state">Actualizando…</span>
+    </div>
+    <div class="courier-monitor-layout">
+      <div id="adminCourierMap" class="courier-monitor-map"></div>
+      <div id="adminCourierList" class="courier-monitor-list">Cargando domiciliarios…</div>
+    </div>
+  </section>
+
   <div id="ordersMessage" class="orders-message"></div>
   <div id="ordersGrid" class="orders-grid"></div>
 

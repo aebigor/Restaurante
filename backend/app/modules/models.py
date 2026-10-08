@@ -26,7 +26,7 @@ from app.modules.menu.model import Menu
 from app.modules.menu_items.model import MenuItem
 
 from app.modules.cashier.model import CashRegister, CashPayment, CashRegisterMovement
-from app.modules.delivery.model import CourierLocation, DeliveryMessage
+from app.modules.delivery.model import CourierLocation, CourierPresence, DeliveryMessage, DeliveryPaymentProof
 
 from app.modules.chatbot.model import SupportRequest
 

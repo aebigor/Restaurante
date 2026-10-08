@@ -829,3 +829,36 @@ button:disabled {
 .btn-confirm-withdrawal { background:#b40000; color:#fff; }
 .btn-confirm-withdrawal:disabled { opacity:.6; cursor:not-allowed; }
 @media (max-width:650px) { .withdrawal-form { grid-template-columns:1fr; } .withdrawal-form label:first-child { grid-column:auto; } .withdrawal-available { align-items:flex-start; flex-direction:column; } }
+
+/* ==========================================================
+   SOPORTE DOMICILIARIOS + COMPROBANTES
+========================================================== */
+.delivery-chat-panel{border-left:4px solid #b40000}
+.delivery-chat-messages{height:250px;overflow:auto;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:12px}
+.cash-chat-message{padding:9px 0;border-bottom:1px solid #eee}
+.cash-chat-message b{display:block;font-size:12px;color:#222}
+.cash-chat-message small{display:block;color:#999;font-size:10px}
+.cash-chat-message p{display:inline-block;margin:4px 0 0;background:#fff;border-radius:9px;padding:8px;max-width:90%;overflow-wrap:anywhere}
+.delivery-chat-form{display:flex;gap:8px;margin-top:10px}
+.delivery-chat-form input{flex:1;min-width:0;border:1px solid #ddd;border-radius:10px;padding:11px}
+.courier-locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.courier-location-card{display:flex;flex-direction:column;gap:6px;border:1px solid #ddd;border-radius:12px;padding:14px;background:#fff}
+.courier-location-card.is-online{border-color:#b8dcbf}
+.courier-location-card.is-offline{opacity:.72}
+.courier-location-card>div{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.courier-presence{font-size:10px;font-weight:900}
+.online-waiting-courier{padding:8px 12px;display:inline-block;border-radius:8px;background:#f1f1f1}
+.delivery-close-actions{display:grid;gap:8px;width:100%;margin-top:8px}
+.cash-delivery-payment-methods{display:flex;flex-wrap:wrap;gap:6px}
+.cash-delivery-payment-methods button,.btn-chat-delivery{border:1px solid #ddd;background:#fff;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer}
+.cash-delivery-payment-methods button:hover,.btn-chat-delivery:hover{background:#f5f5f5}
+.cash-proofs{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.cash-proof-thumb{display:flex;flex-direction:column;gap:4px;width:92px;text-decoration:none;color:#555;font-size:9px;font-weight:800}
+.cash-proof-thumb img{width:92px;height:92px;object-fit:cover;border:1px solid #ddd;border-radius:9px}
+.cash-proof-thumb.approved img{border:2px solid #35a66d}
+.cash-proof-thumb.rejected img{border:2px solid #b40000;opacity:.65}
+.proof-review-actions{display:inline-flex;gap:6px;flex-wrap:wrap}
+.proof-approve,.proof-reject{border:0;border-radius:8px;padding:7px 9px;font-weight:800;cursor:pointer}
+.proof-approve{background:#eaf8ef;color:#1f7d49}.proof-reject{background:#fff0f0;color:#a60000}
+.proof-missing{color:#a66a00;background:#fff7df;border-radius:9px;padding:8px}
+@media(max-width:650px){.delivery-chat-form{flex-direction:column}.delivery-chat-form button{width:100%}}

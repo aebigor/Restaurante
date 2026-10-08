@@ -1,0 +1,125 @@
+{% extends "layouts/base.html" %}
+{% block title %}Inventario | CRIPTONIX{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/sidebar.css">
+<link rel="stylesheet" href="/static/css/admin/topbar.css">
+<link rel="stylesheet" href="/static/css/admin/inventory.css">
+{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include "admin/components/sidebar.html" %}
+  <div class="contenido">
+    {% include "admin/components/topbar.html" %}
+    <main class="inventory-page">
+      <header class="inv-head">
+        <div>
+          <span class="eyebrow">CONTROL DE EXISTENCIAS</span>
+          <h1>Inventario del restaurante</h1>
+          <p>Ingredientes, bebidas, congelados, empaques, limpieza, utensilios, equipos y suministros.</p>
+        </div>
+        <div class="inv-actions">
+          <button class="inv-btn secondary" type="button" id="downloadReport">⬇ Descargar informe Excel</button>
+          <button class="inv-btn primary" id="newItem">＋ Agregar producto</button>
+        </div>
+      </header>
+
+      <section class="inv-stats">
+        <article><small>Productos activos</small><strong id="statTotal">0</strong><span>Todo lo registrado</span></article>
+        <article class="warn"><small>Stock bajo / agotado</small><strong id="statLow">0</strong><span>Revisar compras</span></article>
+        <article class="danger"><small>Vencimientos</small><strong id="statExpiry">0</strong><span>Fecha o cadena de frío</span></article>
+        <article><small>Valor estimado</small><strong id="statValue">$0</strong><span>Existencia × costo</span></article>
+      </section>
+
+      <section class="inv-panel">
+        <div class="inv-tools">
+          <input id="search" placeholder="Buscar producto, SKU, lote, proveedor, categoría...">
+          <select id="filter">
+            <option value="">Todos los estados</option>
+            <option>OK</option><option>POR AGOTARSE</option><option>SIN STOCK</option>
+            <option>REVISAR VENCIMIENTO</option><option>VENCIDO</option>
+          </select>
+        </div>
+
+        <div class="inv-chart-grid">
+          <div class="inv-chart">
+            <h3>Estado del inventario</h3>
+            <div id="chartBars" class="bars"></div>
+          </div>
+          <div class="inv-advice">
+            <h3>Qué revisar</h3>
+            <p>🧊 <b>Congelador / nevera:</b> controla vencimiento, lote y temperatura de almacenamiento.</p>
+            <p>📦 <b>Stock bajo:</b> programa compra antes de llegar a cero.</p>
+            <p>⚠️ <b>Merma:</b> registra vencidos, daños, derrames o desperdicio para que el stock sea real.</p>
+            <p>🥩 <b>Perecederos:</b> usa lote y fecha para priorizar el consumo.</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Producto</th><th>Categoría / tipo</th><th>Existencia</th><th>Mínimo / máximo</th>
+              <th>Ubicación</th><th>Lote / vencimiento</th><th>Estado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="itemsBody"><tr><td colspan="8">Cargando inventario...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="inv-modal" id="itemModal" hidden>
+  <form id="itemForm" class="inv-form">
+    <div class="modal-head"><div><span class="eyebrow">FICHA DE INVENTARIO</span><h2 id="modalTitle">Agregar producto</h2></div><button type="button" id="closeModal">✕</button></div>
+    <input type="hidden" id="itemId">
+    <div class="form-grid">
+      <label>Nombre *<input id="name" required maxlength="160"></label>
+      <label>SKU / código interno<input id="sku"></label>
+      <label>Código de barras<input id="barcode"></label>
+      <label>Categoría<input id="category" list="categories" value="Ingredientes"><datalist id="categories">
+        <option>Ingredientes</option><option>Bebidas</option><option>Carnes</option><option>Frutas y verduras</option><option>Lácteos</option><option>Congelados</option><option>Secos y granos</option><option>Panadería</option><option>Empaques</option><option>Limpieza</option><option>Utensilios</option><option>Equipos</option><option>Desechables</option><option>General</option>
+      </datalist></label>
+      <label>Tipo<select id="item_type"><option>INGREDIENTE</option><option>BEBIDA</option><option>PRODUCTO_VENTA</option><option>EMPAQUE</option><option>LIMPIEZA</option><option>UTENSILIO</option><option>EQUIPO</option><option>OTRO</option></select></label>
+      <label>Marca<input id="brand"></label>
+      <label>Presentación<input id="presentation" placeholder="Caja x 12, bolsa 1 kg..."></label>
+      <label>Unidad<input id="unit" value="unidad" required placeholder="kg, litro, unidad..."></label>
+      <label>Existencia actual<input id="quantity" type="number" step="0.001" min="0" value="0" required></label>
+      <label>Stock mínimo<input id="min_quantity" type="number" step="0.001" min="0" value="0" required></label>
+      <label>Stock máximo<input id="max_quantity" type="number" step="0.001" min="0" value="0"></label>
+      <label>Cantidad sugerida a reponer<input id="reorder_quantity" type="number" step="0.001" min="0" value="0"></label>
+      <label>Costo unitario (COP)<input id="unit_cost" type="number" min="0" step="0.01" value="0"></label>
+      <label>Almacenamiento<input id="storage" placeholder="Congelador, nevera, bodega..."></label>
+      <label>Ubicación exacta<input id="location" placeholder="Congelador 1 / Estante B..."></label>
+      <label>Lote<input id="lot"></label>
+      <label>Fecha de compra<input id="purchase_date" type="date"></label>
+      <label>Fecha de apertura<input id="opened_date" type="date"></label>
+      <label>Fecha de vencimiento<input id="expiry_date" type="date"></label>
+      <label>Temperatura / condición<input id="storage_temperature" placeholder="-18 °C, refrigerado..."></label>
+      <label>Proveedor<input id="supplier"></label>
+      <label>Alérgenos / advertencias<input id="allergen" placeholder="Leche, gluten, frutos secos..."></label>
+      <label class="wide">Notas<input id="notes" placeholder="Observaciones, conservación, presentación, instrucciones..."></label>
+    </div>
+    <div class="modal-actions"><button type="button" class="inv-btn secondary" id="cancelModal">Cancelar</button><button class="inv-btn primary" type="submit">Guardar producto</button></div>
+  </form>
+</div>
+
+<div class="inv-modal" id="movementModal" hidden>
+  <form id="movementForm" class="inv-form compact-form">
+    <div class="modal-head"><div><span class="eyebrow">KARDEX</span><h2 id="movementTitle">Registrar movimiento</h2></div><button type="button" id="closeMovement">✕</button></div>
+    <input type="hidden" id="movementItemId">
+    <label>Movimiento<select id="movementType"><option>ENTRADA</option><option>SALIDA</option><option>MERMA</option><option>AJUSTE</option></select></label>
+    <label>Cantidad<input id="movementQty" type="number" min="0.001" step="0.001" required></label>
+    <label>Motivo<input id="movementReason" placeholder="Compra, uso cocina, vencimiento, daño..."></label>
+    <div class="modal-actions"><button type="button" class="inv-btn secondary" id="cancelMovement">Cancelar</button><button class="inv-btn primary" type="submit">Guardar movimiento</button></div>
+  </form>
+</div>
+
+<div class="inv-modal" id="historyModal" hidden>
+  <div class="inv-form history-form">
+    <div class="modal-head"><div><span class="eyebrow">HISTORIAL</span><h2 id="historyTitle">Movimientos</h2></div><button type="button" id="closeHistory">✕</button></div>
+    <div id="historyBody" class="history-body">Cargando...</div>
+  </div>
+</div>
+<script src="/static/js/admin/sidebar.js"></script>
+<script src="/static/js/admin/inventory.js?v=20261004"></script>
+{% endblock %}

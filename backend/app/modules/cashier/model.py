@@ -137,10 +137,19 @@ class CashPayment(Base):
         nullable=False
     )
 
-    session_id: Mapped[uuid.UUID] = mapped_column(
+    session_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("sessions.id"),
-        nullable=False
+        nullable=True
+    )
+
+    # Pedido online/domicilio asociado al cobro. Permite que las ventas
+    # de domicilio también entren al arqueo de Caja sin inventar una sesión.
+    order_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("orders.id"),
+        nullable=True,
+        unique=True
     )
 
     cashier_id: Mapped[uuid.UUID] = mapped_column(
@@ -187,6 +196,10 @@ class CashPayment(Base):
 
     session = relationship(
         "Session"
+    )
+
+    order = relationship(
+        "Order"
     )
 
     cashier = relationship(

@@ -61,6 +61,18 @@
                 <div id="courierLocations" class="courier-locations">Cargando ubicaciones…</div>
             </section>
 
+            <section id="deliveryChatPanel" class="cashier-panel delivery-chat-panel" hidden>
+                <div class="panel-title">
+                    <div><span>SOPORTE DOMICILIARIO</span><h2 id="deliveryChatTitle">Chat con domiciliario</h2><p>Comunícate con el repartidor para confirmar el cobro y cerrar la venta.</p></div>
+                    <button id="deliveryChatClose" class="btn-refresh" type="button">Cerrar chat</button>
+                </div>
+                <div id="deliveryChatMessages" class="delivery-chat-messages">Selecciona un pedido para abrir el chat.</div>
+                <form id="deliveryChatForm" class="delivery-chat-form">
+                    <input id="deliveryChatInput" maxlength="1000" placeholder="Escribe al domiciliario…" required>
+                    <button class="btn-primary" type="submit">Enviar</button>
+                </form>
+            </section>
+
             <section id="accountsPanel" class="cashier-panel" hidden>
                 <div class="panel-title">
                     <div>
@@ -178,5 +190,5 @@
 </div>
 
 <script src="/static/js/cashier/layout.js"></script>
-<script src="/static/js/admin/cashier.js?v=20260924"></script>
+<script src="/static/js/admin/cashier.js?v=20261004-delivery"></script>
 {% endblock %}

@@ -46,6 +46,7 @@ from .schemas import (
     CashRegisterWithdrawalCreate
 )
 from app.modules.delivery.schemas import PaymentClose
+from app.modules.delivery.model import DeliveryPaymentProof
 
 
 router = APIRouter(
@@ -99,7 +100,7 @@ def _online_order_payload(db: Session, order: Order):
             }
             for item in items
         ],
-        "total": sum(Decimal(str(item.total or 0)) for item in items),
+        "total": sum(Decimal(str(item.total or 0)) for item in items) + Decimal(str(order.delivery_fee or 0)),
     }
 
 
@@ -193,16 +194,73 @@ def close_online_payment(
         raise HTTPException(404, "Pedido online no encontrado.")
     if order.status != "DELIVERED_PENDING_PAYMENT":
         raise HTTPException(409, "El domiciliario debe validar primero la entrega con el código del cliente.")
-    method = (data.payment_method or "CASH").upper()
-    if method not in {"CASH", "CARD", "TRANSFER"}:
+
+    method = (data.payment_method or order.payment_method or "CASH").strip().upper().replace(" ", "_")
+    aliases = {
+        "NEQUI": "TRANSFER_NEQUI",
+        "BANCOLOMBIA": "TRANSFER_BANCOLOMBIA",
+        "LLAVES": "TRANSFER_LLAVES",
+        "LLAVE": "TRANSFER_LLAVES",
+    }
+    method = aliases.get(method, method)
+    allowed = {"CASH", "CARD", "TRANSFER", "TRANSFER_NEQUI", "TRANSFER_BANCOLOMBIA", "TRANSFER_LLAVES"}
+    if method not in allowed:
         raise HTTPException(400, "Método de pago inválido.")
+
+    register = get_open_register(db, current_user.id)
+    if not register:
+        raise HTTPException(409, "Debes tener una caja abierta para registrar y cerrar esta venta.")
+
+    proof = None
+    if method.startswith("TRANSFER"):
+        proof = (
+            db.query(DeliveryPaymentProof)
+            .filter(
+                DeliveryPaymentProof.order_id == order.id,
+                DeliveryPaymentProof.payment_method == method,
+                DeliveryPaymentProof.status == "APPROVED",
+            )
+            .order_by(DeliveryPaymentProof.created_at.desc())
+            .first()
+        )
+        if not proof:
+            raise HTTPException(409, "Primero debes revisar y aprobar al menos un comprobante de esta transferencia.")
+
+    existing = db.query(CashPayment).filter(CashPayment.order_id == order.id).first()
+    if existing:
+        raise HTTPException(409, "Esta venta ya fue registrada en Caja.")
+
+    items_total = sum(
+        (Decimal(str(row[0] or 0)) for row in db.query(func.sum(OrderItem.total)).filter(OrderItem.order_id == order.id).all()),
+        Decimal("0")
+    )
+    total = items_total + Decimal(str(order.delivery_fee or 0))
     now = datetime.now(timezone.utc)
+    payment = CashPayment(
+        cash_register_id=register.id,
+        session_id=None,
+        order_id=order.id,
+        cashier_id=current_user.id,
+        method=method,
+        amount=total,
+        received_amount=total,
+        change_amount=Decimal("0"),
+        reference=f"DOMICILIO #{str(order.id)[:8].upper()}",
+    )
+    db.add(payment)
     order.payment_method = method
     order.payment_confirmed_at = now
     order.status = "CLOSED"
     order.closed_at = now
     db.commit()
-    return {"message":"Pago registrado y pedido cerrado por Caja.","order_id":str(order.id),"status":order.status,"payment_method":method}
+    return {
+        "message": "Pago registrado y pedido cerrado por Caja.",
+        "order_id": str(order.id),
+        "status": order.status,
+        "payment_method": method,
+        "amount": total,
+        "proof_id": str(proof.id) if proof else None,
+    }
 
 
 # ==========================================================
@@ -550,7 +608,7 @@ def admin_cash_summary(
         Decimal("0")
     )
     transfer_today = sum(
-        (Decimal(str(p.amount or 0)) for p in payments_today if p.method == "TRANSFER"),
+        (Decimal(str(p.amount or 0)) for p in payments_today if str(p.method or "").startswith("TRANSFER")),
         Decimal("0")
     )
 
@@ -622,7 +680,7 @@ def admin_cash_summary(
             Decimal("0")
         )
         transfer = sum(
-            (Decimal(str(p.amount or 0)) for p in payments if p.method == "TRANSFER"),
+            (Decimal(str(p.amount or 0)) for p in payments if str(p.method or "").startswith("TRANSFER")),
             Decimal("0")
         )
         return cash, card, transfer, cash + card + transfer, len(payments)
@@ -735,6 +793,91 @@ def admin_cash_summary(
             "waiter_id": str(session.waiter_id) if session.waiter_id else None,
         })
 
+    transfer_methods = {"TRANSFER", "TRANSFER_NEQUI", "TRANSFER_BANCOLOMBIA", "TRANSFER_LLAVES"}
+    transfer_payments_today = [p for p in payments_today if p.method in transfer_methods]
+    approved_proofs_today = (
+        db.query(DeliveryPaymentProof)
+        .options(joinedload(DeliveryPaymentProof.uploader), joinedload(DeliveryPaymentProof.reviewer))
+        .filter(
+            func.date(DeliveryPaymentProof.created_at) == today,
+            DeliveryPaymentProof.status == "APPROVED",
+        )
+        .order_by(DeliveryPaymentProof.created_at.desc())
+        .all()
+    )
+    transfer_provider_labels = {
+        "TRANSFER": "Transferencia",
+        "TRANSFER_NEQUI": "Nequi",
+        "TRANSFER_BANCOLOMBIA": "Bancolombia",
+        "TRANSFER_LLAVES": "Llaves",
+    }
+    provider_summary = {}
+    for method, label in transfer_provider_labels.items():
+        rows = [p for p in transfer_payments_today if p.method == method]
+        proofs = [p for p in approved_proofs_today if p.payment_method == method]
+        provider_summary[method] = {
+            "label": label,
+            "sales_count": len(rows),
+            "sales_total": sum((Decimal(str(p.amount or 0)) for p in rows), Decimal("0")),
+            "proof_count": len(proofs),
+        }
+
+    proof_rows_today = (
+        db.query(DeliveryPaymentProof)
+        .options(joinedload(DeliveryPaymentProof.order), joinedload(DeliveryPaymentProof.uploader), joinedload(DeliveryPaymentProof.reviewer))
+        .filter(func.date(DeliveryPaymentProof.created_at) == today)
+        .order_by(DeliveryPaymentProof.created_at.desc())
+        .all()
+    )
+    transfer_evidence = []
+    pending_transfer_closures = []
+    for proof in proof_rows_today:
+        if proof.order is None:
+            continue
+        registered = db.query(CashPayment).filter(CashPayment.order_id == proof.order_id).first()
+        item = {
+            "id": str(proof.id),
+            "order_id": str(proof.order_id),
+            "order_short_id": str(proof.order_id)[:8].upper(),
+            "customer_name": proof.order.customer.full_name if proof.order.customer else "Cliente",
+            "method": proof.payment_method,
+            "method_label": transfer_provider_labels.get(proof.payment_method, proof.payment_method),
+            "file_url": proof.file_url,
+            "status": proof.status,
+            "review_note": proof.review_note,
+            "uploaded_by": proof.uploader.full_name if proof.uploader else None,
+            "reviewed_by": proof.reviewer.full_name if proof.reviewer else None,
+            "created_at": proof.created_at,
+            "reviewed_at": proof.reviewed_at,
+            "registered_in_cash": bool(registered),
+            "cash_payment_id": str(registered.id) if registered else None,
+        }
+        transfer_evidence.append(item)
+        if proof.status == "APPROVED" and not registered:
+            pending_transfer_closures.append(item)
+
+    # Ventas de transferencia cerradas sin comprobante aprobado: se muestran
+    # como excepción para que el arqueo no quede en silencio.
+    transfer_sales_without_proof = []
+    for payment in transfer_payments_today:
+        if not payment.order_id:
+            continue
+        approved = db.query(DeliveryPaymentProof).filter(
+            DeliveryPaymentProof.order_id == payment.order_id,
+            DeliveryPaymentProof.status == "APPROVED"
+        ).first()
+        if not approved:
+            order = db.query(Order).filter(Order.id == payment.order_id).first()
+            transfer_sales_without_proof.append({
+                "order_id": str(payment.order_id),
+                "order_short_id": str(payment.order_id)[:8].upper(),
+                "method": payment.method,
+                "method_label": transfer_provider_labels.get(payment.method, payment.method),
+                "amount": payment.amount,
+                "customer_name": order.customer.full_name if order and order.customer else "Cliente",
+                "paid_at": payment.paid_at,
+            })
+
     movement_rows_today = (
         db.query(CashRegisterMovement)
         .filter(func.date(CashRegisterMovement.created_at) == today)
@@ -776,6 +919,15 @@ def admin_cash_summary(
             (Decimal(str(m.amount or 0)) for m in movement_rows_today if m.movement_type == "WITHDRAWAL"),
             Decimal("0")
         ),
+        "transfer_reconciliation": {
+            "registered_count": len(transfer_payments_today),
+            "registered_total": transfer_today,
+            "approved_proof_count": len(approved_proofs_today),
+            "pending_transfer_closures": pending_transfer_closures,
+            "sales_without_approved_proof": transfer_sales_without_proof,
+            "providers": provider_summary,
+        },
+        "transfer_evidence_today": transfer_evidence,
     }
 
 

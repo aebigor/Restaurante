@@ -80,6 +80,27 @@ async function loadCashControl(){
                 <div><span>CAJA</span><strong>${escapeHtml(m.register_id.slice(0,8).toUpperCase())}</strong><span>Movimiento auditado</span></div>
             </div>`).join("")
         : `<div class="control-empty"><strong>No hay retiros registrados hoy.</strong><br>Los retiros de efectivo aparecerán aquí inmediatamente.</div>`;
+
+    const rec = data.transfer_reconciliation || {};
+    const providers = rec.providers || {};
+    const transferSummary = document.getElementById('transferSummary');
+    if (transferSummary) {
+        const cards = Object.entries(providers).map(([key,p]) => `<div class="transfer-provider"><span>${escapeHtml(p.label || key)}</span><strong>${money(p.sales_total)}</strong><small>${p.sales_count || 0} ventas · ${p.proof_count || 0} comprobantes aprobados</small></div>`).join('');
+        transferSummary.innerHTML = `<div class="transfer-kpis"><div><span>Ventas registradas por transferencia</span><strong>${rec.registered_count || 0}</strong><small>${money(rec.registered_total || 0)}</small></div><div><span>Comprobantes aprobados</span><strong>${rec.approved_proof_count || 0}</strong><small>Revisados por Caja</small></div></div><div class="transfer-providers">${cards || '<span>No hay transferencias hoy.</span>'}</div>`;
+    }
+
+    const transferAlerts = document.getElementById('transferAlerts');
+    if (transferAlerts) {
+        const pending = rec.pending_transfer_closures || [];
+        const missing = rec.sales_without_approved_proof || [];
+        transferAlerts.innerHTML = `${pending.length ? `<div class="transfer-alert warning"><b>⚠️ Comprobantes aprobados sin venta cerrada (${pending.length})</b>${pending.map(x=>`<span>Pedido #${escapeHtml(x.order_short_id)} · ${escapeHtml(x.method_label)} · ${escapeHtml(x.customer_name)}</span>`).join('')}</div>` : ''}${missing.length ? `<div class="transfer-alert danger"><b>🚨 Ventas por transferencia sin comprobante aprobado (${missing.length})</b>${missing.map(x=>`<span>Pedido #${escapeHtml(x.order_short_id)} · ${escapeHtml(x.method_label)} · ${money(x.amount)}</span>`).join('')}</div>` : ''}${!pending.length&&!missing.length ? `<div class="transfer-ok">✅ No hay diferencias de comprobantes por transferencia detectadas.</div>` : ''}`;
+    }
+
+    const evidenceList = document.getElementById('transferEvidenceList');
+    const evidence = data.transfer_evidence_today || [];
+    if (evidenceList) {
+        evidenceList.innerHTML = evidence.length ? evidence.map(x=>`<article class="transfer-evidence-card"><a href="${escapeHtml(x.file_url)}" target="_blank" rel="noopener"><img src="${escapeHtml(x.file_url)}" alt="Comprobante ${escapeHtml(x.order_short_id)}"></a><div><b>Pedido #${escapeHtml(x.order_short_id)}</b><span>${escapeHtml(x.customer_name)} · ${escapeHtml(x.method_label)}</span><small>${x.status==='APPROVED'?'✅ Aprobado':x.status==='REJECTED'?'❌ Rechazado':'⏳ Pendiente'} · ${dateTime(x.created_at)}</small><small>${x.registered_in_cash?'✅ Venta registrada en Caja':'⚠️ Aún no registrada en Caja'}</small>${x.review_note?`<small>Nota: ${escapeHtml(x.review_note)}</small>`:''}</div></article>`).join('') : '<div class="control-empty"><strong>No hay comprobantes transferidos hoy.</strong><br>Cuando un domiciliario suba un comprobante aparecerá aquí.</div>';
+    }
 }
 
 const editModal = document.getElementById("editClosingModal");
