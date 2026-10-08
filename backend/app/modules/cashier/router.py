@@ -1405,11 +1405,13 @@ def pay_session(
         )
 
 
+    # La cuenta sigue siendo cobrable si el mesero ya marcó la mesa como
+    # limpia. Limpiar NO libera la mesa: Caja todavía debe registrar el pago.
     session = (
         db.query(RestaurantSession)
         .filter(
             RestaurantSession.id == data.session_id,
-            RestaurantSession.status == "OPEN"
+            RestaurantSession.status.in_(["OPEN", "CLEAN"])
         )
         .first()
     )
@@ -1583,7 +1585,10 @@ def pay_session(
     # La sesión permanece abierta en estado PAID para que el mesero
     # pueda comprobar que la mesa ya quedó limpia y liberarla.
 
-    session.status = "PAID"
+    # Si ya estaba limpia, conservar CLEAN para que Caja pueda finalizar
+    # la liberación solo después de registrar el pago. Si no, PAID mantiene
+    # la mesa ocupada hasta que el mesero complete la limpieza.
+    session.status = "CLEAN" if session.status == "CLEAN" else "PAID"
 
 
     db.commit()
@@ -1640,15 +1645,16 @@ def release_table_from_cashier(
             detail="Solo Caja puede liberar una mesa."
         )
 
-    # Si Caja ya recibió el pago, se considera que el cliente terminó
-    # su consumo. La liberación desde Caja NO debe depender de que el
-    # mesero haya marcado cada comanda como entregada: el pago es el
-    # cierre operativo definitivo de la mesa.
+    # Caja puede liberar una mesa pagada sin esperar a que el mesero
+    # la marque como limpia. Así un estado de entrega atascado no deja
+    # la mesa ocupada indefinidamente.
+    # Se aceptan sesiones activas OPEN, PAID o CLEAN, pero siempre se exige
+    # un pago registrado antes de cerrar la sesión y dejar libre la mesa.
     session = (
         db.query(RestaurantSession)
         .filter(
             RestaurantSession.id == session_id,
-            RestaurantSession.status.in_(["PAID", "CLEAN"])
+            RestaurantSession.status.in_(["OPEN", "PAID", "CLEAN"])
         )
         .first()
     )
@@ -1656,7 +1662,16 @@ def release_table_from_cashier(
     if not session:
         raise HTTPException(
             status_code=409,
-            detail="La mesa debe estar pagada antes de poder liberarla desde Caja."
+            detail="La sesión no está activa o ya fue liberada."
+        )
+
+    has_payment = db.query(CashPayment.id).filter(
+        CashPayment.session_id == session.id
+    ).first() is not None
+    if not has_payment:
+        raise HTTPException(
+            status_code=409,
+            detail="Antes de liberar la mesa, Caja debe registrar y confirmar el pago."
         )
 
     now = datetime.now(timezone.utc)

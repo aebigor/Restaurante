@@ -46,6 +46,35 @@ def elapsed_seconds(value):
     return max(0, int((datetime.now(timezone.utc) - value).total_seconds()))
 
 
+
+def sync_fully_served_orders(db: Session, session_id):
+    """Repara comandas antiguas: si todos sus productos ya fueron entregados,
+    registra la entrega total aunque served_at haya quedado nulo por un error.
+
+    No marca como entregada una comanda que tenga productos pendientes.
+    """
+    orders = db.query(Order).filter(
+        Order.session_id == session_id,
+        Order.status != "CANCELLED",
+        Order.served_at.is_(None),
+    ).all()
+
+    now = datetime.now(timezone.utc)
+    changed = False
+    for order in orders:
+        items = db.query(OrderItem).filter(
+            OrderItem.order_id == order.id
+        ).all()
+        active_items = [item for item in items if item.status != "CANCELLED"]
+        if active_items and all(item.status == "SERVED" for item in active_items):
+            order.status = "SERVED"
+            order.served_at = now
+            changed = True
+
+    if changed:
+        db.flush()
+
+
 router = APIRouter(
     prefix="/api/waiter",
     tags=["Waiter"]
@@ -312,6 +341,9 @@ def waiter_tables(
         pending_delivery = 0
         pending_payment_since = None
         if session:
+            # Corrige comandas donde los productos ya están entregados pero
+            # quedó served_at nulo; no deben bloquear la limpieza de la mesa.
+            sync_fully_served_orders(db, session.id)
             pending_delivery = db.query(Order).filter(
                 Order.session_id == session.id,
                 Order.status != "CANCELLED",
@@ -1206,6 +1238,9 @@ def mark_table_clean(
     # de 30 minutos comiendo y cuando todos los pedidos ya fueron entregados.
     # El pago NO bloquea la limpieza: Caja sigue siendo quien libera la mesa.
     if not prepayment_required:
+        # Reconciliar primero los estados históricos para que una entrega real
+        # no siga bloqueando al mesero por un served_at que quedó vacío.
+        sync_fully_served_orders(db, session.id)
         pending_delivery = db.query(Order.id).filter(
             Order.session_id == session.id,
             Order.status != "CANCELLED",

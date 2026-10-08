@@ -660,6 +660,47 @@ async function loadBoard() {
 
 
 // ==========================================================
+// MARCAR LISTO Y MOVER AL HISTORIAL
+// ==========================================================
+async function changeStatus(queueId) {
+    const button = document.querySelector(`[data-item-id="${CSS.escape(String(queueId))}"] button`);
+    if (button) { button.disabled = true; button.textContent = "Avisando al mesero…"; }
+    try {
+        const response = await fetch(`/api/kitchen-queue/${encodeURIComponent(queueId)}/finish`, { method: "PATCH" });
+        if (!response.ok) {
+            const detail = await response.text();
+            throw new Error(detail || "No se pudo marcar la comanda como lista.");
+        }
+        // El endpoint de estación solo devuelve WAITING/PREPARING; al marcar READY
+        // desaparece de producción y se registra en el historial.
+        await loadBoard();
+    } catch (error) {
+        alert(error.message || "No se pudo marcar como listo.");
+        if (button) { button.disabled = false; button.textContent = "✓ LISTO PARA EL MESERO"; }
+    }
+}
+
+async function loadHistory() {
+    const root = document.getElementById("history");
+    if (!root) return;
+    const stationId = currentStationId || selectedStation?.station_id;
+    if (!stationId) { root.innerHTML = ""; return; }
+    try {
+        const response = await fetch(`/api/kitchen-queue/station/${encodeURIComponent(stationId)}/history`);
+        if (!response.ok) throw new Error("No se pudo cargar el historial");
+        historyItems = await response.json();
+        if (!historyItems.length) { root.innerHTML = `<div class="empty-panel">Todavía no hay comandas resueltas.</div>`; return; }
+        root.innerHTML = historyItems.map(item => `<article class="ticket ready history-ticket">
+            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(String(item.order_id).slice(0,8).toUpperCase()) : "—"}</small><small>✓ RESUELTA · AVISADO AL MESERO</small></div>
+            <h2>${escapeHtml(item.quantity)} × ${escapeHtml(item.name)}</h2>
+            <div class="time-grid"><div><span>ESPERA</span><strong>${fmt(item.waiting_seconds || 0)}</strong></div><div><span>PREPARACIÓN</span><strong>${fmt(item.preparation_seconds || 0)}</strong></div><div><span>TOTAL</span><strong>${fmt(item.total_seconds || 0)}</strong></div></div>
+        </article>`).join("");
+    } catch (error) {
+        root.innerHTML = `<div class="empty-panel">No se pudo cargar el historial de comandas resueltas.</div>`;
+    }
+}
+
+// ==========================================================
 // RENDER COLA
 // ==========================================================
 
@@ -682,10 +723,10 @@ function render() {
         const totalTime = waiting ? waitingTime : (item.finished_at ? elapsedBetween(item.created_at, item.finished_at) : waitingTime + preparationTime);
         const stateClass = overdue ? "overdue" : (ready ? "ready" : String(item.status).toLowerCase());
         return `<article class="ticket ${stateClass}" data-item-id="${escapeHtml(item.id)}">
-            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(item.order_id.slice(0, 8).toUpperCase()) : "—"} · MESA ${escapeHtml(item.table || "—")}</small><small>${overdue ? "⚠ ATRASADO" : "EN COCINA"}</small></div>
+            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(item.order_id.slice(0, 8).toUpperCase()) : "—"} · MESA ${escapeHtml(item.table || "—")}</small><small>${waiting ? "NUEVA" : ready ? "LISTO · ESPERA MESERO" : overdue ? "⚠ ATRASADO" : "PREPARANDO"}</small></div>
             <h2>${escapeHtml(item.quantity)} × ${escapeHtml(item.name)}</h2>
             ${waiting ? `<div class="time-main-label">ESPERA EN COCINA</div><div class="timer" data-mode="waiting" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime)}</div>${prepLimit ? `<div class="target-time">⏱ Tiempo objetivo: <b>${prepLimit} min</b></div>` : ""}` : ready ? `<div class="ready-banner">✓ LISTO — esperando que el mesero marque <b>ENTREGADO</b></div><div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong>${fmt(preparationTime)}</strong></div><div><span>TOTAL</span><strong>${fmt(totalTime)}</strong></div></div>` : `<div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong class="preparation-timer" data-started="${escapeHtml(item.started_at)}">${fmt(prepSeconds)}</strong></div><div><span>TOTAL</span><strong class="total-timer" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime + prepSeconds)}</strong></div></div><div class="prep-target ${overdue ? "late" : ""}">${overdue ? `⚠ ATRASADO <b>${fmt(overdueSeconds)}</b> · objetivo ${prepLimit} min` : `⏱ Objetivo ${prepLimit ? prepLimit + " min" : "sin límite"}`}</div>`}
-            <button onclick="changeStatus('${escapeHtml(item.id)}','READY')">✓ LISTO PARA EL MESERO</button>
+            <button onclick="changeStatus('${escapeHtml(item.id)}')">✓ LISTO PARA EL MESERO</button>
         </article>`;
     }).join("");
 }
@@ -706,38 +747,6 @@ function tickTimers() {
 }
 
 // ==========================================================
-// ==========================================================
-// MARCAR LISTO PARA EL MESERO
-// ==========================================================
-
-async function changeStatus(queueId, status) {
-    if (status !== "READY") return;
-
-    try {
-        const response = await fetch(
-            `/api/kitchen-queue/${encodeURIComponent(queueId)}/finish`,
-            { method: "PATCH" }
-        );
-
-        if (!response.ok) {
-            let message = "No se pudo marcar la comanda como lista.";
-            try {
-                const data = await response.json();
-                message = data.detail || message;
-            } catch (_) {}
-            throw new Error(message);
-        }
-
-        await loadBoard();
-    } catch (error) {
-        console.error(error);
-        alert(error.message || "No se pudo marcar la comanda como lista.");
-    }
-}
-
-
-// ==========================================================
-
 // CAMBIAR ESTACIÓN
 // ==========================================================
 

@@ -283,10 +283,11 @@ def finish(
     if queue.status == "READY":
         return _serialize(queue)
 
-    # Cocina no necesita "Tomar pedido": al pulsar LISTO,
-    # si nunca se inició manualmente, usamos la llegada como inicio
-    # para conservar los tiempos sin introducir un paso adicional.
-    if queue.started_at is None:
+    if queue.status not in ("WAITING", "PREPARING"):
+        raise HTTPException(409, "La comanda ya fue resuelta o no está pendiente.")
+
+    # Si cocina no pulsó iniciar, usar la llegada como inicio para registrar tiempos.
+    if not queue.started_at:
         queue.started_at = queue.created_at or datetime.utcnow()
 
     queue.status = "READY"
