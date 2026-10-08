@@ -124,6 +124,19 @@ async def admin_support(request: Request):
         context={}
     )
 
+
+# ======================================================
+# INVENTARIO
+# ======================================================
+
+@router.get("/admin/inventory")
+async def admin_inventory(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/inventory.html",
+        context={}
+    )
+
 # ======================================================
 # DASHBOARD
 # ======================================================

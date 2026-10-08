@@ -656,7 +656,7 @@ function renderTables() {
                                 ? table.prepayment_required
                                     ? `
                                         <button type="button" class="clean-table-button prepayment-release-button" onclick="event.stopPropagation(); markTableClean('${escapeHtml(table.session_id)}', true)">
-                                            ✅ Confirmar salida y liberar mesa
+                                            🧹 Confirmar entrega y marcar mesa limpia
                                         </button>
                                     `
                                     : `
@@ -2638,8 +2638,8 @@ async function markTableClean(sessionId, isPrepayment = false) {
     if (!sessionId) return;
 
     const message = isPrepayment
-        ? "¿Confirmas que los clientes ya se retiraron y que la mesa está completamente limpia?\\n\\nLa mesa de pago anticipado quedará LIBRE inmediatamente."
-        : "¿Confirmas que la mesa ya está completamente limpia?\\n\\nEl pago ya fue autorizado por Caja. La mesa quedará en estado LIMPIA y Caja será quien la libere.";
+        ? "¿Confirmas que el pedido ya fue ENTREGADO por completo y que la mesa está limpia?\\n\\nLa mesa NO quedará libre todavía. Quedará en LIMPIA y Caja deberá liberarla."
+        : "¿Confirmas que el pedido ya fue ENTREGADO por completo y que la mesa ya está limpia?\\n\\nLa mesa quedará en LIMPIA y Caja será quien la libere.";
 
     const confirmed = confirm(message);
     if (!confirmed) return;
@@ -2651,9 +2651,7 @@ async function markTableClean(sessionId, isPrepayment = false) {
         );
 
         alert(response.message || (
-            isPrepayment
-                ? "Mesa liberada correctamente."
-                : "Mesa marcada como limpia. Caja debe liberarla."
+            "Mesa marcada como limpia. Caja debe liberarla."
         ));
 
         await Promise.all([loadTables(), loadActiveOrders()]);

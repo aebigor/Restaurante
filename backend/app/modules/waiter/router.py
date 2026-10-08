@@ -1181,17 +1181,13 @@ def mark_table_clean(
             detail="No puedes marcar la mesa como limpia hasta entregar todos los pedidos."
         )
 
-    # Las mesas de pago anticipado se liberan directamente desde el mesero
-    # una vez que Caja autorizó el pago y todos los pedidos fueron entregados.
-    # Las mesas normales conservan el flujo anterior: CLEAN -> liberación por Caja.
-    if prepayment_required:
-        session.status = "CLOSED"
-        message = "Mesa de pago anticipado liberada correctamente. Ya está disponible."
-        response_status = "CLOSED"
-    else:
-        session.status = "CLEAN"
-        message = "Mesa marcada como limpia. Caja debe liberarla."
-        response_status = "CLEAN"
+    # NUNCA liberar la mesa desde el mesero, ni siquiera cuando el pago
+    # anticipado ya fue registrado. El mesero solamente confirma que todos
+    # los pedidos fueron entregados y marca la mesa como LIMPIA.
+    # Después de esto, Caja es quien hace la liberación definitiva (CLOSED).
+    session.status = "CLEAN"
+    message = "Mesa marcada como limpia. Caja debe liberarla."
+    response_status = "CLEAN"
 
     db.commit()
     db.refresh(session)
