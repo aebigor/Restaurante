@@ -27,7 +27,6 @@ class InventoryItem(Base):
     unit_cost: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
     storage: Mapped[str | None] = mapped_column(String(80), nullable=True)
     location: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    lot: Mapped[str | None] = mapped_column(String(100), nullable=True)
     purchase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     opened_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)

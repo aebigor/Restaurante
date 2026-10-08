@@ -5,6 +5,7 @@ let items = [];
 let historyItems = [];
 let selectedStation = null;
 let currentScreenCode = null;
+let currentStationId = null;
 
 // ==========================================================
 // SONIDO DE ALERTA
@@ -437,8 +438,10 @@ async function selectStation(
             screen.code
         );
 
+        // Cada pantalla queda vinculada a la estación elegida.
+        // No usamos prioridad ni "Principal" para redireccionar.
         window.location.href =
-            `/kitchen/${encodeURIComponent(screen.code)}`;
+            `/kitchen/station/${encodeURIComponent(station.id)}`;
 
     } catch (error) {
 
@@ -552,17 +555,33 @@ async function heartbeat() {
 
 async function loadBoard() {
 
-    if (!currentScreenCode) return;
+    // En una ruta por estación no necesitamos screenCode todavía.
+    // La estación seleccionada es la autoridad de la cola.
+    if (!currentStationId && !currentScreenCode) return;
+
+    const queueUrl = currentStationId
+        ? `/api/screens/by-station/${encodeURIComponent(currentStationId)}/queue`
+        : `/api/screens/${encodeURIComponent(currentScreenCode)}/queue`;
 
     const response =
-        await fetch(
-            `/api/screens/${encodeURIComponent(currentScreenCode)}/queue`
-        );
+        await fetch(queueUrl);
 
     if (!response.ok) {
+        // Si la TV ya está en /kitchen/station/<id>, NO debemos volver
+        // a mostrar las tarjetas de selección por un error temporal del API.
+        // La estación elegida sigue siendo la autoridad de esta pantalla.
+        if (currentStationId) {
+            const root = document.getElementById("queue");
+            document.getElementById("stationSelector")?.classList.add("hidden");
+            document.getElementById("kitchenBoard")?.classList.remove("hidden");
+            document.getElementById("changeStationBtn")?.classList.remove("hidden");
+            if (root) {
+                root.innerHTML = `<div class="empty-panel queue-empty"><div class="empty-icon">⚠</div><strong>No se pudo actualizar esta estación</strong><span>La TV conserva la estación seleccionada. Reintentando automáticamente...</span></div>`;
+            }
+            return;
+        }
 
         showSelector();
-
         return;
     }
 
@@ -570,6 +589,7 @@ async function loadBoard() {
         await response.json();
 
     selectedStation = data;
+    if (data.screen_code) currentScreenCode = data.screen_code;
 
     document
         .getElementById("stationSelector")
@@ -656,435 +676,46 @@ async function loadBoard() {
 // ==========================================================
 
 function render() {
-
-    const root =
-        document.getElementById("queue");
-
+    const root = document.getElementById("queue");
     if (!items.length) {
-
-        root.innerHTML = `
-            <div class="empty-panel queue-empty">
-
-                <div class="empty-icon">
-                    ✓
-                </div>
-
-                <strong>
-                    No hay comandas pendientes
-                </strong>
-
-                <span>
-                    La estación está al día.
-                    Los nuevos pedidos aparecerán automáticamente.
-                </span>
-
-            </div>
-        `;
-
+        root.innerHTML = `<div class="empty-panel queue-empty"><div class="empty-icon">✓</div><strong>No hay comandas pendientes</strong><span>Los nuevos pedidos aparecerán automáticamente.</span></div>`;
         return;
     }
-
-
-    root.innerHTML =
-        items.map(item => {
-
-            const waiting =
-                item.status === "WAITING";
-
-            let waitingTime = 0;
-            let preparationTime = 0;
-            let totalTime = 0;
-
-            if (waiting) {
-
-                waitingTime =
-                    elapsedFrom(
-                        item.created_at
-                    );
-
-            } else {
-
-                waitingTime =
-                    item.waiting_seconds ||
-                    elapsedBetween(
-                        item.created_at,
-                        item.started_at
-                    );
-
-                preparationTime =
-                    elapsedFrom(
-                        item.started_at
-                    );
-
-                totalTime =
-                    waitingTime +
-                    preparationTime;
-            }
-
-
-            return `
-                <article
-                    class="ticket ${String(item.status).toLowerCase()}"
-                    data-item-id="${escapeHtml(item.id)}"
-                >
-
-                    <div class="ticket-head">
-
-                        <small>
-                            COMANDA
-                            ${
-                                item.order_id
-                                    ? escapeHtml(
-                                        item.order_id
-                                            .slice(0, 8)
-                                            .toUpperCase()
-                                    )
-                                    : "—"
-                            }
-
-                            · MESA
-                            ${escapeHtml(
-                                item.table || "—"
-                            )}
-                        </small>
-
-                        <small>
-                            ${
-                                waiting
-                                    ? "NUEVA"
-                                    : "PREPARANDO"
-                            }
-                        </small>
-
-                    </div>
-
-
-                    <h2>
-                        ${escapeHtml(item.quantity)}
-                        ×
-                        ${escapeHtml(item.name)}
-                    </h2>
-
-
-                    ${
-                        waiting
-                            ? `
-                                <div class="time-main-label">
-                                    ESPERA EN COCINA
-                                </div>
-
-                                <div
-                                    class="timer"
-                                    data-mode="waiting"
-                                    data-created="${escapeHtml(item.created_at)}"
-                                >
-                                    ${fmt(waitingTime)}
-                                </div>
-                            `
-                            : `
-                                <div class="time-grid">
-
-                                    <div>
-                                        <span>
-                                            ESPERA
-                                        </span>
-
-                                        <strong>
-                                            ${fmt(waitingTime)}
-                                        </strong>
-                                    </div>
-
-                                    <div>
-                                        <span>
-                                            PREPARACIÓN
-                                        </span>
-
-                                        <strong
-                                            class="preparation-timer"
-                                            data-started="${escapeHtml(item.started_at)}"
-                                        >
-                                            ${fmt(preparationTime)}
-                                        </strong>
-                                    </div>
-
-                                    <div>
-                                        <span>
-                                            TOTAL
-                                        </span>
-
-                                        <strong
-                                            class="total-timer"
-                                            data-created="${escapeHtml(item.created_at)}"
-                                        >
-                                            ${fmt(totalTime)}
-                                        </strong>
-                                    </div>
-
-                                </div>
-                            `
-                    }
-
-
-                    <button
-                        onclick="changeStatus(
-                            '${escapeHtml(item.id)}',
-                            '${escapeHtml(item.status)}'
-                        )"
-                    >
-                        ${
-                            waiting
-                                ? "Tomar pedido"
-                                : "Marcar listo"
-                        }
-                    </button>
-
-                </article>
-            `;
-
-        }).join("");
+    root.innerHTML = items.map(item => {
+        const waiting = item.status === "WAITING";
+        const preparing = item.status === "PREPARING";
+        const ready = item.status === "READY";
+        const prepLimit = Math.max(0, Number(item.preparation_time || 0));
+        const prepSeconds = preparing && item.started_at ? elapsedFrom(item.started_at) : 0;
+        const overdue = preparing && prepLimit > 0 && prepSeconds > prepLimit * 60;
+        const overdueSeconds = overdue ? prepSeconds - prepLimit * 60 : 0;
+        const waitingTime = waiting ? elapsedFrom(item.created_at) : (item.waiting_seconds || (item.started_at ? elapsedBetween(item.created_at, item.started_at) : 0));
+        const preparationTime = preparing ? prepSeconds : (ready && item.started_at && item.finished_at ? elapsedBetween(item.started_at, item.finished_at) : 0);
+        const totalTime = waiting ? waitingTime : (item.finished_at ? elapsedBetween(item.created_at, item.finished_at) : waitingTime + preparationTime);
+        const stateClass = overdue ? "overdue" : (ready ? "ready" : String(item.status).toLowerCase());
+        return `<article class="ticket ${stateClass}" data-item-id="${escapeHtml(item.id)}">
+            <div class="ticket-head"><small>COMANDA ${item.order_id ? escapeHtml(item.order_id.slice(0, 8).toUpperCase()) : "—"} · MESA ${escapeHtml(item.table || "—")}</small><small>${waiting ? "NUEVA" : ready ? "LISTO · ESPERA MESERO" : overdue ? "⚠ ATRASADO" : "PREPARANDO"}</small></div>
+            <h2>${escapeHtml(item.quantity)} × ${escapeHtml(item.name)}</h2>
+            ${waiting ? `<div class="time-main-label">ESPERA EN COCINA</div><div class="timer" data-mode="waiting" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime)}</div>${prepLimit ? `<div class="target-time">⏱ Tiempo objetivo: <b>${prepLimit} min</b></div>` : ""}` : ready ? `<div class="ready-banner">✓ LISTO — esperando que el mesero marque <b>ENTREGADO</b></div><div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong>${fmt(preparationTime)}</strong></div><div><span>TOTAL</span><strong>${fmt(totalTime)}</strong></div></div>` : `<div class="time-grid"><div><span>ESPERA</span><strong>${fmt(waitingTime)}</strong></div><div><span>PREPARACIÓN</span><strong class="preparation-timer" data-started="${escapeHtml(item.started_at)}">${fmt(prepSeconds)}</strong></div><div><span>TOTAL</span><strong class="total-timer" data-created="${escapeHtml(item.created_at)}">${fmt(waitingTime + prepSeconds)}</strong></div></div><div class="prep-target ${overdue ? "late" : ""}">${overdue ? `⚠ ATRASADO <b>${fmt(overdueSeconds)}</b> · objetivo ${prepLimit} min` : `⏱ Objetivo ${prepLimit ? prepLimit + " min" : "sin límite"}`}</div>`}
+            ${waiting ? `<button onclick="changeStatus('${escapeHtml(item.id)}','WAITING')">Tomar pedido</button>` : preparing ? `<button onclick="changeStatus('${escapeHtml(item.id)}','PREPARING')">Marcar listo</button>` : `<button class="station-locked" type="button" disabled>🔒 Esperando entrega del mesero</button>`}
+        </article>`;
+    }).join("");
 }
-
-
-// ==========================================================
-// CAMBIAR ESTADO
-// ==========================================================
-
-async function changeStatus(
-    id,
-    status
-) {
-
-    const endpoint =
-        status === "WAITING"
-            ? "start"
-            : "finish";
-
-    const response =
-        await fetch(
-            `/api/kitchen-queue/${encodeURIComponent(id)}/${endpoint}`,
-            {
-                method: "PATCH"
-            }
-        );
-
-    if (!response.ok) {
-
-        alert(
-            "No se pudo actualizar el estado de la comanda."
-        );
-
-        return;
-    }
-
-    await loadBoard();
-}
-
-
-// ==========================================================
-// HISTORIAL
-// ==========================================================
-
-async function loadHistory() {
-
-    if (!selectedStation?.station_id) {
-        return;
-    }
-
-    const response =
-        await fetch(
-            `/api/kitchen-queue/station/${encodeURIComponent(selectedStation.station_id)}/history`
-        );
-
-    if (!response.ok) {
-        return;
-    }
-
-    historyItems =
-        await response.json();
-
-    renderHistory();
-}
-
-
-function renderHistory() {
-
-    const root =
-        document.getElementById("history");
-
-    if (!root) return;
-
-
-    if (!historyItems.length) {
-
-        root.innerHTML = `
-            <div class="empty-panel">
-                <strong>
-                    Todavía no hay historial.
-                </strong>
-
-                <span>
-                    Las comandas terminadas aparecerán aquí.
-                </span>
-            </div>
-        `;
-
-        return;
-    }
-
-
-    root.innerHTML =
-        historyItems.map(item => {
-
-            return `
-                <article class="history-card">
-
-                    <div class="history-main">
-
-                        <strong>
-                            ${escapeHtml(item.quantity)}
-                            ×
-                            ${escapeHtml(item.name)}
-                        </strong>
-
-                        <span>
-                            Comanda
-                            ${
-                                item.order_id
-                                    ? escapeHtml(
-                                        item.order_id
-                                            .slice(0, 8)
-                                            .toUpperCase()
-                                    )
-                                    : "—"
-                            }
-
-                            · Mesa
-                            ${escapeHtml(
-                                item.table || "—"
-                            )}
-                        </span>
-
-                    </div>
-
-
-                    <div class="history-times">
-
-                        <div>
-                            <span>
-                                ESPERA
-                            </span>
-
-                            <strong>
-                                ${fmt(
-                                    item.waiting_seconds
-                                )}
-                            </strong>
-                        </div>
-
-
-                        <div>
-                            <span>
-                                COCINA
-                            </span>
-
-                            <strong>
-                                ${fmt(
-                                    item.preparation_seconds
-                                )}
-                            </strong>
-                        </div>
-
-
-                        <div>
-                            <span>
-                                TOTAL
-                            </span>
-
-                            <strong>
-                                ${fmt(
-                                    item.total_seconds
-                                )}
-                            </strong>
-                        </div>
-
-                    </div>
-
-
-                    <div class="history-finished">
-
-                        <span>
-                            LISTO
-                        </span>
-
-                        <strong>
-                            ${formatClock(
-                                item.finished_at
-                            )}
-                        </strong>
-
-                    </div>
-
-                </article>
-            `;
-
-        }).join("");
-}
-
-
-// ==========================================================
-// ACTUALIZAR CRONÓMETROS
-// ==========================================================
 
 function tickTimers() {
-
-    // Esperando
-    document
-        .querySelectorAll(
-            ".timer[data-mode='waiting']"
-        )
-        .forEach(element => {
-
-            element.textContent =
-                fmt(
-                    elapsedFrom(
-                        element.dataset.created
-                    )
-                );
-        });
-
-
-    // Preparación
-    document
-        .querySelectorAll(
-            ".preparation-timer"
-        )
-        .forEach(element => {
-
-            element.textContent =
-                fmt(
-                    elapsedFrom(
-                        element.dataset.started
-                    )
-                );
-        });
-
-
-    // Tiempo total
-    document
-        .querySelectorAll(
-            ".total-timer"
-        )
-        .forEach(element => {
-
-            element.textContent =
-                fmt(
-                    elapsedFrom(
-                        element.dataset.created
-                    )
-                );
-        });
+    document.querySelectorAll(".timer[data-mode='waiting']").forEach(element => element.textContent = fmt(elapsedFrom(element.dataset.created)));
+    document.querySelectorAll(".preparation-timer").forEach(element => {
+        const seconds = elapsedFrom(element.dataset.started); element.textContent = fmt(seconds);
+        const ticket = element.closest('.ticket'); const item = items.find(x => String(x.id) === String(ticket?.dataset.itemId));
+        if (!ticket || !item || item.status !== 'PREPARING') return;
+        const limit = Number(item.preparation_time || 0) * 60; const overdue = limit > 0 && seconds > limit;
+        ticket.classList.toggle('overdue', overdue);
+        const target = ticket.querySelector('.prep-target');
+        if (target) target.classList.toggle('late', overdue);
+        if (target && overdue) target.innerHTML = `⚠ ATRASADO <b>${fmt(seconds - limit)}</b> · objetivo ${Number(item.preparation_time)} min`;
+    });
+    document.querySelectorAll(".total-timer").forEach(element => element.textContent = fmt(elapsedFrom(element.dataset.created)));
 }
-
 
 // ==========================================================
 // CAMBIAR ESTACIÓN
@@ -1097,6 +728,10 @@ document
         () => {
 
             currentScreenCode = null;
+            currentStationId = null;
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem("kitchen_selected_station_name");
+            localStorage.removeItem("kitchen_selected_screen_code");
 
             showSelector();
         }
@@ -1172,20 +807,27 @@ async function boot() {
             .split("/")
             .filter(Boolean);
 
-    const screenFromUrl =
+    const stationFromUrl =
         pathParts[0] === "kitchen" &&
-        pathParts[1]
-            ? decodeURIComponent(
-                pathParts[1]
-            )
+        pathParts[1] === "station" &&
+        pathParts[2]
+            ? decodeURIComponent(pathParts[2])
             : null;
 
+    const screenFromUrl =
+        pathParts[0] === "kitchen" &&
+        pathParts[1] &&
+        pathParts[1] !== "station"
+            ? decodeURIComponent(pathParts[1])
+            : null;
 
-    if (screenFromUrl) {
-
-        currentScreenCode =
-            screenFromUrl;
-
+    if (stationFromUrl) {
+        currentStationId = stationFromUrl;
+        // Una URL de estación es una pantalla ya configurada.
+        // Nunca debe mostrar las tarjetas de selección.
+        document.getElementById("stationSelector")?.classList.add("hidden");
+        document.getElementById("kitchenBoard")?.classList.remove("hidden");
+        document.getElementById("changeStationBtn")?.classList.remove("hidden");
         await loadBoard();
 
         heartbeat();
@@ -1203,6 +845,15 @@ async function boot() {
         return;
     }
 
+    // Compatibilidad con enlaces antiguos /kitchen/TV-...
+    if (screenFromUrl) {
+        currentScreenCode = screenFromUrl;
+        await loadBoard();
+        heartbeat();
+        setInterval(loadBoard, 5000);
+        setInterval(heartbeat, 15000);
+        return;
+    }
 
     showSelector();
 }
@@ -1226,5 +877,7 @@ updateClock();
 
 boot();
 
+
+document.getElementById("enableKitchenPush")?.addEventListener("click", async () => { try { await window.ImperioPush.enable({stationId:selectedStation?.station_id || localStorage.getItem(STORAGE_KEY)}); alert("🔔 Alertas activadas para esta estación."); } catch(e){ alert(e.message || "No se pudieron activar las alertas."); } });
 
 document.getElementById("logoutKitchen")?.addEventListener("click",()=>{localStorage.removeItem("token");localStorage.removeItem("user");window.location.replace("/login");});

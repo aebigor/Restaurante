@@ -59,6 +59,12 @@ class KitchenQueue(Base):
         nullable=True
     )
 
+    # Momento en que ya se avisó que la preparación excedió su tiempo objetivo.
+    overdue_notified_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=True
+    )
+
     station = relationship("Station")
 
     order_item = relationship("OrderItem")

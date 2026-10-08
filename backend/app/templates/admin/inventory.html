@@ -32,7 +32,7 @@
 
       <section class="inv-panel">
         <div class="inv-tools">
-          <input id="search" placeholder="Buscar producto, SKU, lote, proveedor, categoría...">
+          <input id="search" placeholder="Buscar producto, SKU, proveedor, categoría...">
           <select id="filter">
             <option value="">Todos los estados</option>
             <option>OK</option><option>POR AGOTARSE</option><option>SIN STOCK</option>
@@ -47,10 +47,10 @@
           </div>
           <div class="inv-advice">
             <h3>Qué revisar</h3>
-            <p>🧊 <b>Congelador / nevera:</b> controla vencimiento, lote y temperatura de almacenamiento.</p>
+            <p>🧊 <b>Congelador / nevera:</b> controla vencimiento y temperatura de almacenamiento.</p>
             <p>📦 <b>Stock bajo:</b> programa compra antes de llegar a cero.</p>
             <p>⚠️ <b>Merma:</b> registra vencidos, daños, derrames o desperdicio para que el stock sea real.</p>
-            <p>🥩 <b>Perecederos:</b> usa lote y fecha para priorizar el consumo.</p>
+            <p>🥩 <b>Perecederos:</b> usa la fecha para priorizar el consumo.</p>
           </div>
         </div>
 
@@ -58,7 +58,7 @@
           <table>
             <thead><tr>
               <th>Producto</th><th>Categoría / tipo</th><th>Existencia</th><th>Mínimo / máximo</th>
-              <th>Ubicación</th><th>Lote / vencimiento</th><th>Estado</th><th>Acciones</th>
+              <th>Ubicación</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th>
             </tr></thead>
             <tbody id="itemsBody"><tr><td colspan="8">Cargando inventario...</td></tr></tbody>
           </table>
@@ -90,7 +90,6 @@
       <label>Costo unitario (COP)<input id="unit_cost" type="number" min="0" step="0.01" value="0"></label>
       <label>Almacenamiento<input id="storage" placeholder="Congelador, nevera, bodega..."></label>
       <label>Ubicación exacta<input id="location" placeholder="Congelador 1 / Estante B..."></label>
-      <label>Lote<input id="lot"></label>
       <label>Fecha de compra<input id="purchase_date" type="date"></label>
       <label>Fecha de apertura<input id="opened_date" type="date"></label>
       <label>Fecha de vencimiento<input id="expiry_date" type="date"></label>

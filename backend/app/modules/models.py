@@ -8,6 +8,8 @@ from app.modules.roles.model import Role
 from app.modules.categories.model import Category
 from app.modules.stations.model import Station
 from app.modules.products.model import Product
+from app.modules.products.inventory_recipe_model import ProductInventoryRecipe
+from app.modules.inventory.model import InventoryItem, InventoryMovement
 
 from app.modules.tables.model import Table
 from app.modules.sessions.model import Session

@@ -98,7 +98,7 @@ $('messageForm').addEventListener('submit',async e=>{
 $('logout').onclick=async()=>{try{await api('/api/delivery/presence/offline',{method:'POST'})}catch(_){}localStorage.removeItem('token');localStorage.removeItem('user');location.replace('/login')};
 function track(){
   if(!navigator.geolocation){$('locationState').textContent='⚠️ Este navegador no permite ubicación.';return;}
-  navigator.geolocation.watchPosition(async p=>{try{await api('/api/delivery/location',{method:'POST',body:JSON.stringify({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy})});$('locationState').textContent=`📍 Ubicación activa · precisión aprox. ${Math.round(p.coords.accuracy)} m`;}catch(e){console.error(e)}},e=>{$('locationState').textContent='⚠️ Debes permitir la ubicación para que Caja y Administración puedan ver al domiciliario.'},{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
+  navigator.geolocation.watchPosition(async p=>{try{await api('/api/delivery/location',{method:'POST',body:JSON.stringify({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy})});$('locationState').textContent=`📍 Ubicación activa · precisión aprox. ${Math.round(p.coords.accuracy)} m`;}catch(e){console.error(e)}},e=>{$('locationState').textContent='⚠️ Debes permitir la ubicación para que Caja y Administración puedan ver al domiciliario.'},{enableHighAccuracy:true,maximumAge:2000,timeout:10000});
 }
 async function heartbeat(){try{await api('/api/delivery/presence',{method:'POST'})}catch(e){console.error(e)}}
 track();heartbeat();load();setInterval(load,5000);setInterval(heartbeat,15000);

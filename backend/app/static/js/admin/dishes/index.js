@@ -308,7 +308,7 @@ function renderDishes(dishes) {
 
 
                         <a
-                            href="/admin/dishes/${dish.id}/edit"
+                            href="/admin/dishes/edit/${dish.id}"
                             class="btn-secondary"
                         >
                             Editar

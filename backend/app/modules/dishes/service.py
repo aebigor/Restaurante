@@ -40,22 +40,6 @@ class DishService:
             )
 
 
-        if not category.station_id:
-
-            raise HTTPException(
-                400,
-                "La categoría debe tener una estación de cocina asignada antes de crear el plato."
-            )
-
-
-        if data.station_id != category.station_id:
-
-            raise HTTPException(
-                400,
-                "La estación del plato debe coincidir con la estación de su categoría."
-            )
-
-
         dish = Dish(
 
             id=uuid.uuid4(),
@@ -196,22 +180,6 @@ class DishService:
             raise HTTPException(
                 400,
                 "La categoría no existe o está inactiva."
-            )
-
-
-        if not category.station_id:
-
-            raise HTTPException(
-                400,
-                "La categoría debe tener una estación de cocina asignada."
-            )
-
-
-        if data.station_id != category.station_id:
-
-            raise HTTPException(
-                400,
-                "La estación del plato debe coincidir con la categoría."
             )
 
 

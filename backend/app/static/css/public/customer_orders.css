@@ -750,6 +750,9 @@ body {
    LEAFLET
    ========================================================= */
 
+
+.courier-live-marker{background:transparent;border:0}.courier-live-marker span{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--barril-rojo);border:3px solid var(--barril-blanco);box-shadow:0 5px 18px rgba(41,21,16,.35);font-size:22px;animation:courierPulse 1.8s infinite}.tracking-button{background:var(--barril-rojo)!important;color:#fff!important;border:1px solid var(--barril-rojo)!important}.tracking-button:hover{background:var(--barril-rojo-hover)!important}@keyframes courierPulse{0%,100%{box-shadow:0 0 0 0 rgba(181,44,32,.35),0 5px 18px rgba(41,21,16,.35)}50%{box-shadow:0 0 0 12px rgba(181,44,32,0),0 5px 18px rgba(41,21,16,.35)}}
+
 .leaflet-container {
     font-family: "DM Sans", system-ui, sans-serif;
 }

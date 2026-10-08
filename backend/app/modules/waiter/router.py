@@ -21,6 +21,8 @@ from app.modules.dishes.model import Dish
 from app.modules.products.model import Product
 from app.modules.tables.model import Table
 from app.modules.cashier.model import CashPayment
+from app.modules.inventory.service import consume_for_sale
+from app.modules.products.inventory_recipe_service import get_recipe
 
 from .schemas import WaiterOrderCreate
 
@@ -184,10 +186,7 @@ def active_menu(
             joinedload(Product.category),
             joinedload(Product.station)
         )
-        .filter(
-            Product.active.is_(True),
-            Product.stock > 0
-        )
+        .filter(Product.active.is_(True))
         .order_by(Product.name.asc())
         .all()
     )
@@ -216,6 +215,11 @@ def active_menu(
     for product in products:
         category = product.category
         station = product.station
+        recipe = get_recipe(db, product.id)
+        product_available = product.active and (
+            all(float(r.inventory_item.quantity or 0) >= float(r.quantity_per_sale or 0) for r in recipe)
+            if recipe else product.stock > 0
+        )
         product_data.append({
             "id": str(product.id),
             "name": product.name,
@@ -227,11 +231,13 @@ def active_menu(
             "portion": None,
             "image": None,
             "preparation_time": product.preparation_time,
-            "available": product.active and product.stock > 0,
+            "available": product_available,
             "active": product.active,
             "display_order": 999999,
             "is_product": True,
-            "stock": product.stock
+            "stock": product.stock,
+            "inventory_controlled": bool(recipe),
+            "inventory_alert": next((r.inventory_item.quantity <= r.inventory_item.min_quantity for r in recipe if r.inventory_item.min_quantity and r.inventory_item.quantity <= r.inventory_item.min_quantity), False)
         })
 
     categories = list(
@@ -683,11 +689,10 @@ def create_waiter_order(
             )
             if not source:
                 raise HTTPException(404, "El producto no existe o está inactivo.")
-            if source.stock < requested.quantity:
-                raise HTTPException(409, f"Stock insuficiente para '{source.name}'. Disponible: {source.stock}.")
             product_id = source.id
             dish_id = None
-            source.stock -= requested.quantity
+            # El inventario real vive en la receta asociada al producto.
+            # No se modifica products.stock para evitar duplicar existencias.
 
         if not source.station_id:
             raise HTTPException(400, f"'{source.name}' no tiene estación asignada.")
@@ -708,6 +713,15 @@ def create_waiter_order(
 
         db.add(item)
         db.flush()
+
+        # Inventario automático para productos/platos que tengan
+        # una coincidencia inequívoca en el inventario (por código o nombre).
+        consume_for_sale(
+            db,
+            source,
+            requested.quantity,
+            order_id=order.id,
+        )
 
         if station_key not in batches and not prepayment_required:
             batch = (
@@ -1070,8 +1084,19 @@ def serve_order_item(
         raise HTTPException(400, "Este producto todavía no está listo en cocina.")
 
     item.status = "SERVED"
+
+    # La salida de cocina la da el mesero. Cuando confirma que este
+    # producto ya fue entregado, la estación deja de mostrarlo y queda
+    # bloqueado para nuevas acciones de cocina.
+    queues = db.query(KitchenQueue).filter(
+        KitchenQueue.order_item_id == item.id,
+        KitchenQueue.status == "READY"
+    ).all()
+    for queue in queues:
+        queue.status = "CLOSED"
+
     db.commit()
-    return {"message": "Producto entregado.", "item_id": str(item.id), "status": "SERVED"}
+    return {"message": "Producto entregado y cerrado en la estación.", "item_id": str(item.id), "status": "SERVED"}
 
 
 @router.patch("/orders/{order_id}/serve")
@@ -1103,6 +1128,17 @@ def serve_order(
     served_at = datetime.now(timezone.utc)
     order.status = "SERVED"
     order.served_at = served_at
+
+    # La confirmación del mesero es la salida definitiva de las estaciones.
+    # Cocina ya marcó LISTO; aquí se cierra la cola para que no vuelva a tocarse.
+    order_item_ids = [item.id for item in items]
+    queues = db.query(KitchenQueue).filter(
+        KitchenQueue.order_item_id.in_(order_item_ids),
+        KitchenQueue.status == "READY"
+    ).all()
+    for queue in queues:
+        queue.status = "CLOSED"
+
     db.commit()
     db.refresh(order)
     return {"message": "Toda la comanda fue entregada correctamente.", "order_id": str(order.id), "status": "SERVED", "served_at": order.served_at}

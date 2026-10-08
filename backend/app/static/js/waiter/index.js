@@ -375,7 +375,7 @@ function formatTime(value) {
 
 
 const mealNotificationState = new Map();
-const DEFAULT_MEAL_TIME_LIMIT_SECONDS = 5;
+const DEFAULT_MEAL_TIME_LIMIT_SECONDS = 1800;
 
 function formatMealElapsedAlert(seconds) {
     const total = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -2917,4 +2917,6 @@ setInterval(
     updateWaiterTimers,
     1000
 );
+document.getElementById("enableWaiterPush")?.addEventListener("click", async()=>{try{await window.ImperioPush.enable();alert("🔔 Alertas del mesero activadas.")}catch(e){alert(e.message||"No se pudieron activar las alertas.")}});
+
 document.getElementById("logoutWaiter")?.addEventListener("click",()=>{localStorage.removeItem("token");localStorage.removeItem("user");window.location.replace("/login");});

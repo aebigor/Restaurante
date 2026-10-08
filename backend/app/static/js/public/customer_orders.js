@@ -62,7 +62,11 @@
   let lastLocation = null;
 
   function initMap() {
-    if (map || !window.L || !mapElement) return;
+    if (map || !mapElement) return;
+    if (!window.L) {
+      trackingStatus.textContent = 'No se pudo cargar el mapa. Comprueba tu conexión a Internet y vuelve a intentarlo.';
+      return;
+    }
 
     map = L.map(mapElement, {
       zoomControl: true,
@@ -92,8 +96,19 @@
     lastLocation = [lat, lng];
     const point = [lat, lng];
 
+    // GPS: mostramos también el radio de precisión reportado por el teléfono.
+    // Un GPS de 8 m, por ejemplo, no significa que el punto sea exacto al centímetro.
+    const accuracy = Number(location.accuracy);
+    const safeAccuracy = Number.isFinite(accuracy) && accuracy > 0 ? accuracy : 50;
+
     if (!courierMarker) {
-      courierMarker = L.marker(point).addTo(map).bindPopup('🛵 Domiciliario');
+      const courierIcon = L.divIcon({
+        className: 'courier-live-marker',
+        html: '<span>🛵</span>',
+        iconSize: [42, 42],
+        iconAnchor: [21, 21]
+      });
+      courierMarker = L.marker(point, { icon: courierIcon }).addTo(map).bindPopup('🛵 Domiciliario');
       courierMarker.openPopup();
     } else {
       courierMarker.setLatLng(point);
@@ -101,19 +116,20 @@
 
     if (accuracyCircle) {
       accuracyCircle.setLatLng(point);
-      if (location.accuracy != null) accuracyCircle.setRadius(Number(location.accuracy));
+      accuracyCircle.setRadius(safeAccuracy);
     } else {
       accuracyCircle = L.circle(point, {
-        radius: Number(location.accuracy || 50)
+        radius: safeAccuracy
       }).addTo(map);
     }
 
     map.setView(point, Math.max(map.getZoom(), 15), { animate: true });
+    map.invalidateSize(true);
 
-    trackingStatus.textContent = '🟢 Ubicación del domiciliario actualizada';
+    trackingStatus.textContent = `🟢 Domiciliario localizado · precisión aproximada ${Math.round(safeAccuracy)} m`;
     trackingUpdated.textContent = location.recorded_at
-      ? `Última actualización: ${new Date(location.recorded_at).toLocaleTimeString('es-CO')}`
-      : 'Ubicación recibida';
+      ? `Última actualización: ${new Date(location.recorded_at).toLocaleTimeString('es-CO')} · GPS ±${Math.round(safeAccuracy)} m`
+      : `Ubicación recibida · GPS ±${Math.round(safeAccuracy)} m`;
   }
 
   async function loadTracking(orderId, firstOpen = false) {
@@ -167,6 +183,8 @@
     setTimeout(() => map?.invalidateSize(), 100);
 
     loadTracking(selectedOrderId, true);
+    // Al abrir un modal Leaflet necesita recalcular el tamaño real del contenedor.
+    setTimeout(() => { if (map) { map.invalidateSize(true); if (lastLocation) map.setView(lastLocation, 17); } }, 250);
 
     clearInterval(trackingTimer);
     trackingTimer = setInterval(() => {

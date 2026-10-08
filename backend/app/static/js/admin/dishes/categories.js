@@ -43,11 +43,6 @@ async function loadCategories() {
         });
 
 
-        select.addEventListener(
-            "change",
-            syncCategoryStation
-        );
-
 
     } catch (error) {
 
@@ -67,51 +62,6 @@ async function loadCategories() {
 }
 
 
-function syncCategoryStation() {
 
-    const categorySelect =
-        document.getElementById("category");
-
-    const stationSelect =
-        document.getElementById("station");
-
-
-    if (!categorySelect || !stationSelect) {
-        return;
-    }
-
-
-    const category =
-        dishCategories.find(
-            category =>
-                String(category.id) ===
-                String(categorySelect.value)
-        );
-
-
-    if (!category) {
-
-        stationSelect.value = "";
-
-        return;
-
-    }
-
-
-    if (!category.station_id) {
-
-        stationSelect.value = "";
-
-        alert(
-            "Esta categoría no tiene una estación de cocina asignada."
-        );
-
-        return;
-
-    }
-
-
-    stationSelect.value =
-        String(category.station_id);
-
-}
+// La categoría NO decide la estación del plato.
+// La estación se selecciona de forma independiente en el formulario.

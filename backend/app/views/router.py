@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from fastapi import Depends
@@ -95,6 +96,10 @@ async def customer_orders_page(request: Request):
 @router.get("/domiciliario")
 async def courier_page(request: Request):
     return templates.TemplateResponse(request=request, name="delivery/dashboard.html", context={})
+
+@router.get("/push-sw.js")
+async def push_service_worker():
+    return FileResponse("app/static/push-sw.js", media_type="application/javascript")
 
 @router.get("/terms")
 async def terms(request: Request):
@@ -490,6 +495,13 @@ async def kitchen_selector(request: Request):
 
 @router.get("/kitchen/{screen_code}")
 async def kitchen_view(request: Request, screen_code: str):
+    return templates.TemplateResponse(request=request, name="kitchen/index.html", context={})
+
+
+@router.get("/kitchen/station/{station_id}")
+async def kitchen_station_view(request: Request, station_id: str):
+    # La estación es la identidad de esta pantalla.
+    # No se redirige a una estación principal por prioridad o categoría.
     return templates.TemplateResponse(request=request, name="kitchen/index.html", context={})
 
 # ======================================================

@@ -5,43 +5,103 @@ Editar Plato
 {% endblock %}
 
 {% block css %}
-
 <link rel="stylesheet" href="/static/css/admin/sidebar.css">
 <link rel="stylesheet" href="/static/css/admin/topbar.css">
 <link rel="stylesheet" href="/static/css/admin/dashboard.css">
 <link rel="stylesheet" href="/static/css/admin/dishes.css">
-
 {% endblock %}
 
 {% block content %}
-
 <div class="layout">
-
     {% include "admin/components/sidebar.html" %}
 
     <div class="contenido">
-
         {% include "admin/components/topbar.html" %}
 
         <div class="panel">
+            <section class="page-header">
+                <div>
+                    <h1>Editar Plato</h1>
+                    <p>Modifica nombre, precio, categoría, estación, tiempo, porción, imagen y disponibilidad.</p>
+                </div>
+                <a href="/admin/dishes" class="btn-secondary">← Regresar</a>
+            </section>
 
-            <div id="editor">
+            <form id="dishForm" class="dish-form">
+                <div class="dish-left">
+                    <div class="preview">
+                        <img id="previewImage" src="/static/img/no-image.png" alt="Vista previa del plato">
+                    </div>
+                    <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp,image/avif">
+                    <small class="field-help">JPG, PNG, WEBP o AVIF. Si no eliges una imagen, se conserva la actual.</small>
+                </div>
 
-            </div>
+                <div class="dish-right">
+                    <div class="grid">
+                        <div class="campo">
+                            <label for="name">Nombre del plato</label>
+                            <input id="name" type="text" maxlength="150" required>
+                        </div>
 
+                        <div class="campo">
+                            <label for="category">Categoría</label>
+                            <select id="category" required>
+                                <option value="">Seleccione una categoría</option>
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="price">Precio</label>
+                            <input id="price" type="number" min="0" step="0.01" required>
+                        </div>
+
+                        <div class="campo">
+                            <label for="station">Estación de cocina</label>
+                            <select id="station" required>
+                                <option value="">Cargando estaciones...</option>
+                            </select>
+                            <small class="field-help">La estación es independiente de la categoría y define dónde se prepara este plato.</small>
+                        </div>
+
+                        <div class="campo">
+                            <label for="portion">Porción / cantidad</label>
+                            <input id="portion" type="text" maxlength="100">
+                        </div>
+
+                        <div class="campo">
+                            <label for="preparation_time">Tiempo de preparación</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input id="preparation_time" type="number" min="1" max="999" required>
+                                <span>min</span>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label>Modelo 3D</label>
+                            <button type="button" class="btn-secondary" disabled>🧊 Modelo 3D próximamente</button>
+                        </div>
+
+                        <div class="campo" style="display:flex;gap:20px;flex-wrap:wrap;">
+                            <label style="display:flex;gap:8px;align-items:center;">
+                                <input type="checkbox" id="available"> Disponible
+                            </label>
+                            <label style="display:flex;gap:8px;align-items:center;">
+                                <input type="checkbox" id="featured"> Destacado
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/admin/dishes" class="btn-secondary">Cancelar</a>
+                        <button type="submit" id="btnGuardar" class="btn-primary">Guardar cambios</button>
+                    </div>
+                </div>
+            </form>
         </div>
-
     </div>
-
 </div>
 
-<script>
-
-const DISH_ID="{{ dish_id }}";
-
-</script>
-
+<script>const DISH_ID="{{ dish_id }}";</script>
 <script src="/static/js/admin/sidebar.js"></script>
-<script src="/static/js/admin/dishes/edit.js"></script>
-
+<script src="/static/js/admin/dishes/edit.js?v=20261008-edit1"></script>
 {% endblock %}

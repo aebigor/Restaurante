@@ -39,7 +39,7 @@ Panel del Mesero
 
         </div>
 
-        <div class="waiter-header-actions"><div class="live"><span></span> EN VIVO</div><button id="logoutWaiter" class="btn-logout" type="button">↪ Cerrar sesión</button></div>
+        <div class="waiter-header-actions"><button id="enableWaiterPush" class="btn-logout" type="button">🔔 Alertas</button><div class="live"><span></span> EN VIVO</div><button id="logoutWaiter" class="btn-logout" type="button">↪ Cerrar sesión</button></div>
 
     </header>
 
@@ -444,8 +444,9 @@ Panel del Mesero
 </div>
 
 
+<script src="/static/js/push_notifications.js"></script>
 <script
-    src="/static/js/waiter/index.js?v=20261008-sound"
+    src="/static/js/waiter/index.js?v=20261008-alertas2"
 ></script>
 
 {% endblock %}

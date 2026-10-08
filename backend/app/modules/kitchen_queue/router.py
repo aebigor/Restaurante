@@ -444,6 +444,9 @@ def _serialize(queue):
             )
         )
 
+    source = dish or product
+    preparation_time = int(getattr(source, "preparation_time", 0) or 0)
+
     return {
         "id": str(queue.id),
 
@@ -462,6 +465,10 @@ def _serialize(queue):
         "started_at": queue.started_at,
 
         "finished_at": queue.finished_at,
+
+        "overdue_notified_at": queue.overdue_notified_at,
+
+        "preparation_time": preparation_time,
 
         "waiting_seconds": waiting_seconds,
 

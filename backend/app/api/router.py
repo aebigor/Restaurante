@@ -37,6 +37,7 @@ from app.modules.delivery.router import router as delivery_router
 from app.modules.chatbot.router import router as chatbot_router
 from app.modules.attendance.router import router as attendance_router, admin_router as attendance_admin_router
 from app.modules.inventory.router import router as inventory_router
+from app.modules.push.router import router as push_router
 
 
 api_router = APIRouter()
@@ -64,6 +65,7 @@ api_router.include_router(chatbot_router)
 api_router.include_router(attendance_router)
 api_router.include_router(attendance_admin_router)
 api_router.include_router(inventory_router)
+api_router.include_router(push_router)
 
 from app.modules.promotions.router import router as promotions_router
 api_router.include_router(promotions_router)

@@ -521,3 +521,17 @@
 }
 
 }
+/* =====================================================
+   ASOCIACION PRODUCTO -> INVENTARIO
+===================================================== */
+.inventory-association{margin-top:24px;padding:20px;border:1px solid #eadede;border-radius:16px;background:#fff8f6}
+.inventory-association-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.inventory-association-header h3{margin:0 0 5px;color:#4b1710}
+.inventory-association-header p{margin:0;color:#777;font-size:13px}
+.inventory-recipe-rows{display:flex;flex-direction:column;gap:10px}
+.inventory-recipe-row{display:grid;grid-template-columns:minmax(0,1fr) 130px 90px 38px;gap:8px;align-items:center}
+.inventory-recipe-row select,.inventory-recipe-row input{border:1px solid #ddd;border-radius:10px;padding:10px;background:white}
+.recipe-unit{font-size:13px;font-weight:700;color:#666}
+.mini-remove{border:0;border-radius:10px;padding:9px;cursor:pointer;background:#fee;color:#9b1c1c;font-weight:800}
+.inventory-help{margin-top:12px;font-size:12px;color:#666;background:#fff;padding:12px;border-radius:10px}
+@media(max-width:700px){.inventory-association-header{align-items:flex-start;flex-direction:column}.inventory-recipe-row{grid-template-columns:1fr 100px 60px 38px}}

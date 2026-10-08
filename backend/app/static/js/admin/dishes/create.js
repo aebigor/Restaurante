@@ -71,7 +71,7 @@ async function saveDish(event) {
         if (!stationId) {
 
             alert(
-                "La categoría seleccionada no tiene una estación de cocina asignada."
+                "Selecciona la estación donde realmente se prepara este plato."
             );
 
             return;

@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     # Tiempo de comida antes de permitir marcar la mesa para limpieza.
     # Se cambia desde backend/.env y se expresa en segundos.
     MEAL_TIME_LIMIT_SECONDS: int = 1800
+    WEB_PUSH_VAPID_PRIVATE_KEY: str | None = None
+    WEB_PUSH_VAPID_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
